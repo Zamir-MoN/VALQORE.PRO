@@ -40,7 +40,7 @@ export const GameCard = ({ game }: GameCardProps) => {
           <img 
             src={getImageUrl(game.tagImage)} 
             alt="Tag" 
-            className="absolute bottom-3 left-3 h-6 object-contain drop-shadow-md z-10"
+            className="absolute bottom-3 left-3 h-8 sm:h-9 object-contain drop-shadow-md z-10"
           />
         )}
 
