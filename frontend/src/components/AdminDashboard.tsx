@@ -337,89 +337,140 @@ export const AdminDashboard = () => {
                 <X size={20} />
               </button>
               <h2 className="text-2xl font-bold mb-6 text-primary">{isEditing ? 'Edit Game' : 'Add New Game'}</h2>
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="flex gap-2">
-                <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Title" required className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
-                <button 
-                  type="button" 
-                  onClick={handleAutofill} 
-                  disabled={isAutofilling}
-                  className="bg-primary/20 text-primary hover:bg-primary/30 px-4 rounded-lg flex items-center gap-2 transition-colors border border-primary/50 disabled:opacity-50"
-                  title="Auto-fill details from IGDB"
-                >
-                  {isAutofilling ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-                  <span className="hidden sm:inline font-bold">Autofill</span>
-                </button>
-              </div>
-              <input type="text" name="developer" value={formData.developer} onChange={handleInputChange} placeholder="Developer" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
-              <div className="flex gap-4">
-                <input type="number" step="0.1" name="price" value={formData.price} onChange={handleInputChange} placeholder="Price (₹)" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" />
-                <input type="number" step="1" name="discount" value={formData.discount} onChange={handleInputChange} placeholder="Discount (%)" className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" />
-              </div>
-              <div className="flex gap-4">
-                <input type="text" name="genre" value={formData.genre} onChange={handleInputChange} placeholder="Genre" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" />
-                <input type="number" step="0.1" name="rating" value={formData.rating} onChange={handleInputChange} placeholder="Rating (0-5)" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" />
-              </div>
-              <input type="date" name="releaseDate" value={formData.releaseDate} onChange={handleInputChange} required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
-              <input type="text" name="platforms" value={formData.platforms} onChange={handleInputChange} placeholder="Platforms (e.g. PC, PS5)" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
-
-              <div className="flex flex-col gap-2 mt-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-text-secondary">Cover Image</label>
-                  {imageFile && (
-                    <button type="button" onClick={clearCoverImage} className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
-                      <X size={12} /> Clear Selection
-                    </button>
-                  )}
-                </div>
-                <input type="file" accept="image/*" ref={coverImageInputRef} onChange={handleFileChange} className="bg-cards border border-white/10 rounded-lg p-2 text-white" />
-                <span className="text-xs text-text-secondary">Or use URL:</span>
-                <div className="flex gap-4 items-start">
-                  <input type="text" name="coverImage" value={formData.coverImage} onChange={handleInputChange} placeholder="Image URL" className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
-                  {formData.coverImage && (
-                    <div className="relative group w-20 h-28 shrink-0">
-                      <img src={formData.coverImage} alt="Cover Preview" className="w-full h-full object-cover rounded-lg border border-white/10" />
-                      <button 
-                        type="button"
-                        onClick={() => setFormData({ ...formData, coverImage: '' })}
-                        className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove image"
-                      >
-                        <X size={14} />
-                      </button>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                
+                {/* Basic Information */}
+                <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full"></span>Basic Information</h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-3">
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Game Title</label>
+                        <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="Enter title" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-transparent uppercase tracking-wider font-bold select-none">Action</label>
+                        <button 
+                          type="button" 
+                          onClick={handleAutofill} 
+                          disabled={isAutofilling}
+                          className="bg-primary/20 text-primary hover:bg-primary/30 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors border border-primary/50 disabled:opacity-50 h-[50px]"
+                          title="Auto-fill details from IGDB"
+                        >
+                          {isAutofilling ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                          <span className="hidden sm:inline font-bold">Autofill</span>
+                        </button>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 mt-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-text-secondary">Tag/Badge Image (Optional, transparent PNG)</label>
-                  {tagImageFile && (
-                    <button type="button" onClick={clearTagImage} className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
-                      <X size={12} /> Clear Selection
-                    </button>
-                  )}
-                </div>
-                <input type="file" accept="image/png, image/webp" ref={tagImageInputRef} onChange={handleTagFileChange} className="bg-cards border border-white/10 rounded-lg p-2 text-white" />
-                <span className="text-xs text-text-secondary">Or use URL:</span>
-                <div className="flex gap-4 items-start">
-                  <input type="text" name="tagImage" value={formData.tagImage} onChange={handleInputChange} placeholder="Image URL (transparent PNG)" className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
-                  {formData.tagImage && (
-                    <div className="relative group w-20 h-20 shrink-0 bg-black/50 rounded-lg flex items-center justify-center p-2">
-                      <img src={formData.tagImage} alt="Tag Preview" className="max-w-full max-h-full object-contain drop-shadow-lg" />
-                      <button 
-                        type="button"
-                        onClick={() => setFormData({ ...formData, tagImage: '' })}
-                        className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove image"
-                      >
-                        <X size={14} />
-                      </button>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Developer</label>
+                        <input type="text" name="developer" value={formData.developer} onChange={handleInputChange} placeholder="E.g. Rockstar Games" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Genre</label>
+                        <input type="text" name="genre" value={formData.genre} onChange={handleInputChange} placeholder="E.g. Action, RPG" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                      </div>
                     </div>
-                  )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Release Date</label>
+                        <input type="date" name="releaseDate" value={formData.releaseDate} onChange={handleInputChange} required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none [&::-webkit-calendar-picker-indicator]:invert" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Platforms</label>
+                        <input type="text" name="platforms" value={formData.platforms} onChange={handleInputChange} placeholder="E.g. PC, PS5" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+
+                {/* Pricing & Rating */}
+                <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full"></span>Pricing & Rating</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Price (₹)</label>
+                      <input type="number" step="0.1" name="price" value={formData.price} onChange={handleInputChange} placeholder="0.00" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Discount (%)</label>
+                      <input type="number" step="1" name="discount" value={formData.discount} onChange={handleInputChange} placeholder="0" className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Rating (0-5)</label>
+                      <input type="number" step="0.1" name="rating" value={formData.rating} onChange={handleInputChange} placeholder="E.g. 4.5" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cover & Branding */}
+                <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full"></span>Cover & Branding</h3>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-white">Cover Image</label>
+                        {imageFile && (
+                          <button type="button" onClick={clearCoverImage} className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
+                            <X size={12} /> Clear Selection
+                          </button>
+                        )}
+                      </div>
+                      <input type="file" accept="image/*" ref={coverImageInputRef} onChange={handleFileChange} className="bg-cards border border-white/10 rounded-lg p-2 text-text-secondary text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                      <span className="text-xs text-text-secondary font-bold">Or use URL:</span>
+                      <div className="flex gap-4 items-start">
+                        <input type="text" name="coverImage" value={formData.coverImage} onChange={handleInputChange} placeholder="https://..." className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none text-sm" />
+                        {formData.coverImage && (
+                          <div className="relative group w-16 h-20 shrink-0">
+                            <img src={formData.coverImage} alt="Cover Preview" className="w-full h-full object-cover rounded-lg border border-white/10" />
+                            <button 
+                              type="button"
+                              onClick={() => setFormData({ ...formData, coverImage: '' })}
+                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              title="Remove image"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="w-full h-px bg-white/10"></div>
+
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-white">Tag/Badge Image <span className="text-text-secondary font-normal text-xs">(Optional, transparent PNG)</span></label>
+                        {tagImageFile && (
+                          <button type="button" onClick={clearTagImage} className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
+                            <X size={12} /> Clear Selection
+                          </button>
+                        )}
+                      </div>
+                      <input type="file" accept="image/png, image/webp" ref={tagImageInputRef} onChange={handleTagFileChange} className="bg-cards border border-white/10 rounded-lg p-2 text-text-secondary text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                      <span className="text-xs text-text-secondary font-bold">Or use URL:</span>
+                      <div className="flex gap-4 items-start">
+                        <input type="text" name="tagImage" value={formData.tagImage} onChange={handleInputChange} placeholder="https://... (transparent PNG)" className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none text-sm" />
+                        {formData.tagImage && (
+                          <div className="relative group w-16 h-16 shrink-0 bg-black/50 rounded-lg flex items-center justify-center p-2">
+                            <img src={formData.tagImage} alt="Tag Preview" className="max-w-full max-h-full object-contain drop-shadow-lg" />
+                            <button 
+                              type="button"
+                              onClick={() => setFormData({ ...formData, tagImage: '' })}
+                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              title="Remove image"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
               {/* Rental Options */}
               <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
