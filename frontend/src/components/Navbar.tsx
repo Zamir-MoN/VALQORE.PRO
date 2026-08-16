@@ -126,12 +126,14 @@ export const Navbar = () => {
         </Link>
         <div className="w-px h-6 bg-white/10 mx-2 hidden sm:block"></div>
         {user ? (
-          <div className="flex items-center gap-3">
-            <Link to="/profile" className="hidden sm:block text-sm font-bold text-white hover:text-primary transition-colors max-w-[100px] truncate">{user.username}</Link>
-            <button onClick={logout} className="hidden sm:flex items-center gap-2 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] text-sm font-bold px-4 py-2 rounded-full transition-all duration-300">
-              <span>Logout</span>
-            </button>
-          </div>
+          <Link to="/profile" className="flex items-center gap-2 p-1 pr-3 sm:pr-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 transition-all duration-300 group">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary flex items-center justify-center text-background font-black text-sm uppercase group-hover:scale-105 transition-transform shadow-[0_0_10px_rgba(220,248,54,0.3)]">
+              {user.username.charAt(0)}
+            </div>
+            <span className="hidden sm:block text-sm font-bold text-white group-hover:text-primary transition-colors max-w-[100px] truncate">
+              {user.username}
+            </span>
+          </Link>
         ) : (
           <button onClick={openAuthModal} className="hidden sm:flex items-center gap-2 bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-background hover:shadow-[0_0_20px_rgba(220,248,54,0.4)] text-sm font-bold px-6 py-2.5 rounded-full transition-all duration-300">
             <User size={16} />

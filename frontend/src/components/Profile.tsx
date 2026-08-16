@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck } from 'lucide-react';
+import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -10,7 +10,7 @@ import clsx from 'clsx';
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Profile = () => {
-  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { user, logout, loading: authLoading, openAuthModal } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
@@ -134,6 +134,15 @@ export const Profile = () => {
                   <ShieldCheck size={14} className="text-primary" /> Verified Account
                 </span>
               </div>
+            </div>
+            
+            <div className="md:ml-auto">
+              <button 
+                onClick={logout}
+                className="flex items-center gap-2 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] text-sm font-bold px-6 py-2.5 rounded-xl transition-all duration-300"
+              >
+                <LogOut size={16} /> Logout
+              </button>
             </div>
           </div>
         </div>
