@@ -30,7 +30,7 @@ export const TrendingGames = () => {
               </Link>
             </div>
             
-            <div className="relative group">
+            <div className="relative">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-6 sm:gap-y-8 gap-x-4">
                 {trendingGames.map((game) => (
                   <GameCard key={game.id} game={game} />
