@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2 } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -697,42 +697,51 @@ export const AdminDashboard = () => {
         <div className="w-full">
           {/* List Section */}
           <div className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="text-2xl font-bold">Manage Games</h2>
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search games..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-cards border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:border-primary outline-none"
-                />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
+              <div>
+                <h2 className="text-3xl font-black bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent flex items-center gap-3 mb-2">
+                  <Gamepad2 className="w-8 h-8 text-primary" />
+                  Manage Games
+                </h2>
+                <p className="text-text-secondary text-sm">Control your store inventory and game details.</p>
               </div>
-              <button
-                onClick={() => {
-                  resetForm();
-                  setIsModalOpen(true);
-                }}
-                className="bg-primary text-background font-bold py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap"
-              >
-                Add Game
-              </button>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-72">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search games..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-white/5 outline-none transition-all duration-300 shadow-inner"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    resetForm();
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-primary text-background font-bold py-3 px-6 rounded-xl hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 whitespace-nowrap shadow-[0_0_20px_rgba(var(--primary),0.3)]"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span className="hidden sm:inline">Add Game</span>
+                </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {loading ? (
                 [...Array(6)].map((_, i) => (
-                  <div key={i} className="glass p-4 rounded-xl border border-white/10 flex gap-4 items-center animate-pulse">
-                    <div className="w-16 h-24 bg-white/10 rounded-md"></div>
-                    <div className="flex-1 flex flex-col gap-2">
-                      <div className="h-5 bg-white/10 rounded w-3/4"></div>
-                      <div className="h-4 bg-white/5 rounded w-1/4"></div>
+                  <div key={i} className="glass p-5 rounded-2xl border border-white/5 flex gap-5 items-center animate-pulse bg-white/[0.02]">
+                    <div className="w-20 h-28 bg-white/5 rounded-xl shadow-inner"></div>
+                    <div className="flex-1 flex flex-col gap-3">
+                      <div className="h-6 bg-white/10 rounded-md w-2/3"></div>
+                      <div className="h-4 bg-white/5 rounded w-1/3"></div>
+                      <div className="h-8 bg-white/5 rounded-full w-32 mt-2"></div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <div className="w-8 h-8 bg-white/10 rounded-lg"></div>
-                      <div className="w-8 h-8 bg-white/10 rounded-lg"></div>
+                      <div className="w-10 h-10 bg-white/5 rounded-xl"></div>
+                      <div className="w-10 h-10 bg-white/5 rounded-xl"></div>
                     </div>
                   </div>
                 ))
@@ -741,39 +750,75 @@ export const AdminDashboard = () => {
                   {games
                     .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(game => (
-                    <div key={game.id} className="glass p-4 rounded-xl border border-white/10 flex gap-4 items-center">
-                      <img src={game.coverImage} alt={game.title} className="w-16 h-24 object-cover rounded-md" />
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg">{game.title}</h3>
-                        <p className="text-text-secondary text-sm mb-2">{formatPrice(game.price)}</p>
-                        <label className="flex items-center gap-2 cursor-pointer w-max">
-                          <div className="relative flex items-center justify-center w-4 h-4 rounded bg-background border border-white/20">
-                            <input 
-                              type="checkbox" 
-                              checked={game.outOfStock || false} 
-                              onChange={() => toggleOutOfStock(game.id, game.outOfStock || false)} 
-                              className="absolute opacity-0 w-full h-full cursor-pointer"
-                            />
-                            {game.outOfStock && <div className="w-2 h-2 bg-red-500 rounded-sm"></div>}
+                    <div 
+                      key={game.id} 
+                      className="group relative glass p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row gap-5 items-start sm:items-center bg-gradient-to-br from-white/[0.03] to-transparent hover:from-white/[0.08] hover:border-white/20 transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden"
+                    >
+                      {game.outOfStock && (
+                        <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none opacity-80">
+                          <div className="absolute top-4 -right-8 w-32 bg-red-500/90 text-[10px] font-black tracking-wider text-white text-center py-1 shadow-lg shadow-red-500/20 rotate-45 backdrop-blur-sm border-y border-white/20">
+                            OUT OF STOCK
                           </div>
-                          <span className={`text-xs font-bold ${game.outOfStock ? 'text-red-500' : 'text-text-secondary'}`}>
-                            {game.outOfStock ? 'Out of Stock' : 'Mark Out of Stock'}
-                          </span>
-                        </label>
+                        </div>
+                      )}
+                      
+                      <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-28">
+                        <img 
+                          src={game.coverImage} 
+                          alt={game.title} 
+                          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${game.outOfStock ? 'grayscale opacity-70' : ''}`} 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent sm:hidden"></div>
                       </div>
-                      <div className="flex flex-col gap-2">
-                        <button onClick={() => editGame(game)} className="p-2 bg-cards hover:bg-white/10 border border-white/10 rounded-lg text-white transition-colors">
-                          <Edit2 size={16} />
+                      
+                      <div className="flex-1 flex flex-col w-full z-10">
+                        <h3 className="font-bold text-xl text-white mb-1 leading-tight line-clamp-1">{game.title}</h3>
+                        <p className="text-primary font-semibold text-sm mb-4">{formatPrice(game.price)}</p>
+                        
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center gap-3 cursor-pointer group/toggle p-1.5 pr-3 rounded-full bg-black/40 hover:bg-black/60 border border-white/5 transition-colors">
+                            <div className="relative">
+                              <input 
+                                type="checkbox" 
+                                checked={game.outOfStock || false} 
+                                onChange={() => toggleOutOfStock(game.id, game.outOfStock || false)} 
+                                className="sr-only"
+                              />
+                              <div className={`block w-11 h-6 rounded-full transition-colors duration-300 ease-in-out ${game.outOfStock ? 'bg-red-500' : 'bg-white/10 group-hover/toggle:bg-white/20'}`}></div>
+                              <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ease-in-out shadow-sm ${game.outOfStock ? 'transform translate-x-5' : ''}`}></div>
+                            </div>
+                            <span className={`text-xs font-bold uppercase tracking-wide ${game.outOfStock ? 'text-red-400' : 'text-text-secondary group-hover/toggle:text-white'}`}>
+                              {game.outOfStock ? 'Out of Stock' : 'In Stock'}
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                      
+                      <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0 z-10">
+                        <button 
+                          onClick={() => editGame(game)} 
+                          className="flex-1 sm:flex-none flex items-center justify-center p-3 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/50 rounded-xl text-white hover:text-primary transition-all duration-300 hover:shadow-[0_0_15px_rgba(var(--primary),0.2)] group/btn tooltip-trigger"
+                          title="Edit Game"
+                        >
+                          <Edit2 size={18} className="transition-transform group-hover/btn:scale-110" />
                         </button>
-                        <button onClick={() => handleDelete(game.id)} className="p-2 bg-error/20 hover:bg-error/40 border border-error/50 rounded-lg text-error transition-colors">
-                          <Trash2 size={16} />
+                        <button 
+                          onClick={() => handleDelete(game.id)} 
+                          className="flex-1 sm:flex-none flex items-center justify-center p-3 bg-white/5 hover:bg-error/20 border border-white/10 hover:border-error/50 rounded-xl text-white hover:text-error transition-all duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] group/btn tooltip-trigger"
+                          title="Delete Game"
+                        >
+                          <Trash2 size={18} className="transition-transform group-hover/btn:scale-110" />
                         </button>
                       </div>
                     </div>
                   ))}
                   {games.length === 0 && (
-                    <div className="col-span-full p-8 text-center text-text-secondary border border-dashed border-white/20 rounded-xl">
-                      No games found. Add some!
+                    <div className="col-span-full py-16 px-8 flex flex-col items-center justify-center text-center glass rounded-2xl border border-white/10">
+                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                        <Package className="w-8 h-8 text-white/40" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2">No games found</h3>
+                      <p className="text-text-secondary">Try adjusting your search or add a new game to your inventory.</p>
                     </div>
                   )}
                 </>
