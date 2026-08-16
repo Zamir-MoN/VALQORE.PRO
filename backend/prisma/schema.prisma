@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// FOR LOCAL DEVELOPMENT (SQLite):
+// datasource db {
+//   provider = "sqlite"
+// }
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  title       String
+  developer   String
+  rating      Float
+  genre       String
+  price       Float
+  discount    Float
+  coverImage  String
+  releaseDate String
+  platforms        String   // Comma separated string for simplicity, or JSON
+  isRentable       Boolean  @default(false)
+  rentPrice        Float?
+  rentDurationDays Int?     @default(7)
+  rentRules        String?
+  minRequirements  String?
+  recRequirements  String?
+  trailerUrl       String?
+  screenshots      String?
+  tagImage         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  cartItems        CartItem[]
+  wishlistItems    WishlistItem[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  gameId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  gameId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+}

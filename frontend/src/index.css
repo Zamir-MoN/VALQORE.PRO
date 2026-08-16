@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #E6FF00;
+  --color-secondary: #6D28D9;
+  --color-accent: #D4AF37;
+  --color-background: #0A0A0B;
+  --color-cards: #171717;
+  --color-border-custom: rgba(255,255,255,0.08);
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B8B8B8;
+  --color-success: #00FF88;
+  --color-error: #FF4D4D;
+  
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Montserrat", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased;
+    overflow-x: hidden;
+    background-size: 50px 50px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-extrabold;
+  }
+  
+  /* Lenis smooth scrolling recommended base styles */
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  
+  .glass {
+    background: rgba(23, 23, 23, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border-custom);
+  }
+}
+
+

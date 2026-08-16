@@ -1,0 +1,189 @@
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useCurrency } from '../context/CurrencyContext';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight } from 'lucide-react';
+
+export const Cart = () => {
+  const { cartItems, loading, removeFromCart } = useCart();
+  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      openAuthModal();
+      navigate('/');
+    }
+  }, [user, authLoading, navigate, openAuthModal]);
+
+  if (loading || authLoading || !user) return (
+    <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen flex justify-center items-center">
+       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+  
+  const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
+  const total = cartItems.reduce((acc, item) => acc + (item.price * (1 - item.discount / 100)), 0);
+  const savings = subtotal - total;
+
+  return (
+    <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen" id="cart-page">
+      <div className="container mx-auto max-w-[1200px]">
+        
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <button 
+            onClick={() => navigate(-1)}
+            className="p-2 rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors group"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 bg-primary rotate-45 flex-shrink-0"></div>
+            <h1 className="text-3xl sm:text-4xl font-heading font-black tracking-wider uppercase text-white">
+              Your Cart
+            </h1>
+          </div>
+          <span className="ml-auto text-text-secondary font-bold bg-white/5 px-4 py-1.5 rounded-full">
+            {cartItems.length} ITEMS
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          
+          {/* Left Column: Cart Items */}
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            {cartItems.map((item) => (
+              <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-cards/40 border border-white/5 rounded-2xl p-4 sm:p-6 transition-all hover:bg-cards/60 hover:border-white/10 group relative">
+                
+                {/* Item Image */}
+                <Link to={`/game/${item.id}`} className="w-full sm:w-40 aspect-video sm:aspect-[3/4] flex-shrink-0 rounded-xl overflow-hidden relative border border-white/10">
+                  <img src={item.coverImage} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {item.discount > 0 && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg">
+                      -{item.discount}%
+                    </div>
+                  )}
+                </Link>
+                
+                {/* Item Details */}
+                <div className="flex flex-col justify-between flex-grow">
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <div className="flex gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{item.genre}</span>
+                        <span className="px-2 py-0.5 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{item.platforms[0]}</span>
+                      </div>
+                      <Link to={`/game/${item.id}`}>
+                        <h3 className="text-xl font-bold text-white hover:text-primary transition-colors line-clamp-2 leading-tight">
+                          {item.title}
+                        </h3>
+                      </Link>
+                      <p className="text-text-secondary text-sm mt-1">{item.developer}</p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-text-secondary hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors group/trash"
+                    >
+                      <Trash2 size={18} className="group-hover/trash:scale-110 transition-transform" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex justify-between items-end mt-4 sm:mt-0">
+                    <span className="text-xs text-text-secondary font-bold uppercase tracking-wider bg-white/5 px-2 py-1 rounded border border-white/5">
+                      Instant Delivery
+                    </span>
+                    <div className="flex flex-col items-end">
+                      {item.discount > 0 ? (
+                        <div className="flex flex-col items-end">
+                          <span className="text-text-secondary line-through text-sm">{formatPrice(item.price)}</span>
+                          <span className="text-lg font-heading font-black text-white">
+                            {formatPrice(item.price * (1 - item.discount / 100))}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-2xl font-heading font-black text-white">{formatPrice(item.price)}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right Column: Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-32 flex flex-col gap-6">
+              
+              <div className="bg-cards/80 backdrop-blur-sm border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl">
+                <h2 className="text-xl font-heading font-black tracking-wider uppercase text-white mb-6">
+                  Order Summary
+                </h2>
+                
+                <div className="flex flex-col gap-4 text-sm font-bold mb-6">
+                  <div className="flex justify-between text-text-secondary">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(subtotal)}</span>
+                  </div>
+                  {savings > 0 && (
+                    <div className="flex justify-between items-center text-primary drop-shadow-[0_0_8px_rgba(220,248,54,0.3)]">
+                      <span>Discount</span>
+                      <span>-{formatPrice(savings)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-text-secondary">
+                    <span>Taxes</span>
+                    <span>Calculated at checkout</span>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-white/10 mb-8">
+                  <div className="flex justify-between items-end">
+                    <span className="text-text-secondary font-bold uppercase tracking-wider">Estimated Total</span>
+                    <span className="text-3xl font-heading font-black text-white">
+                      {formatPrice(total)}
+                    </span>
+                  </div>
+                </div>
+                
+                <button className="w-full bg-primary hover:bg-white text-background font-black text-lg px-6 py-4 rounded-xl shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all uppercase tracking-wide hover:scale-105 active:scale-95 duration-300 flex items-center justify-center gap-2 group">
+                  Secure Checkout
+                  <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <div className="mt-4 flex items-center justify-center gap-2 text-text-secondary text-xs font-bold uppercase tracking-wider">
+                  <Shield size={14} className="text-primary" />
+                  <span>256-bit SSL Encrypted</span>
+                </div>
+              </div>
+
+              {/* Payment Methods */}
+              <div className="bg-cards/40 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+                <p className="text-sm font-bold text-text-secondary uppercase tracking-widest mb-4">Accepted Payment Methods</p>
+                <div className="flex flex-wrap justify-center gap-3 opacity-60">
+                  <div className="h-8 w-14 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                    <CreditCard size={18} />
+                  </div>
+                  <div className="h-8 w-14 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-3.5 object-contain grayscale" />
+                  </div>
+                  <div className="h-8 w-14 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                    <img src="https://cryptologos.cc/logos/tether-usdt-logo.svg?v=032" alt="USDT" className="h-4 object-contain grayscale" />
+                  </div>
+                  <div className="h-8 w-14 rounded bg-white/5 border border-white/10 flex items-center justify-center">
+                    <img src="https://cryptologos.cc/logos/litecoin-ltc-logo.svg?v=032" alt="LTC" className="h-4 object-contain grayscale" />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
