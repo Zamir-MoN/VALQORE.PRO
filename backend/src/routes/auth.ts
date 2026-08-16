@@ -119,4 +119,48 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
   }
 });
 
+// Change user password
+router.put('/password', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ error: 'Current and new password are required' });
+      return;
+    }
+
+    if (!userPayload.userId && userPayload.username === (process.env.ADMIN_USERNAME || 'admin')) {
+      res.status(403).json({ error: 'Cannot change default admin password' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userPayload.userId }
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({ error: 'Incorrect current password' });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('[CHANGE PASSWORD ERROR]', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 export default router;

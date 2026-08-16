@@ -1,15 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight } from 'lucide-react';
+import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Cart = () => {
   const { cartItems, loading, removeFromCart } = useCart();
   const { user, loading: authLoading, openAuthModal } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -17,6 +22,26 @@ export const Cart = () => {
       navigate('/');
     }
   }, [user, authLoading, navigate, openAuthModal]);
+
+  const handleCheckout = async () => {
+    if (!user) return;
+    if (cartItems.length === 0) return;
+    
+    setIsCheckingOut(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/orders`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Order placed successfully!');
+      // Hard reload to clear cart context and go to profile
+      window.location.href = '/profile';
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.error || 'Failed to place order');
+      setIsCheckingOut(false);
+    }
+  };
 
   if (loading || authLoading || !user) return (
     <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen flex justify-center items-center">
@@ -149,9 +174,16 @@ export const Cart = () => {
                   </div>
                 </div>
                 
-                <button className="w-full bg-primary hover:bg-white text-background font-black text-lg px-6 py-4 rounded-xl shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all uppercase tracking-wide hover:scale-105 active:scale-95 duration-300 flex items-center justify-center gap-2 group">
-                  Secure Checkout
-                  <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                <button 
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut || cartItems.length === 0}
+                  className="w-full bg-primary hover:bg-white text-background font-black text-lg px-6 py-4 rounded-xl shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all uppercase tracking-wide hover:scale-105 active:scale-95 duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:hover:scale-100"
+                >
+                  {isCheckingOut ? (
+                    <><Loader2 size={20} className="animate-spin" /> Processing...</>
+                  ) : (
+                    <>Secure Checkout <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
+                  )}
                 </button>
                 
                 <div className="mt-4 flex items-center justify-center gap-2 text-text-secondary text-xs font-bold uppercase tracking-wider">

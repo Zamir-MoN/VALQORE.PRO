@@ -127,7 +127,7 @@ export const Navbar = () => {
         <div className="w-px h-6 bg-white/10 mx-2 hidden sm:block"></div>
         {user ? (
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-sm font-bold text-white max-w-[100px] truncate">{user.username}</span>
+            <Link to="/profile" className="hidden sm:block text-sm font-bold text-white hover:text-primary transition-colors max-w-[100px] truncate">{user.username}</Link>
             <button onClick={logout} className="hidden sm:flex items-center gap-2 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] text-sm font-bold px-4 py-2 rounded-full transition-all duration-300">
               <span>Logout</span>
             </button>

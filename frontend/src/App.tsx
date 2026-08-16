@@ -17,6 +17,7 @@ import { Newsletter } from './components/Newsletter';
 import { Footer } from './components/Footer';
 import { GameDetails } from './components/GameDetails';
 import { Cart } from './components/Cart';
+import { Profile } from './components/Profile';
 import { AuthModal } from './components/Auth';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLogin } from './components/AdminLogin';
@@ -105,6 +106,7 @@ function App() {
                       <Route path="/store" element={<BrowseGames />} />
                       <Route path="/game/:id" element={<GameDetails />} />
                       <Route path="/cart" element={<Cart />} />
+                      <Route path="/profile" element={<Profile />} />
                       <Route path="/admin/login" element={<AdminLogin />} />
                       <Route path="/admin" element={<AdminDashboard />} />
                     </Routes>

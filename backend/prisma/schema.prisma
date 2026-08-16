@@ -36,6 +36,7 @@ model Game {
   
   cartItems        CartItem[]
   wishlistItems    WishlistItem[]
+  orderItems       OrderItem[]
 }
 
 model User {
@@ -47,6 +48,7 @@ model User {
   
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
+  orders        Order[]
 }
 
 model CartItem {
@@ -71,4 +73,27 @@ model WishlistItem {
   game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@unique([userId, gameId])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  status      String      @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  totalAmount Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  gameId    String
+  pricePaid Float
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  game  Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
 }

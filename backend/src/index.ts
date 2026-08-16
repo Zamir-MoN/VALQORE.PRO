@@ -11,6 +11,7 @@ import authRouter from './routes/auth';
 import igdbRouter from './routes/igdb';
 import cartRouter from './routes/cart';
 import wishlistRouter from './routes/wishlist';
+import ordersRouter from './routes/orders';
 import http from 'http';
 import { initSocket } from './socket';
 
@@ -28,6 +29,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/igdb', igdbRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/wishlist', wishlistRouter);
+app.use('/api/orders', ordersRouter);
 
 const PORT = process.env.PORT || 5000;
 
