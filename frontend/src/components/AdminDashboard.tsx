@@ -442,26 +442,28 @@ export const AdminDashboard = () => {
                     <div className="w-full h-px bg-white/10"></div>
 
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-bold text-white">Tag/Badge Image <span className="text-text-secondary font-normal text-xs">(Optional, transparent PNG)</span></label>
-                        {tagImageFile && (
-                          <button type="button" onClick={clearTagImage} className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
-                            <X size={12} /> Clear Selection
-                          </button>
-                        )}
-                      </div>
-                      <input type="file" accept="image/png, image/webp" ref={tagImageInputRef} onChange={handleTagFileChange} className="bg-cards border border-white/10 rounded-lg p-2 text-text-secondary text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
-                      <span className="text-xs text-text-secondary font-bold">Or use URL:</span>
+                      <label className="text-sm font-bold text-white">Platform Badge</label>
                       <div className="flex gap-4 items-start">
-                        <input type="text" name="tagImage" value={formData.tagImage} onChange={handleInputChange} placeholder="https://... (transparent PNG)" className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none text-sm" />
+                        <select 
+                          name="tagImage" 
+                          value={formData.tagImage} 
+                          onChange={handleInputChange} 
+                          className="flex-1 bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none text-sm cursor-pointer"
+                        >
+                          <option value="">None</option>
+                          <option value="/badges/STEAM.png">Steam</option>
+                          <option value="/badges/Ubsoft.png">Ubisoft</option>
+                          <option value="/badges/ROCKSTAR.png">Rockstar Games</option>
+                          <option value="/badges/EPIC_Game.png">Epic Games</option>
+                        </select>
                         {formData.tagImage && (
-                          <div className="relative group w-16 h-16 shrink-0 bg-black/50 rounded-lg flex items-center justify-center p-2">
-                            <img src={formData.tagImage} alt="Tag Preview" className="max-w-full max-h-full object-contain drop-shadow-lg" />
+                          <div className="relative group w-16 h-16 shrink-0 bg-black/50 rounded-lg flex items-center justify-center p-2 border border-white/10">
+                            <img src={formData.tagImage} alt="Badge Preview" className="max-w-full max-h-full object-contain drop-shadow-lg" />
                             <button 
                               type="button"
                               onClick={() => setFormData({ ...formData, tagImage: '' })}
                               className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                              title="Remove image"
+                              title="Remove badge"
                             >
                               <X size={12} />
                             </button>
