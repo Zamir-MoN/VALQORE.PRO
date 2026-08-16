@@ -251,6 +251,20 @@ export const AdminDashboard = () => {
     navigate('/admin/login');
   };
 
+  const toggleOutOfStock = async (gameId: string, currentStatus: boolean) => {
+    try {
+      await axios.put(`${API_URL}/games/${gameId}`, 
+        { outOfStock: !currentStatus }, 
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      toast.success(currentStatus ? 'Game is back in stock!' : 'Game marked as out of stock!');
+      fetchGames();
+    } catch (err) {
+      toast.error('Failed to update stock status');
+      console.error("Toggle stock failed:", err);
+    }
+  };
+
   const resetForm = () => {
     setIsEditing(false);
     setCurrentId(null);
@@ -731,7 +745,21 @@ export const AdminDashboard = () => {
                       <img src={game.coverImage} alt={game.title} className="w-16 h-24 object-cover rounded-md" />
                       <div className="flex-1">
                         <h3 className="font-bold text-lg">{game.title}</h3>
-                        <p className="text-text-secondary text-sm">{formatPrice(game.price)}</p>
+                        <p className="text-text-secondary text-sm mb-2">{formatPrice(game.price)}</p>
+                        <label className="flex items-center gap-2 cursor-pointer w-max">
+                          <div className="relative flex items-center justify-center w-4 h-4 rounded bg-background border border-white/20">
+                            <input 
+                              type="checkbox" 
+                              checked={game.outOfStock || false} 
+                              onChange={() => toggleOutOfStock(game.id, game.outOfStock || false)} 
+                              className="absolute opacity-0 w-full h-full cursor-pointer"
+                            />
+                            {game.outOfStock && <div className="w-2 h-2 bg-red-500 rounded-sm"></div>}
+                          </div>
+                          <span className={`text-xs font-bold ${game.outOfStock ? 'text-red-500' : 'text-text-secondary'}`}>
+                            {game.outOfStock ? 'Out of Stock' : 'Mark Out of Stock'}
+                          </span>
+                        </label>
                       </div>
                       <div className="flex flex-col gap-2">
                         <button onClick={() => editGame(game)} className="p-2 bg-cards hover:bg-white/10 border border-white/10 rounded-lg text-white transition-colors">
