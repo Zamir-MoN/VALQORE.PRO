@@ -23,6 +23,7 @@ model Game {
   releaseDate String
   platforms        String   // Comma separated string for simplicity, or JSON
   isRentable       Boolean  @default(false)
+  outOfStock       Boolean  @default(false)
   rentPrice        Float?
   rentDurationDays Int?     @default(7)
   rentRules        String?

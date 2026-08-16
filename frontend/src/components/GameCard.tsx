@@ -22,14 +22,18 @@ export const GameCard = ({ game }: GameCardProps) => {
         <img 
           src={game.coverImage ? getImageUrl(game.coverImage) : '/images/hero-artwork.png'} 
           alt={game.title} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${game.outOfStock ? 'grayscale-[0.5] opacity-70' : ''}`}
         />
         
         {/* Gradient Overlay for bottom text legibility if needed */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-60"></div>
         
-        {/* Top-right tags (optional, e.g. discount) */}
-        {game.discount > 0 && (
+        {/* Top-right tags (optional, e.g. discount, out of stock) */}
+        {game.outOfStock ? (
+          <div className="absolute top-3 right-3 bg-red-600/90 backdrop-blur-sm border border-red-500/50 text-white font-bold text-xs px-2 py-1 rounded shadow-lg z-20">
+            OUT OF STOCK
+          </div>
+        ) : game.discount > 0 && (
           <div className="absolute top-3 right-3 bg-red-500 text-white font-bold text-xs px-2 py-1 rounded shadow-lg">
             -{game.discount}%
           </div>

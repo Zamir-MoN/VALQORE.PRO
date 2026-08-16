@@ -171,7 +171,14 @@ export const GameDetails = () => {
                     )}
                   </div>
 
-                  {game.isRentable ? (
+                  {game.outOfStock ? (
+                    <button 
+                      disabled
+                      className="w-full mt-2 bg-red-600/50 text-white/50 cursor-not-allowed font-black text-sm px-4 py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2"
+                    >
+                      OUT OF STOCK
+                    </button>
+                  ) : game.isRentable ? (
                     <div className="flex flex-col sm:flex-row lg:flex-col gap-3 mt-2">
                       <button 
                         onClick={handleAddToCart}

@@ -32,6 +32,7 @@ export const AdminDashboard = () => {
     releaseDate: '',
     platforms: '',
     isRentable: false,
+    outOfStock: false,
     rentPrice: '',
     rentDurationDays: 7,
     rentRules: '',
@@ -209,6 +210,7 @@ export const AdminDashboard = () => {
       releaseDate: game.releaseDate,
       platforms: game.platforms,
       isRentable: game.isRentable || false,
+      outOfStock: game.outOfStock || false,
       rentPrice: game.rentPrice || '',
       rentDurationDays: game.rentDurationDays || 7,
       rentRules: game.rentRules || '',
@@ -263,6 +265,7 @@ export const AdminDashboard = () => {
       releaseDate: '',
       platforms: '',
       isRentable: false,
+      outOfStock: false,
       rentPrice: '',
       rentDurationDays: 7,
       rentRules: '',
@@ -522,6 +525,23 @@ export const AdminDashboard = () => {
                     />
                   </div>
                 )}
+              </div>
+
+              {/* Inventory Management */}
+              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
+                    <input 
+                      type="checkbox" 
+                      name="outOfStock" 
+                      checked={formData.outOfStock} 
+                      onChange={handleInputChange} 
+                      className="absolute opacity-0 w-full h-full cursor-pointer"
+                    />
+                    {formData.outOfStock && <div className="w-3 h-3 bg-red-500 rounded-sm"></div>}
+                  </div>
+                  <span className="font-bold text-white text-red-500">Mark as Out of Stock</span>
+                </label>
               </div>
 
               {/* System Requirements */}

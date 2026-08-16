@@ -16,6 +16,7 @@ export interface Game {
   releaseDate: string;
   platforms: string[];
   isRentable?: boolean;
+  outOfStock?: boolean;
   rentPrice?: number;
   rentDurationDays?: number;
   rentRules?: string;
