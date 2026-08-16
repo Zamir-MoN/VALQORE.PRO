@@ -1,10 +1,10 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, Heart, ArrowLeft, Play, ShoppingCart } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
+
 import { getYouTubeVideoId } from '../utils/youtube';
 import { getImageUrl } from '../utils/image';
 
@@ -12,7 +12,7 @@ export const GameDetails = () => {
   const { games, loading } = useGames();
   const { formatPrice } = useCurrency();
   const { addToCart, isInCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
   
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export const GameDetails = () => {
   const hasTrailer = !!(game?.trailerUrl && getYouTubeVideoId(game.trailerUrl));
   const [activeMedia, setActiveMedia] = useState<number>(hasTrailer ? -1 : 0);
 
-  const inWishlist = game ? isInWishlist(game.id) : false;
+
   const inCart = game ? isInCart(game.id) : false;
 
   const handleAddToCart = () => {
@@ -32,15 +32,7 @@ export const GameDetails = () => {
     }
   };
 
-  const toggleWishlist = () => {
-    if (game) {
-      if (inWishlist) {
-        removeFromWishlist(game.id);
-      } else {
-        addToWishlist(game.id);
-      }
-    }
-  };
+
 
   useEffect(() => {
     setActiveMedia(hasTrailer ? -1 : 0);
@@ -202,17 +194,7 @@ export const GameDetails = () => {
                     </button>
                   )}
 
-                  <button 
-                    onClick={toggleWishlist}
-                    className={`w-full mt-1 border py-3 rounded-xl transition-all flex items-center justify-center gap-2 group text-xs font-bold ${
-                      inWishlist 
-                        ? 'bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500/30' 
-                        : 'bg-transparent text-white border-white/10 hover:border-white/30'
-                    }`}
-                  >
-                    <Heart size={14} className={inWishlist ? 'fill-red-500' : 'text-text-secondary group-hover:text-red-500 transition-colors'} />
-                    {inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                  </button>
+
 
                   <div className="mt-3 pt-4 border-t border-white/10 flex items-center justify-between">
                     <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Secure Payments</span>

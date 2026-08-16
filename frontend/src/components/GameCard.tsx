@@ -1,7 +1,7 @@
-import { Heart } from 'lucide-react';
+
 import { Link } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
-import { useWishlist } from '../context/WishlistContext';
+
 import { getImageUrl } from '../utils/image';
 import type { Game } from '../types';
 
@@ -11,18 +11,7 @@ interface GameCardProps {
 
 export const GameCard = ({ game }: GameCardProps) => {
   const { formatPrice } = useCurrency();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
-  const inWishlist = isInWishlist(game.id);
-
-  const toggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (inWishlist) {
-      removeFromWishlist(game.id);
-    } else {
-      addToWishlist(game.id);
-    }
-  };
 
 
 
@@ -54,17 +43,7 @@ export const GameCard = ({ game }: GameCardProps) => {
             className="absolute bottom-3 left-3 h-6 object-contain drop-shadow-md z-10"
           />
         )}
-        {/* Bottom Right Wishlist Button */}
-        <button 
-          onClick={toggleWishlist}
-          className={`absolute bottom-3 right-3 p-2 rounded-full backdrop-blur-md border transition-colors ${
-            inWishlist 
-              ? 'bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500/40' 
-              : 'bg-black/40 text-white border-white/10 hover:text-primary hover:bg-black/60'
-          }`}
-        >
-          <Heart size={16} className={inWishlist ? 'fill-red-500' : ''} />
-        </button>
+
       </div>
 
       {/* Content */}

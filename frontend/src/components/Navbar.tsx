@@ -3,7 +3,6 @@ import { Search, ShoppingCart, Heart, User, ChevronDown } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
 import type { Currency } from '../context/CurrencyContext';
 import clsx from 'clsx';
 import { Link, useLocation } from 'react-router-dom';
@@ -15,7 +14,6 @@ export const Navbar = () => {
   const { currency, setCurrency } = useCurrency();
   const { user, logout, openAuthModal } = useAuth();
   const { cartItems } = useCart();
-  const { wishlistItems } = useWishlist();
   
   const currencies: Currency[] = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD'];
   const location = useLocation();
@@ -108,14 +106,7 @@ export const Navbar = () => {
           )}
         </div>
 
-        <button className="p-2 rounded-full text-text-secondary hover:text-white hover:bg-white/5 transition-all duration-300 group relative block">
-          <Heart size={20} className="group-hover:scale-110 transition-transform" />
-          {wishlistItems.length > 0 && (
-            <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.6)]">
-              {wishlistItems.length}
-            </span>
-          )}
-        </button>
+
         <Link 
           to={user ? "/cart" : "#"} 
           onClick={(e) => {
