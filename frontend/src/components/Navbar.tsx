@@ -152,7 +152,9 @@ export const Navbar = () => {
             { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
             { label: 'Store', ariaLabel: 'Browse the store', link: '/store' },
             { label: 'Support', ariaLabel: 'Get help', link: '/#support' },
-            { label: 'Login', ariaLabel: 'Sign in to account', link: '/auth' }
+            ...(user 
+              ? [{ label: 'Profile', ariaLabel: 'Go to your profile', link: '/profile' }]
+              : [{ label: 'Login', ariaLabel: 'Sign in to account', link: '/auth' }])
           ]}
           socialItems={[
             { label: 'Discord', link: '#' },
