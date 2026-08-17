@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2 } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -13,6 +13,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'games' | 'giveaways'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -269,7 +270,7 @@ export const AdminDashboard = () => {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (isGiveawayFlag: boolean = false) => {
     setIsEditing(false);
     setCurrentId(null);
     setFormData({
@@ -284,7 +285,7 @@ export const AdminDashboard = () => {
       platforms: '',
       isRentable: false,
       outOfStock: false,
-      isGiveaway: false,
+      isGiveaway: isGiveawayFlag,
       giveawayRules: '',
       rentPrice: '',
       rentDurationDays: 7,
@@ -411,7 +412,8 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Pricing & Rating */}
-                <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
+                {!formData.isGiveaway && (
+                  <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
                   <h3 className="font-bold text-white mb-4 flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full"></span>Pricing & Rating</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex flex-col gap-1.5">
@@ -427,7 +429,7 @@ export const AdminDashboard = () => {
                       <input type="number" step="0.1" name="rating" value={formData.rating} onChange={handleInputChange} placeholder="E.g. 4.5" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Cover & Branding */}
                 <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
@@ -498,84 +500,73 @@ export const AdminDashboard = () => {
                 </div>
 
               {/* Rental Options */}
-              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
-                <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
-                    <input 
-                      type="checkbox" 
-                      name="isRentable" 
-                      checked={formData.isRentable} 
-                      onChange={handleInputChange} 
-                      className="absolute opacity-0 w-full h-full cursor-pointer"
-                    />
-                    {formData.isRentable && <div className="w-3 h-3 bg-primary rounded-sm"></div>}
-                  </div>
-                  <span className="font-bold text-white">This game is rentable</span>
-                </label>
-
-                {formData.isRentable && (
-                  <div className="mt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-300">
-                    <div className="flex gap-4">
+              {!formData.isGiveaway && (
+                <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
                       <input 
-                        type="number" 
-                        step="0.1" 
-                        name="rentPrice" 
-                        value={formData.rentPrice} 
+                        type="checkbox" 
+                        name="isRentable" 
+                        checked={formData.isRentable} 
                         onChange={handleInputChange} 
-                        placeholder="Rent Price (₹)" 
-                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" 
+                        className="absolute opacity-0 w-full h-full cursor-pointer"
                       />
-                      <input 
-                        type="number" 
-                        step="1" 
-                        name="rentDurationDays" 
-                        value={formData.rentDurationDays} 
+                      {formData.isRentable && <div className="w-3 h-3 bg-primary rounded-sm"></div>}
+                    </div>
+                    <span className="font-bold text-white">This game is rentable</span>
+                  </label>
+
+                  {formData.isRentable && (
+                    <div className="mt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-300">
+                      <div className="flex gap-4">
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          name="rentPrice" 
+                          value={formData.rentPrice} 
+                          onChange={handleInputChange} 
+                          placeholder="Rent Price (₹)" 
+                          className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" 
+                        />
+                        <input 
+                          type="number" 
+                          step="1" 
+                          name="rentDurationDays" 
+                          value={formData.rentDurationDays} 
+                          onChange={handleInputChange} 
+                          placeholder="Duration (Days)" 
+                          className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" 
+                        />
+                      </div>
+                      <textarea 
+                        name="rentRules" 
+                        value={formData.rentRules} 
                         onChange={handleInputChange} 
-                        placeholder="Duration (Days)" 
-                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" 
+                        placeholder="Rental Rules / Details (Optional)" 
+                        rows={2}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
                       />
                     </div>
-                    <textarea 
-                      name="rentRules" 
-                      value={formData.rentRules} 
-                      onChange={handleInputChange} 
-                      placeholder="Rental Rules / Details (Optional)" 
-                      rows={2}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
-                    />
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* Giveaway Options */}
-              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
-                <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
-                    <input 
-                      type="checkbox" 
-                      name="isGiveaway" 
-                      checked={formData.isGiveaway} 
-                      onChange={handleInputChange} 
-                      className="absolute opacity-0 w-full h-full cursor-pointer"
-                    />
-                    {formData.isGiveaway && <div className="w-3 h-3 bg-[#00F0FF] rounded-sm"></div>}
-                  </div>
-                  <span className="font-bold text-white">This item is a Giveaway</span>
-                </label>
-
-                {formData.isGiveaway && (
-                  <div className="mt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-300">
+              {formData.isGiveaway && (
+                <div className="mt-4 p-5 border border-[#00F0FF]/30 rounded-xl bg-cards/30 shadow-[0_0_15px_rgba(0,240,255,0.05)]">
+                  <h3 className="font-bold text-[#00F0FF] mb-4 flex items-center gap-2"><Gift size={16} /> Giveaway Details</h3>
+                  <div className="flex flex-col gap-4">
                     <textarea 
                       name="giveawayRules" 
                       value={formData.giveawayRules} 
                       onChange={handleInputChange} 
                       placeholder="How to participate full guide (e.g. Subscribe to channel, Comment below...)" 
-                      rows={4}
+                      rows={6}
                       className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#00F0FF] outline-none resize-none" 
                     />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Inventory Management */}
               <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
@@ -595,36 +586,39 @@ export const AdminDashboard = () => {
               </div>
 
               {/* System Requirements */}
-              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
-                <h3 className="font-bold text-white mb-4">System Requirements (Optional)</h3>
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-text-secondary">Minimum Requirements</label>
-                    <textarea 
-                      name="minRequirements" 
-                      value={formData.minRequirements} 
-                      onChange={handleInputChange} 
-                      placeholder="E.g. OS: Windows 10, Processor: i5, Memory: 8GB RAM, Graphics: GTX 960" 
-                      rows={3}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-text-secondary">Recommended Requirements</label>
-                    <textarea 
-                      name="recRequirements" 
-                      value={formData.recRequirements} 
-                      onChange={handleInputChange} 
-                      placeholder="E.g. OS: Windows 10/11, Processor: i7, Memory: 16GB RAM, Graphics: RTX 2070" 
-                      rows={3}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
-                    />
+              {!formData.isGiveaway && (
+                <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
+                  <h3 className="font-bold text-white mb-4">System Requirements (Optional)</h3>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm text-text-secondary">Minimum Requirements</label>
+                      <textarea 
+                        name="minRequirements" 
+                        value={formData.minRequirements} 
+                        onChange={handleInputChange} 
+                        placeholder="E.g. OS: Windows 10, Processor: i5, Memory: 8GB RAM, Graphics: GTX 960" 
+                        rows={3}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm text-text-secondary">Recommended Requirements</label>
+                      <textarea 
+                        name="recRequirements" 
+                        value={formData.recRequirements} 
+                        onChange={handleInputChange} 
+                        placeholder="E.g. OS: Windows 10/11, Processor: i7, Memory: 16GB RAM, Graphics: RTX 2070" 
+                        rows={3}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Game Media */}
-              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
+              {!formData.isGiveaway && (
+                <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
                 <h3 className="font-bold text-white mb-4">Game Media (Epic Layout)</h3>
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
@@ -715,7 +709,7 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-4 mt-4">
                 <button type="submit" className="flex-1 bg-primary text-background font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors">
@@ -731,15 +725,31 @@ export const AdminDashboard = () => {
         )}
 
         <div className="w-full">
+          {/* Tabs */}
+          <div className="flex gap-4 mb-8 border-b border-white/10 pb-4 overflow-x-auto">
+            <button 
+              onClick={() => setActiveTab('games')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'games' ? 'bg-primary text-background' : 'bg-cards/40 text-text-secondary hover:text-white hover:bg-cards'}`}
+            >
+              <Gamepad2 size={20} /> Games
+            </button>
+            <button 
+              onClick={() => setActiveTab('giveaways')}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black' : 'bg-cards/40 text-text-secondary hover:text-white hover:bg-cards'}`}
+            >
+              <Gift size={20} /> Giveaways
+            </button>
+          </div>
+
           {/* List Section */}
           <div className="w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
               <div>
                 <h2 className="text-3xl font-black bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent flex items-center gap-3 mb-2">
-                  <Gamepad2 className="w-8 h-8 text-primary" />
-                  Manage Games
+                  {activeTab === 'games' ? <Gamepad2 className="w-8 h-8 text-primary" /> : <Gift className="w-8 h-8 text-[#00F0FF]" />}
+                  Manage {activeTab === 'games' ? 'Games' : 'Giveaways'}
                 </h2>
-                <p className="text-text-secondary text-sm">Control your store inventory and game details.</p>
+                <p className="text-text-secondary text-sm">Control your {activeTab === 'games' ? 'store inventory' : 'giveaway events'}.</p>
               </div>
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 sm:w-72">
@@ -754,13 +764,13 @@ export const AdminDashboard = () => {
                 </div>
                 <button
                   onClick={() => {
-                    resetForm();
+                    resetForm(activeTab === 'giveaways');
                     setIsModalOpen(true);
                   }}
-                  className="bg-primary text-background font-bold py-3 px-6 rounded-xl hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 whitespace-nowrap shadow-[0_0_20px_rgba(var(--primary),0.3)]"
+                  className={`${activeTab === 'games' ? 'bg-primary shadow-[0_0_20px_rgba(var(--primary),0.3)]' : 'bg-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.3)] text-black'} font-bold py-3 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 whitespace-nowrap`}
                 >
                   <Plus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Add Game</span>
+                  <span className="hidden sm:inline">Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
                 </button>
               </div>
             </div>
@@ -785,6 +795,7 @@ export const AdminDashboard = () => {
                 <>
                   {games
                     .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .filter(game => (game.isGiveaway || false) === (activeTab === 'giveaways'))
                     .map(game => (
                     <div 
                       key={game.id} 
