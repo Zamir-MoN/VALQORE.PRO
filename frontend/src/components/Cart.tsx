@@ -15,6 +15,8 @@ export const Cart = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -50,8 +52,21 @@ export const Cart = () => {
   );
   
   const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
-  const total = cartItems.reduce((acc, item) => acc + (item.price * (1 - item.discount / 100)), 0);
-  const savings = subtotal - total;
+  let total = cartItems.reduce((acc, item) => acc + (item.price * (1 - item.discount / 100)), 0);
+  let savings = subtotal - total;
+
+  if (couponApplied) {
+    const extraDiscount = total * 0.10; // 10% extra discount
+    savings += extraDiscount;
+    total -= extraDiscount;
+  }
+
+  const handleApplyCoupon = () => {
+    if (couponCode.trim()) {
+      setCouponApplied(true);
+      toast.success('Coupon applied! 10% discount added.');
+    }
+  };
 
   return (
     <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen" id="cart-page">
@@ -173,13 +188,34 @@ export const Cart = () => {
                   </div>
                   {savings > 0 && (
                     <div className="flex justify-between items-center text-primary drop-shadow-[0_0_8px_rgba(220,248,54,0.3)]">
-                      <span>Discount</span>
+                      <span>Discount {couponApplied && '(+ Coupon)'}</span>
                       <span>-{formatPrice(savings)}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center text-text-secondary">
                     <span>Taxes</span>
                     <span>Calculated at checkout</span>
+                  </div>
+                </div>
+                
+                {/* Coupon Code */}
+                <div className="mb-6">
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="Enter Coupon Code" 
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      disabled={couponApplied}
+                      className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors placeholder:text-text-secondary/50 disabled:opacity-50"
+                    />
+                    <button 
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode.trim() || couponApplied}
+                      className="bg-white/10 hover:bg-primary text-white hover:text-black px-6 py-3 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 disabled:hover:bg-white/10 disabled:hover:text-white uppercase tracking-wider"
+                    >
+                      {couponApplied ? 'Applied' : 'Apply'}
+                    </button>
                   </div>
                 </div>
                 
