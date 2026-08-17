@@ -71,7 +71,7 @@ export const GameDetails = () => {
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 bg-primary rotate-45 flex-shrink-0"></div>
             <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white">
-              {game.title} {game.discount > 50 || game.price < 20 ? "FREE ACCOUNT" : "DETAILS"}
+              {game.title}
             </h1>
           </div>
 
@@ -364,7 +364,7 @@ export const GameDetails = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">FREE STEAM ACCOUNTS</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">NEWS</span>
                     <span className="text-[10px] text-text-secondary flex items-center gap-1"><Clock size={10} /> 1 days ago</span>
                   </div>
                   <h3 className="font-bold text-sm leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">Velocity X - Full Premium Account Access Available</h3>
@@ -379,7 +379,7 @@ export const GameDetails = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">FREE STEAM ACCOUNTS</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">NEWS</span>
                     <span className="text-[10px] text-text-secondary flex items-center gap-1"><Clock size={10} /> 2 months ago</span>
                   </div>
                   <h3 className="font-bold text-sm leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">Neon Drift - Full Premium Account Access Available</h3>
@@ -393,7 +393,7 @@ export const GameDetails = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">FREE STEAM ACCOUNTS</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">NEWS</span>
                     <span className="text-[10px] text-text-secondary flex items-center gap-1"><Clock size={10} /> 3 months ago</span>
                   </div>
                   <h3 className="font-bold text-sm leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">Shadow Tactics - Full Premium Account Access Available</h3>
