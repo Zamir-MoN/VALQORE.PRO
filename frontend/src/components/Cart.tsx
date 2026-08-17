@@ -11,7 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Cart = () => {
   const { cartItems, loading, removeFromCart } = useCart();
-  const { user, loading: authLoading, openAuthModal } = useAuth();
+  const { user, token, loading: authLoading, openAuthModal } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -33,7 +33,6 @@ export const Cart = () => {
     
     setIsCheckingOut(true);
     try {
-      const token = localStorage.getItem('token');
       // In a real app, you would pass the coupon code to the order creation endpoint too
       await axios.post(`${API_URL}/orders`, { couponCode: couponApplied ? couponCode : undefined }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -69,7 +68,6 @@ export const Cart = () => {
     
     setIsApplyingCoupon(true);
     try {
-      const token = localStorage.getItem('token');
       const res = await axios.post(`${API_URL}/coupons/validate`, { code: couponCode }, {
         headers: { Authorization: `Bearer ${token}` }
       });
