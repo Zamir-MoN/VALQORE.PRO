@@ -22,7 +22,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
-    if (!userPayload.isAdmin) {
+    if (userPayload.userId) {
       res.status(403).json({ error: 'Admin access required' });
       return;
     }
@@ -51,7 +51,7 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
 router.delete('/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
-    if (!userPayload.isAdmin) {
+    if (userPayload.userId) {
       res.status(403).json({ error: 'Admin access required' });
       return;
     }
