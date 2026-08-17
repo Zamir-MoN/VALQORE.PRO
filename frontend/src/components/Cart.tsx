@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight, Loader2 } from 'lucide-react';
+import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight, Loader2, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -61,24 +61,42 @@ export const Cart = () => {
         <div className="flex items-center gap-4 mb-8">
           <button 
             onClick={() => navigate(-1)}
-            className="p-2 rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors group"
+            className="p-2 rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors group cursor-pointer"
           >
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-4 h-4 bg-primary rotate-45 flex-shrink-0"></div>
+            <div className="w-4 h-4 bg-primary rotate-45 flex-shrink-0 shadow-[0_0_10px_rgba(220,248,54,0.5)]"></div>
             <h1 className="text-3xl sm:text-4xl font-heading font-black tracking-wider uppercase text-white">
               Your Cart
             </h1>
           </div>
-          <span className="ml-auto text-text-secondary font-bold bg-white/5 px-4 py-1.5 rounded-full">
+          <span className="ml-auto text-text-secondary font-bold bg-white/5 px-4 py-1.5 rounded-full border border-white/10 shadow-inner">
             {cartItems.length} ITEMS
           </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-          
-          {/* Left Column: Cart Items */}
+        {cartItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 bg-cards/30 border border-white/10 rounded-3xl backdrop-blur-md relative overflow-hidden group">
+            {/* Background glowing effect */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-primary/10 transition-colors duration-700"></div>
+            
+            <div className="w-24 h-24 bg-cards border border-white/10 rounded-full flex items-center justify-center mb-6 shadow-xl relative z-10">
+              <ShoppingCart size={40} className="text-white/30" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-heading font-black text-white mb-4 relative z-10">Your cart is empty</h2>
+            <p className="text-text-secondary text-center max-w-md mb-8 relative z-10 leading-relaxed">Looks like you haven't added any games to your cart yet. Discover your next favorite game in our store.</p>
+            <Link 
+              to="/store"
+              className="relative z-10 bg-primary hover:bg-white text-background font-black text-lg px-8 py-4 rounded-xl shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all uppercase tracking-wide hover:scale-105 active:scale-95 duration-300 flex items-center gap-2 group/btn"
+            >
+              Browse Games <ChevronRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            
+            {/* Left Column: Cart Items */}
           <div className="lg:col-span-2 flex flex-col gap-4">
             {cartItems.map((item) => (
               <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-cards/40 border border-white/5 rounded-2xl p-4 sm:p-6 transition-all hover:bg-cards/60 hover:border-white/10 group relative">
@@ -215,6 +233,7 @@ export const Cart = () => {
           </div>
 
         </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, ChevronDown } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Search, Filter, ChevronDown, ArrowLeft } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { GameCard } from './GameCard';
 
@@ -10,6 +10,7 @@ const SORT_OPTIONS = ['Relevance', 'Price: Low to High', 'Price: High to Low', '
 export const BrowseGames = () => {
   const { games, loading } = useGames();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   const activeGenre = searchParams.get('genre') || 'All';
   const searchQuery = searchParams.get('q') || '';
@@ -78,6 +79,13 @@ export const BrowseGames = () => {
         
         {/* Header Section */}
         <div className="mb-8">
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-white/70 hover:text-primary transition-colors mb-6 group w-max cursor-pointer"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="font-semibold text-sm tracking-wide">Back</span>
+          </button>
           <p className="text-primary font-bold text-sm mb-2 uppercase tracking-widest">DISCOVERY</p>
           <h2 className="text-4xl md:text-5xl font-heading font-bold">Browse Games</h2>
         </div>
