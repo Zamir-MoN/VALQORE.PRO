@@ -6,6 +6,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
 import type { Game } from '../types';
+import { getImageUrl } from '../utils/image';
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const AdminDashboard = () => {
@@ -484,7 +485,7 @@ export const AdminDashboard = () => {
                         </select>
                         {formData.tagImage && (
                           <div className="relative group w-16 h-16 shrink-0 bg-black/50 rounded-lg flex items-center justify-center p-2 border border-white/10">
-                            <img src={formData.tagImage} alt="Badge Preview" className="max-w-full max-h-full object-contain drop-shadow-lg" />
+                            <img src={getImageUrl(formData.tagImage)} alt="Badge Preview" className="max-w-full max-h-full object-contain drop-shadow-lg" />
                             <button 
                               type="button"
                               onClick={() => setFormData({ ...formData, tagImage: '' })}
