@@ -44,6 +44,7 @@ export const BrowseGames = () => {
   }, []);
 
   const filteredGames = games.filter(game => {
+    if (game.isGiveaway) return false;
     const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           game.developer.toLowerCase().includes(searchQuery.toLowerCase());
     

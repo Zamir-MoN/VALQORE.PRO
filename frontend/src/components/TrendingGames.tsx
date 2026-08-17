@@ -10,9 +10,10 @@ export const TrendingGames = () => {
   
   if (loading) return null;
 
-  const trendingGames = games.slice(0, 12);
-  const dealsGames = games.slice(1, 3);
-  const newGames = games.slice(2, 4);
+  const validGames = games.filter(g => !g.isGiveaway);
+  const trendingGames = validGames.slice(0, 12);
+  const dealsGames = validGames.slice(1, 3);
+  const newGames = validGames.slice(2, 4);
 
   return (
     <section className="py-20 px-6 lg:px-12 relative z-10" id="trending">

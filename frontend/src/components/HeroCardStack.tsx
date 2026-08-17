@@ -8,8 +8,9 @@ export const HeroCardStack = () => {
   const [cards, setCards] = useState([0, 1, 2]);
 
   // Use cover images from the first 3 games, or fallback to default
-  const IMAGES = games.length >= 3 
-    ? games.slice(0, 3).map(g => getImageUrl(g.coverImage))
+  const validGames = games.filter(g => !g.isGiveaway);
+  const IMAGES = validGames.length >= 3 
+    ? validGames.slice(0, 3).map(g => getImageUrl(g.coverImage))
     : [
         "https://gamegpu.com/images/1_2026/NEWS/Q2/june/Image_jyeghbjyeghbjyeg_ggpu.webp",
         "https://m.media-amazon.com/images/M/MV5BM2E1YjYzMjQtNDM0YS00OWYwLTk1ZDMtMTEzNTdjMDUzMDBiXkEyXkFqcGc@._V1_.jpg",
