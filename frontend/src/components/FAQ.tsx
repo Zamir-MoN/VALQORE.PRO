@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, HelpCircle } from 'lucide-react';
 import { FAQS } from '../data/mockData';
 import clsx from 'clsx';
 
@@ -18,13 +18,13 @@ export const FAQ = () => {
 
     gsap.fromTo(
       itemsRef.current,
-      { y: 30, opacity: 0 },
+      { y: 50, opacity: 0 },
       {
         y: 0,
         opacity: 1,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: 'power2.out',
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'power3.out',
         scrollTrigger: {
           trigger: containerRef.current,
           start: 'top 80%',
@@ -38,51 +38,68 @@ export const FAQ = () => {
   };
 
   return (
-    <section ref={containerRef} className="py-24 px-6 lg:px-12 relative z-10" id="support">
-      <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Frequently Asked <span className="text-primary">Questions</span></h2>
-          <p className="text-text-secondary">Everything you need to know about the Valqore experience.</p>
-        </div>
+    <section ref={containerRef} className="py-32 px-6 lg:px-12 relative z-10" id="support">
+      <div className="container mx-auto max-w-6xl">
+        <div className="flex flex-col md:flex-row gap-16">
+          
+          {/* Header Column */}
+          <div className="md:w-1/3">
+            <div className="sticky top-32">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
+                <HelpCircle size={18} className="text-primary" />
+                <span className="text-sm font-bold tracking-wider text-white uppercase">Support</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">Got Questions?<br /><span className="text-primary">We've Got Answers.</span></h2>
+              <p className="text-text-secondary text-lg leading-relaxed mb-8">Can't find what you're looking for? Reach out to our legendary support team for assistance.</p>
+              <button className="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 backdrop-blur-md">
+                Contact Support
+              </button>
+            </div>
+          </div>
 
-        <div className="space-y-4">
-          {FAQS.map((faq, index) => {
-            const isOpen = openIndex === index;
-            
-            return (
-              <div 
-                key={index}
-                ref={el => { itemsRef.current[index] = el; }}
-                className={clsx(
-                  "border border-white/10 rounded-2xl overflow-hidden transition-colors duration-300",
-                  isOpen ? "bg-cards/80 border-primary/30" : "bg-cards/30 hover:bg-cards/50"
-                )}
-              >
-                <button
-                  onClick={() => toggleAccordion(index)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
-                >
-                  <span className={clsx("font-bold text-lg transition-colors duration-300", isOpen ? "text-primary" : "text-white")}>
-                    {faq.question}
-                  </span>
-                  <div className={clsx("flex-shrink-0 ml-4 p-1 rounded-full transition-colors duration-300", isOpen ? "bg-primary/20 text-primary" : "text-text-secondary")}>
-                    {isOpen ? <Minus size={20} /> : <Plus size={20} />}
-                  </div>
-                </button>
-                
+          {/* Accordion Column */}
+          <div className="md:w-2/3 space-y-4">
+            {FAQS.map((faq, index) => {
+              const isOpen = openIndex === index;
+              
+              return (
                 <div 
+                  key={index}
+                  ref={el => { itemsRef.current[index] = el; }}
                   className={clsx(
-                    "overflow-hidden transition-all duration-500 ease-in-out px-6",
-                    isOpen ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    "border rounded-2xl overflow-hidden transition-all duration-500 glass",
+                    isOpen ? "bg-white/[0.05] border-primary/40 shadow-[0_10px_30px_rgba(var(--primary),0.1)]" : "bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.03]"
                   )}
                 >
-                  <p className="text-text-secondary leading-relaxed">
-                    {faq.answer}
-                  </p>
+                  <button
+                    onClick={() => toggleAccordion(index)}
+                    className="w-full px-8 py-6 flex items-center justify-between text-left focus:outline-none group"
+                  >
+                    <span className={clsx("font-bold text-xl md:text-2xl transition-colors duration-300 pr-8", isOpen ? "text-primary" : "text-white group-hover:text-primary/80")}>
+                      {faq.question}
+                    </span>
+                    <div className={clsx("flex-shrink-0 p-2 rounded-full transition-all duration-500", isOpen ? "bg-primary text-background rotate-180" : "bg-white/5 text-white group-hover:bg-white/10")}>
+                      {isOpen ? <Minus size={24} /> : <Plus size={24} />}
+                    </div>
+                  </button>
+                  
+                  <div 
+                    className={clsx(
+                      "grid transition-all duration-500 ease-in-out",
+                      isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                    )}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="text-text-secondary text-lg leading-relaxed px-8 pb-8 pt-2">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
         </div>
       </div>
     </section>
