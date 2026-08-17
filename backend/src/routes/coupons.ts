@@ -1,12 +1,11 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth';
+import { prisma } from '../prismaClient';
+import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Get all coupons (Admin only)
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const coupons = await prisma.coupon.findMany({
       orderBy: { createdAt: 'desc' }
@@ -18,7 +17,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create a new coupon
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const { code, discount, createdBy } = req.body;
     
@@ -46,7 +45,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Validate a coupon (Authenticated users)
-router.post('/validate', authenticateToken, async (req, res) => {
+router.post('/validate', authMiddleware, async (req, res) => {
   try {
     const { code } = req.body;
     
@@ -67,7 +66,7 @@ router.post('/validate', authenticateToken, async (req, res) => {
 });
 
 // Delete a coupon
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.coupon.delete({
