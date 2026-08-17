@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut } from 'lucide-react';
+import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -107,11 +107,13 @@ export const Profile = () => {
       <div className="container mx-auto max-w-[1200px]">
         
         {/* Back Button */}
-        <div className="mb-6">
-          <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-primary bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 px-5 py-2.5 rounded-xl transition-all duration-300 font-bold text-sm shadow-sm hover:shadow-[0_0_15px_rgba(220,248,54,0.15)] group">
-            <ChevronRight className="rotate-180 transition-transform group-hover:-translate-x-1" size={16} /> Back to Store
-          </Link>
-        </div>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors w-fit mb-6 group"
+        >
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="font-bold tracking-wider uppercase text-sm">Back</span>
+        </button>
 
         {/* Premium Header Banner */}
         <div className="relative mb-10 rounded-3xl overflow-hidden border border-white/10 bg-cards/60 backdrop-blur-xl shadow-2xl">
