@@ -710,6 +710,7 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
+                </div>
               )}
 
               <div className="flex gap-4 mt-4">
