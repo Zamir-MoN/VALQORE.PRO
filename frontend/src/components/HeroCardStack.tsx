@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useGames } from '../context/GameContext';
 import { getImageUrl } from '../utils/image';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
@@ -33,6 +34,19 @@ export const HeroCardStack = () => {
     };
 
     fetchPosters();
+
+    const socket = io(API_URL.replace('/api', ''), {
+      path: '/socket.io',
+      transports: ['websocket', 'polling']
+    });
+
+    socket.on('posters_updated', () => {
+      fetchPosters();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {

@@ -934,7 +934,7 @@ export const AdminDashboard = () => {
                           type="text" 
                           value={posterImageUrl} 
                           onChange={(e) => setPosterImageUrl(e.target.value)} 
-                          placeholder="https://..." 
+                          placeholder="https://image1.jpg, https://image2.png (comma separated for multiple)" 
                           required 
                           className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#00FFAA] outline-none"
                         />
