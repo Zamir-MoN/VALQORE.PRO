@@ -9,10 +9,10 @@ export const RentalGames = () => {
   const { formatPrice } = useCurrency();
   const [startIndex, setStartIndex] = useState(0);
   
-  if (loading) return null;
+  // Filter games to only show ones that are rentable
+  const rentalGamesData = games.filter(game => game.isRentable);
 
-  // Use a different slice of games to make it distinct
-  const rentalGamesData = [...games].reverse();
+  if (loading || rentalGamesData.length === 0) return null;
 
   const nextSlide = () => {
     setStartIndex((prev) => (prev + 3 >= rentalGamesData.length ? 0 : prev + 3));
