@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons'>('games');
+  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -27,6 +27,11 @@ export const AdminDashboard = () => {
   const [coupons, setCoupons] = useState<any[]>([]);
   const [couponFormData, setCouponFormData] = useState({ code: '', discount: '', createdBy: 'Sagar', usageLimit: '' });
   const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
+
+  // Poster state
+  const [posters, setPosters] = useState<any[]>([]);
+  const [posterImageUrl, setPosterImageUrl] = useState('');
+  const [posterToDelete, setPosterToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -78,6 +83,7 @@ export const AdminDashboard = () => {
     if (token) {
       fetchGames();
       fetchCoupons();
+      fetchPosters();
     }
   }, [token]);
 
@@ -105,6 +111,15 @@ export const AdminDashboard = () => {
     }
   };
 
+  const fetchPosters = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/posters`);
+      setPosters(res.data);
+    } catch (err) {
+      console.error('Failed to fetch posters', err);
+    }
+  };
+
   const handleCouponSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -127,6 +142,31 @@ export const AdminDashboard = () => {
       toast.error('Failed to delete coupon');
     } finally {
       setCouponToDelete(null);
+    }
+  };
+
+  const handlePosterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API_URL}/posters`, { imageUrl: posterImageUrl }, { headers: { 'Authorization': `Bearer ${token}` } });
+      toast.success('Poster added successfully');
+      setPosterImageUrl('');
+      fetchPosters();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to add poster');
+    }
+  };
+
+  const confirmDeletePoster = async () => {
+    if (!posterToDelete) return;
+    try {
+      await axios.delete(`${API_URL}/posters/${posterToDelete}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      toast.success('Poster deleted');
+      fetchPosters();
+    } catch (err) {
+      toast.error('Failed to delete poster');
+    } finally {
+      setPosterToDelete(null);
     }
   };
 
@@ -835,6 +875,12 @@ export const AdminDashboard = () => {
               >
                 <Ticket size={20} /> Coupons
               </button>
+              <button 
+                onClick={() => setActiveTab('posters')}
+                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'posters' ? 'bg-[#00FFAA] text-black shadow-[0_0_20px_rgba(0,255,170,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <ImageIcon size={20} /> Posters
+              </button>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4">
@@ -848,7 +894,7 @@ export const AdminDashboard = () => {
                   className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
                 />
               </div>
-              {activeTab !== 'coupons' && (
+              {activeTab !== 'coupons' && activeTab !== 'posters' && (
                 <button
                   onClick={() => {
                     resetForm(activeTab === 'giveaways');
@@ -876,7 +922,79 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
                 ))
-              ) : activeTab !== 'coupons' ? (
+              ) : activeTab === 'posters' ? (
+                <div className="flex flex-col gap-8">
+                  {/* Create Poster Form */}
+                  <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
+                    <h3 className="text-2xl font-bold mb-6 text-white font-heading">Add New Poster</h3>
+                    <form onSubmit={handlePosterSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
+                      <div className="flex flex-col gap-2 w-full flex-1">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Image URL</label>
+                        <input 
+                          type="text" 
+                          value={posterImageUrl} 
+                          onChange={(e) => setPosterImageUrl(e.target.value)} 
+                          placeholder="https://..." 
+                          required 
+                          className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#00FFAA] outline-none"
+                        />
+                      </div>
+                      <button 
+                        type="submit" 
+                        className="w-full sm:w-auto bg-[#00FFAA] text-black font-bold py-3 px-8 rounded-lg hover:bg-[#00FFAA]/90 transition-colors shadow-[0_0_15px_rgba(0,255,170,0.3)] whitespace-nowrap"
+                      >
+                        Add Poster
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Active Posters Grid */}
+                  <div>
+                    <h3 className="text-xl font-bold mb-6 text-white font-heading flex items-center gap-3">
+                      <div className="w-2 h-6 bg-[#00FFAA] rounded-full"></div>
+                      Active Posters
+                    </h3>
+                    {posters.length === 0 ? (
+                      <div className="py-12 px-8 flex flex-col items-center justify-center text-center glass rounded-2xl border border-dashed border-white/20">
+                        <ImageIcon className="w-12 h-12 text-white/20 mb-4" />
+                        <h3 className="text-xl font-bold text-white mb-2">No Posters Found</h3>
+                        <p className="text-text-secondary">Add some posters using the form above.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {posters.map(poster => (
+                          <div key={poster.id} className="relative group rounded-xl overflow-hidden border border-white/10 aspect-[3/4] bg-cards/50">
+                            <img src={poster.imageUrl} alt="Poster" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <button
+                                onClick={() => setPosterToDelete(poster.id)}
+                                className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full transition-colors shadow-lg"
+                                title="Delete Poster"
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Delete Confirmation Modal */}
+                  {posterToDelete && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                      <div className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-md">
+                        <h3 className="text-xl font-bold text-white mb-4">Confirm Deletion</h3>
+                        <p className="text-text-secondary mb-6">Are you sure you want to delete this poster? It will be removed from the homepage immediately.</p>
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => setPosterToDelete(null)} className="px-5 py-2.5 rounded-xl font-bold text-white bg-white/5 hover:bg-white/10 transition-colors">Cancel</button>
+                          <button onClick={confirmDeletePoster} className="px-5 py-2.5 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all">Delete Poster</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : activeTab === 'coupons' ? (
                 <>
                   {games
                     .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))

@@ -2,22 +2,58 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGames } from '../context/GameContext';
 import { getImageUrl } from '../utils/image';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const HeroCardStack = () => {
   const { games } = useGames();
-  const [cards, setCards] = useState([0, 1, 2]);
-
-  // Use cover images from the first 3 games, or fallback to default
-  const validGames = games.filter(g => !g.isGiveaway);
-  const IMAGES = validGames.length >= 3 
-    ? validGames.slice(0, 3).map(g => getImageUrl(g.coverImage))
-    : [
-        "https://gamegpu.com/images/1_2026/NEWS/Q2/june/Image_jyeghbjyeghbjyeg_ggpu.webp",
-        "https://m.media-amazon.com/images/M/MV5BM2E1YjYzMjQtNDM0YS00OWYwLTk1ZDMtMTEzNTdjMDUzMDBiXkEyXkFqcGc@._V1_.jpg",
-        "https://static0.hardcoregamerimages.com/wordpress/wp-content/uploads/sharedimages/2025/06/resident-evil-requiem-tag-page-cover-art.jpg"
-      ];
+  const [cards, setCards] = useState<number[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchPosters = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/posters`);
+        if (res.data && res.data.length > 0) {
+          setImages(res.data.map((p: any) => p.imageUrl));
+          setCards(res.data.map((_: any, i: number) => i));
+        } else {
+          setFallbackImages();
+        }
+      } catch (err) {
+        console.error("Failed to fetch posters", err);
+        setFallbackImages();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const setFallbackImages = () => {
+      const validGames = games.filter(g => !g.isGiveaway);
+      const fallbackImages = validGames.length >= 3 
+        ? validGames.slice(0, 3).map(g => getImageUrl(g.coverImage))
+        : [
+            "https://gamegpu.com/images/1_2026/NEWS/Q2/june/Image_jyeghbjyeghbjyeg_ggpu.webp",
+            "https://m.media-amazon.com/images/M/MV5BM2E1YjYzMjQtNDM0YS00OWYwLTk1ZDMtMTEzNTdjMDUzMDBiXkEyXkFqcGc@._V1_.jpg",
+            "https://static0.hardcoregamerimages.com/wordpress/wp-content/uploads/sharedimages/2025/06/resident-evil-requiem-tag-page-cover-art.jpg"
+          ];
+      setImages(fallbackImages);
+      setCards(fallbackImages.map((_, i) => i));
+    };
+
+    if (games.length > 0) {
+      fetchPosters();
+    } else {
+      // If games aren't loaded yet, just try to fetch posters anyway
+      fetchPosters();
+    }
+  }, [games.length]);
+
+  useEffect(() => {
+    if (loading || images.length <= 1) return;
+
     const timer = setInterval(() => {
       setCards(prev => {
         const newCards = [...prev];
@@ -27,11 +63,19 @@ export const HeroCardStack = () => {
       });
     }, 3500);
     return () => clearInterval(timer);
-  }, []);
+  }, [loading, images.length]);
+
+  if (loading || images.length === 0) {
+    return <div className="w-[65%] sm:w-full max-w-[280px] sm:max-w-lg aspect-[4/5]"></div>;
+  }
 
   return (
     <div className="relative w-[65%] sm:w-full max-w-[280px] sm:max-w-lg aspect-[4/5] flex items-center justify-center">
       {cards.map((cardIndex, i) => {
+        // If there are many cards, we cap the visible stack effect to the top 3-4 cards
+        const isHidden = i > 3;
+        if (isHidden) return null;
+
         return (
           <motion.div
             key={cardIndex}
@@ -50,7 +94,7 @@ export const HeroCardStack = () => {
             }}
           >
             <img 
-              src={IMAGES[cardIndex]} 
+              src={images[cardIndex]} 
               alt="Featured Game Poster" 
               className="w-full h-full object-cover"
             />
