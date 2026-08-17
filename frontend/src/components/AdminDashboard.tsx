@@ -847,6 +847,17 @@ export const AdminDashboard = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
                 />
+              </div>
+              {activeTab !== 'coupons' && (
+                <button
+                  onClick={() => {
+                    resetForm(activeTab === 'giveaways');
+                    setIsModalOpen(true);
+                  }}
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
                 </button>
               )}
             </div>
