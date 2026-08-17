@@ -11,6 +11,12 @@ This document tracks the major updates, squashed bugs, and essential VPS deploym
    - Designed a premium iOS-style toggle switch for the Admin Dashboard.
    - Built-in WebSocket (Socket.io) broadcasting so that when an admin marks a game out of stock, it instantly grays out the game image and replaces "Buy Now" buttons with "OUT OF STOCK" banners for all live users, **without requiring a page refresh**.
 
+5. **Coupon System**:
+   - Added a `Coupon` model to Prisma schema (code, discount, createdBy).
+   - Created full CRUD API endpoints (`/api/coupons`) and a live `validate` endpoint.
+   - Built a custom "Coupons" tab in the Admin Dashboard for Sagar and Zamir to create and manage dynamic ₹ discount codes.
+   - Integrated live coupon validation and price calculation into `Cart.tsx`.
+
 ---
 
 ## 🐛 Bugs & Solutions
@@ -24,6 +30,11 @@ This document tracks the major updates, squashed bugs, and essential VPS deploym
 **Bug**: Hovering over one card in the Trending Games grid caused the text color of *all* cards to change simultaneously.
 **Cause**: The parent container was using the `group` class improperly, causing all child text elements to respond to the hover state of the entire grid rather than individual cards.
 **Solution**: Moved the `group` class directly onto the individual `GameCard` wrapper div, isolating the hover state exclusively to the specific card being hovered.
+
+### 3. Vite Build Failure (Stray JSX Tag)
+**Bug**: Running `npm run build` on the VPS returned `[builtin:vite-transform] Expected corresponding JSX closing tag for 'div'` and failed to build.
+**Cause**: During a massive UI overhaul to the Admin Dashboard (adding the Coupons tab), a stray `</button>` and `)}` were accidentally left in the JSX hierarchy, breaking the tree structure.
+**Solution**: Found the broken `div` container around line 850 in `AdminDashboard.tsx`, added the missing `</div>` tag, wrapped the Add button in the correct `{activeTab !== 'coupons' && (...)}` condition, and pushed the fix.
 
 ---
 
