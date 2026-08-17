@@ -107,18 +107,7 @@ export const Hero = () => {
         {/* Right Side Poster */}
         <div className="flex justify-center items-center relative perspective-1000 px-4 sm:px-0 order-1 lg:order-2">
           
-          {/* Floating Badge */}
-          <div className="absolute top-8 -left-4 sm:-left-12 z-20 bg-cards/40 backdrop-blur-md border border-white/10 p-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce" style={{ animationDuration: '3s' }}>
-            <div className="flex -space-x-2">
-               <img src="https://i.pravatar.cc/100?img=11" alt="player" className="w-8 h-8 rounded-full border-2 border-background" />
-               <img src="https://i.pravatar.cc/100?img=12" alt="player" className="w-8 h-8 rounded-full border-2 border-background" />
-               <img src="https://i.pravatar.cc/100?img=13" alt="player" className="w-8 h-8 rounded-full border-2 border-background" />
-            </div>
-            <div className="text-xs font-bold whitespace-nowrap">
-              <span className="text-primary block text-[13px]">10K+ Players</span>
-              <span className="text-text-secondary text-[10px] uppercase tracking-wider">Online Now</span>
-            </div>
-          </div>
+
 
           <HeroCardStack />
         </div>
