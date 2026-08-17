@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Gift, ArrowRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGames } from '../context/GameContext';
@@ -10,6 +10,17 @@ export const GiveawayGames = () => {
   
   // Filter games that are marked as giveaways
   const giveawayGamesData = games.filter(game => game.isGiveaway);
+
+  useEffect(() => {
+    if (selectedGiveaway) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedGiveaway]);
 
   if (loading || giveawayGamesData.length === 0) return null;
 
