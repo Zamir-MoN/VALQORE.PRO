@@ -429,6 +429,7 @@ export const AdminDashboard = () => {
                       <input type="number" step="0.1" name="rating" value={formData.rating} onChange={handleInputChange} placeholder="E.g. 4.5" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
                     </div>
                   </div>
+                  </div>
                 )}
 
                 {/* Cover & Branding */}
