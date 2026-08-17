@@ -19,7 +19,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // Create a new coupon
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { code, discount, createdBy } = req.body;
+    const { code, discount, createdBy, usageLimit } = req.body;
     
     if (!code || !discount || !createdBy) {
       return res.status(400).json({ error: 'Code, discount, and creator are required' });
@@ -34,7 +34,8 @@ router.post('/', authMiddleware, async (req, res) => {
       data: {
         code: code.toUpperCase(),
         discount: parseFloat(discount),
-        createdBy
+        createdBy,
+        usageLimit: usageLimit ? parseInt(usageLimit, 10) : null
       }
     });
     
@@ -57,6 +58,10 @@ router.post('/validate', authMiddleware, async (req, res) => {
     
     if (!coupon || !coupon.isActive) {
       return res.status(404).json({ error: 'Invalid or expired coupon' });
+    }
+    
+    if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) {
+      return res.status(400).json({ error: 'Coupon usage limit reached' });
     }
     
     res.json({ valid: true, discount: coupon.discount, code: coupon.code });

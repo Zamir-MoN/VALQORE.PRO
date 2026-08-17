@@ -25,7 +25,7 @@ export const AdminDashboard = () => {
 
   // Coupon state
   const [coupons, setCoupons] = useState<any[]>([]);
-  const [couponFormData, setCouponFormData] = useState({ code: '', discount: '', createdBy: 'Sagar' });
+  const [couponFormData, setCouponFormData] = useState({ code: '', discount: '', createdBy: 'Sagar', usageLimit: '' });
   const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -110,7 +110,7 @@ export const AdminDashboard = () => {
     try {
       await axios.post(`${API_URL}/coupons`, couponFormData, { headers: { 'Authorization': `Bearer ${token}` } });
       toast.success('Coupon created successfully');
-      setCouponFormData({ ...couponFormData, code: '', discount: '' });
+      setCouponFormData({ ...couponFormData, code: '', discount: '', usageLimit: '' });
       fetchCoupons();
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to create coupon');
@@ -1003,6 +1003,18 @@ export const AdminDashboard = () => {
                       className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
                     />
                   </div>
+                  <div className="flex flex-col gap-2 w-full sm:w-1/4">
+                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Usage Limit</label>
+                    <input 
+                      type="number" 
+                      min="1"
+                      step="1"
+                      placeholder="e.g. 5 (or blank for unlmtd)"
+                      value={couponFormData.usageLimit} 
+                      onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: e.target.value })}
+                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                    />
+                  </div>
                   <button type="submit" className="w-full sm:w-auto bg-[#FF00F0] hover:bg-[#FF00F0]/80 text-white font-bold py-3 px-6 rounded-lg transition-colors h-[50px] shadow-[0_0_15px_rgba(255,0,240,0.3)]">
                     Create Coupon
                   </button>
@@ -1026,7 +1038,12 @@ export const AdminDashboard = () => {
                       </button>
                     </div>
                     <div className="flex justify-between items-end relative z-10 pt-4 border-t border-white/5">
-                      <span className="text-text-secondary text-sm font-bold">Flat Discount</span>
+                      <div className="flex flex-col">
+                        <span className="text-text-secondary text-sm font-bold">Flat Discount</span>
+                        <span className="text-xs text-text-secondary/70">
+                          {coupon.usageLimit ? `Used: ${coupon.usageCount}/${coupon.usageLimit}` : `Used: ${coupon.usageCount} (Unlmtd)`}
+                        </span>
+                      </div>
                       <span className="text-xl font-bold text-white">₹{coupon.discount}</span>
                     </div>
                   </div>

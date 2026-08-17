@@ -8,6 +8,7 @@ const router = Router();
 router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
+    const { couponCode } = req.body;
     
     if (!userPayload.userId) {
       res.status(403).json({ error: 'Admins cannot place orders' });
@@ -26,9 +27,30 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
     }
 
     // 2. Calculate total amount
-    const totalAmount = cartItems.reduce((acc, item) => {
+    let totalAmount = cartItems.reduce((acc, item) => {
       return acc + (item.game.price * (1 - item.game.discount / 100));
     }, 0);
+
+    // Fetch and validate coupon if provided
+    let validCoupon = null;
+    if (couponCode) {
+      validCoupon = await prisma.coupon.findUnique({
+        where: { code: couponCode.toUpperCase() }
+      });
+      
+      if (!validCoupon || !validCoupon.isActive) {
+        res.status(400).json({ error: 'Invalid or expired coupon' });
+        return;
+      }
+      
+      if (validCoupon.usageLimit !== null && validCoupon.usageCount >= validCoupon.usageLimit) {
+        res.status(400).json({ error: 'Coupon usage limit reached' });
+        return;
+      }
+      
+      totalAmount -= validCoupon.discount;
+      if (totalAmount < 0) totalAmount = 0;
+    }
 
     // 3. Create the order and order items in a transaction, and clear cart
     const order = await prisma.$transaction(async (tx) => {
@@ -51,6 +73,14 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
       await tx.cartItem.deleteMany({
         where: { userId: userPayload.userId }
       });
+      
+      // Increment coupon usage count
+      if (validCoupon) {
+        await tx.coupon.update({
+          where: { id: validCoupon.id },
+          data: { usageCount: { increment: 1 } }
+        });
+      }
 
       return newOrder;
     });
