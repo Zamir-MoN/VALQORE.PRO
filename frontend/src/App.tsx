@@ -77,7 +77,21 @@ function App() {
               <Router>
                 <ScrollToTop />
                 <AuthModal />
-                <div className="min-h-screen bg-background text-text-primary flex flex-col font-body">
+                <div className="fixed inset-0 -z-50 pointer-events-none">
+                  <video 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    className="w-full h-full object-cover"
+                  >
+                    <source src="/videos/background.mp4" type="video/mp4" />
+                  </video>
+                  {/* Optional overlay to darken video */}
+                  <div className="absolute inset-0 bg-background/60"></div>
+                </div>
+                
+                <div className="min-h-screen text-text-primary flex flex-col font-body relative z-0">
                   <Toaster 
                     position="top-center"
                     toastOptions={{
