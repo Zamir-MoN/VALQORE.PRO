@@ -17,6 +17,8 @@ export const Cart = () => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
+  const [couponDiscountAmount, setCouponDiscountAmount] = useState(0);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -32,7 +34,8 @@ export const Cart = () => {
     setIsCheckingOut(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/orders`, {}, {
+      // In a real app, you would pass the coupon code to the order creation endpoint too
+      await axios.post(`${API_URL}/orders`, { couponCode: couponApplied ? couponCode : undefined }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Order placed successfully!');
@@ -56,15 +59,30 @@ export const Cart = () => {
   let savings = subtotal - total;
 
   if (couponApplied) {
-    const extraDiscount = total * 0.10; // 10% extra discount
-    savings += extraDiscount;
-    total -= extraDiscount;
+    savings += couponDiscountAmount;
+    total -= couponDiscountAmount;
+    if (total < 0) total = 0; // Prevent negative total
   }
 
-  const handleApplyCoupon = () => {
-    if (couponCode.trim()) {
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    
+    setIsApplyingCoupon(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API_URL}/coupons/validate`, { code: couponCode }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setCouponDiscountAmount(res.data.discount);
       setCouponApplied(true);
-      toast.success('Coupon applied! 10% discount added.');
+      toast.success(`Coupon applied! ₹${res.data.discount} off.`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Invalid or expired coupon');
+      setCouponApplied(false);
+      setCouponDiscountAmount(0);
+    } finally {
+      setIsApplyingCoupon(false);
     }
   };
 
@@ -211,12 +229,24 @@ export const Cart = () => {
                     />
                     <button 
                       onClick={handleApplyCoupon}
-                      disabled={!couponCode.trim() || couponApplied}
+                      disabled={!couponCode.trim() || couponApplied || isApplyingCoupon}
                       className="bg-white/10 hover:bg-primary text-white hover:text-black px-6 py-3 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 disabled:hover:bg-white/10 disabled:hover:text-white uppercase tracking-wider"
                     >
-                      {couponApplied ? 'Applied' : 'Apply'}
+                      {isApplyingCoupon ? <Loader2 size={16} className="animate-spin inline" /> : (couponApplied ? 'Applied' : 'Apply')}
                     </button>
                   </div>
+                  {couponApplied && (
+                    <button 
+                      onClick={() => {
+                        setCouponApplied(false);
+                        setCouponCode('');
+                        setCouponDiscountAmount(0);
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300 mt-2 font-bold underline decoration-red-400/30 underline-offset-2 transition-colors"
+                    >
+                      Remove coupon
+                    </button>
+                  )}
                 </div>
                 
                 <div className="pt-4 border-t border-white/10 mb-8">

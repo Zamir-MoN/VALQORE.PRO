@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'games' | 'giveaways'>('games');
+  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -22,6 +22,11 @@ export const AdminDashboard = () => {
   const [gameToDelete, setGameToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
+
+  // Coupon state
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [couponFormData, setCouponFormData] = useState({ code: '', discount: '', createdBy: 'Sagar' });
+  const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -72,6 +77,7 @@ export const AdminDashboard = () => {
   useEffect(() => {
     if (token) {
       fetchGames();
+      fetchCoupons();
     }
   }, [token]);
 
@@ -87,6 +93,40 @@ export const AdminDashboard = () => {
     } catch (err) {
       toast.error('Failed to fetch games');
       setLoading(false);
+    }
+  };
+
+  const fetchCoupons = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/coupons`, { headers: { 'Authorization': `Bearer ${token}` } });
+      setCoupons(res.data);
+    } catch (err) {
+      console.error('Failed to fetch coupons', err);
+    }
+  };
+
+  const handleCouponSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API_URL}/coupons`, couponFormData, { headers: { 'Authorization': `Bearer ${token}` } });
+      toast.success('Coupon created successfully');
+      setCouponFormData({ ...couponFormData, code: '', discount: '' });
+      fetchCoupons();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to create coupon');
+    }
+  };
+
+  const confirmDeleteCoupon = async () => {
+    if (!couponToDelete) return;
+    try {
+      await axios.delete(`${API_URL}/coupons/${couponToDelete}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      toast.success('Coupon deleted');
+      fetchCoupons();
+    } catch (err) {
+      toast.error('Failed to delete coupon');
+    } finally {
+      setCouponToDelete(null);
     }
   };
 
@@ -789,6 +829,12 @@ export const AdminDashboard = () => {
               >
                 <Gift size={20} /> Giveaways
               </button>
+              <button 
+                onClick={() => setActiveTab('coupons')}
+                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'coupons' ? 'bg-[#FF00F0] text-white shadow-[0_0_20px_rgba(255,0,240,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <Ticket size={20} /> Coupons
+              </button>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4">
@@ -801,17 +847,8 @@ export const AdminDashboard = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
                 />
-              </div>
-              <button
-                onClick={() => {
-                  resetForm(activeTab === 'giveaways');
-                  setIsModalOpen(true);
-                }}
-                className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
-              </button>
+                </button>
+              )}
             </div>
           </div>
 
@@ -913,6 +950,79 @@ export const AdminDashboard = () => {
               )}
             </div>
           </div>
+
+          {/* Coupon Management Section */}
+          {activeTab === 'coupons' && (
+            <div className="w-full mt-6">
+              <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
+                <h3 className="text-2xl font-bold mb-6 text-white font-heading">Create New Coupon</h3>
+                <form onSubmit={handleCouponSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex flex-col gap-2 w-full sm:w-1/4">
+                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Admin</label>
+                    <select 
+                      value={couponFormData.createdBy} 
+                      onChange={(e) => setCouponFormData({ ...couponFormData, createdBy: e.target.value })}
+                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                    >
+                      <option value="Sagar">Sagar</option>
+                      <option value="Zamir">Zamir</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2 w-full sm:w-1/3">
+                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Coupon Code</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. SAGAR-20"
+                      value={couponFormData.code} 
+                      onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })}
+                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none uppercase"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 w-full sm:w-1/4">
+                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Discount Amount (₹)</label>
+                    <input 
+                      type="number" 
+                      required
+                      step="1"
+                      min="1"
+                      placeholder="e.g. 20"
+                      value={couponFormData.discount} 
+                      onChange={(e) => setCouponFormData({ ...couponFormData, discount: e.target.value })}
+                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                    />
+                  </div>
+                  <button type="submit" className="w-full sm:w-auto bg-[#FF00F0] hover:bg-[#FF00F0]/80 text-white font-bold py-3 px-6 rounded-lg transition-colors h-[50px] shadow-[0_0_15px_rgba(255,0,240,0.3)]">
+                    Create Coupon
+                  </button>
+                </form>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {coupons.filter(c => c.code.toLowerCase().includes(searchQuery.toLowerCase())).map(coupon => (
+                  <div key={coupon.id} className="glass p-5 rounded-2xl border border-white/10 flex flex-col justify-between relative overflow-hidden group hover:border-[#FF00F0]/50 transition-colors">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF00F0]/5 rounded-full blur-2xl group-hover:bg-[#FF00F0]/10 transition-colors"></div>
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                      <div>
+                        <span className="bg-white/10 text-white text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md mb-2 inline-block">Created by {coupon.createdBy}</span>
+                        <h4 className="text-2xl font-black font-heading text-[#FF00F0] tracking-wider">{coupon.code}</h4>
+                      </div>
+                      <button 
+                        onClick={() => setCouponToDelete(coupon.id)}
+                        className="text-text-secondary hover:text-red-500 bg-white/5 hover:bg-red-500/10 p-2 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className="flex justify-between items-end relative z-10 pt-4 border-t border-white/5">
+                      <span className="text-text-secondary text-sm font-bold">Flat Discount</span>
+                      <span className="text-xl font-bold text-white">₹{coupon.discount}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -931,6 +1041,30 @@ export const AdminDashboard = () => {
               </button>
               <button 
                 onClick={confirmDelete}
+                className="px-5 py-2.5 bg-error/10 hover:bg-error text-error hover:text-white border border-error/20 hover:border-error rounded-xl transition-colors font-semibold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Coupon Confirmation Modal */}
+      {couponToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-cards border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+            <h3 className="text-xl font-bold text-white mb-2">Confirm Deletion</h3>
+            <p className="text-text-secondary mb-6">Are you sure you want to delete this coupon? Users will no longer be able to use it.</p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setCouponToDelete(null)}
+                className="px-5 py-2.5 bg-cards border border-white/10 hover:bg-white/5 text-white rounded-xl transition-colors font-semibold"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteCoupon}
                 className="px-5 py-2.5 bg-error/10 hover:bg-error text-error hover:text-white border border-error/20 hover:border-error rounded-xl transition-colors font-semibold"
               >
                 Delete
