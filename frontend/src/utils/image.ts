@@ -10,5 +10,12 @@ export const getImageUrl = (url: string | null | undefined): string => {
   const apiUrl = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
   const baseUrl = apiUrl.replace(/\/api\/?$/, '');
   
-  return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  let finalUrl = `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  
+  // Cache busting for the steam badge
+  if (finalUrl.includes('STEAM.png')) {
+    finalUrl += '?v=' + new Date().getTime();
+  }
+  
+  return finalUrl;
 };
