@@ -876,7 +876,7 @@ export const AdminDashboard = () => {
                     </div>
                   </div>
                 ))
-              ) : (
+              ) : activeTab !== 'coupons' ? (
                 <>
                   {games
                     .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -958,7 +958,7 @@ export const AdminDashboard = () => {
                     </div>
                   )}
                 </>
-              )}
+              ) : null}
             </div>
           </div>
 
