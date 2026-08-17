@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
@@ -159,61 +159,80 @@ export const GameDetails = () => {
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-1 border-b border-white/10 pb-4">
-                    <span className="text-text-secondary text-[11px] font-bold uppercase tracking-widest">Your Price</span>
-                    {game.discount > 0 ? (
+                  {game.isGiveaway ? (
+                    <div className="flex flex-col gap-4 pb-4 border-b border-white/10">
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl font-heading font-black text-white">{formatPrice(game.price * (1 - game.discount / 100))}</span>
-                        <span className="text-text-secondary line-through text-sm">{formatPrice(game.price)}</span>
+                        <Gift className="text-[#00F0FF]" size={24} />
+                        <span className="text-2xl font-heading font-black text-white">GIVEAWAY EVENT</span>
                       </div>
-                    ) : (
-                      <span className="text-3xl font-heading font-black text-white">{formatPrice(game.price)}</span>
-                    )}
-                  </div>
+                      
+                      <div className="bg-black/40 border border-white/5 rounded-xl p-4 text-text-secondary text-sm leading-relaxed whitespace-pre-wrap">
+                        {game.giveawayRules || "No specific rules have been provided for this giveaway. Please check back later!"}
+                      </div>
 
-                  {game.outOfStock ? (
-                    <button 
-                      disabled
-                      className="w-full mt-2 bg-red-600/50 text-white/50 cursor-not-allowed font-black text-sm px-4 py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2"
-                    >
-                      OUT OF STOCK
-                    </button>
-                  ) : game.isRentable ? (
-                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 mt-2">
                       <button 
-                        onClick={handleAddToCart}
-                        className="w-full bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
+                        className="w-full mt-2 bg-[#00F0FF] hover:bg-white text-black font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
                       >
-                        {inCart ? 'Go to Cart' : 'Buy Now'}
-                        <ShoppingCart size={16} className={inCart ? 'hidden' : ''} />
-                      </button>
-                      <button className="w-full bg-white/10 border border-white/20 hover:bg-white/20 text-white font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-2">
-                        Rent ({game.rentDurationDays} Days) <span className="text-primary font-bold normal-case text-xs">{formatPrice(game.rentPrice || 0)}</span>
+                        Participate Now
                       </button>
                     </div>
                   ) : (
-                    <button 
-                      onClick={handleAddToCart}
-                      className="w-full mt-2 bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
-                    >
-                      {inCart ? 'Go to Cart' : 'Buy Now'}
-                      <ShoppingCart size={16} className={inCart ? 'hidden' : ''} />
-                    </button>
+                    <>
+                      <div className="flex flex-col gap-1 border-b border-white/10 pb-4">
+                        <span className="text-text-secondary text-[11px] font-bold uppercase tracking-widest">Your Price</span>
+                        {game.discount > 0 ? (
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl font-heading font-black text-white">{formatPrice(game.price * (1 - game.discount / 100))}</span>
+                            <span className="text-text-secondary line-through text-sm">{formatPrice(game.price)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-3xl font-heading font-black text-white">{formatPrice(game.price)}</span>
+                        )}
+                      </div>
+
+                      {game.outOfStock ? (
+                        <button 
+                          disabled
+                          className="w-full mt-2 bg-red-600/50 text-white/50 cursor-not-allowed font-black text-sm px-4 py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2"
+                        >
+                          OUT OF STOCK
+                        </button>
+                      ) : game.isRentable ? (
+                        <div className="flex flex-col sm:flex-row lg:flex-col gap-3 mt-2">
+                          <button 
+                            onClick={handleAddToCart}
+                            className="w-full bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
+                          >
+                            {inCart ? 'Go to Cart' : 'Buy Now'}
+                            <ShoppingCart size={16} className={inCart ? 'hidden' : ''} />
+                          </button>
+                          <button className="w-full bg-white/10 border border-white/20 hover:bg-white/20 text-white font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-2">
+                            Rent ({game.rentDurationDays} Days) <span className="text-primary font-bold normal-case text-xs">{formatPrice(game.rentPrice || 0)}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={handleAddToCart}
+                          className="w-full mt-2 bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
+                        >
+                          {inCart ? 'Go to Cart' : 'Buy Now'}
+                          <ShoppingCart size={16} className={inCart ? 'hidden' : ''} />
+                        </button>
+                      )}
+
+                      <div className="mt-3 pt-4 border-t border-white/10 flex items-center justify-between">
+                        <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Secure Payments</span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-10 rounded bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="UPI">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-2.5 object-contain" />
+                          </div>
+                          <div className="h-6 w-10 rounded bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="USDT">
+                            <img src="https://cryptologos.cc/logos/tether-usdt-logo.svg?v=032" alt="USDT" className="h-3 object-contain" />
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
-
-
-
-                  <div className="mt-3 pt-4 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Secure Payments</span>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-10 rounded bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="UPI">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-2.5 object-contain" />
-                      </div>
-                      <div className="h-6 w-10 rounded bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="USDT">
-                        <img src="https://cryptologos.cc/logos/tether-usdt-logo.svg?v=032" alt="USDT" className="h-3 object-contain" />
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Epic Layout Game Details moved here */}
                   <div className="mt-2 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs">
