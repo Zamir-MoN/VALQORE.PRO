@@ -38,41 +38,41 @@ export const Testimonials = () => {
   const items = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
 
   return (
-    <section ref={containerRef} className="py-32 relative z-10 overflow-hidden bg-background" id="community">
-      <div className="container mx-auto px-6 lg:px-12 mb-16 text-center">
-        <h2 className="text-4xl md:text-5xl font-black mb-6 text-white tracking-tight">Player <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-primary bg-300% animate-gradient">Acclaim</span></h2>
-        <p className="text-text-secondary text-lg max-w-2xl mx-auto font-medium">Don't just take our word for it. Here's what the community is saying about Valqore.</p>
+    <section ref={containerRef} className="py-24 relative z-10 overflow-hidden border-y border-white/5 bg-background" id="community">
+      <div className="container mx-auto px-6 lg:px-12 mb-12 text-center">
+        <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">Player <span className="text-accent">Acclaim</span></h2>
+        <p className="text-text-secondary max-w-2xl mx-auto">Don't just take our word for it. Here's what the community is saying about Valqore.</p>
       </div>
 
-      <div className="relative w-full overflow-hidden flex py-4">
+      <div className="relative w-full overflow-hidden flex">
         {/* Gradient Masks */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10"></div>
 
         <div ref={trackRef} className="flex gap-6 px-3 w-max">
           {items.map((testimonial, idx) => (
             <div 
               key={`${testimonial.id}-${idx}`}
-              className="w-[350px] sm:w-[450px] flex-shrink-0 p-8 sm:p-10 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-primary/30 hover:bg-white/[0.04] transition-all duration-500 relative group hover:-translate-y-2 hover:shadow-[0_10px_40px_rgba(var(--primary),0.1)]"
+              className="w-[350px] sm:w-[400px] flex-shrink-0 p-8 rounded-2xl glass hover:border-accent/50 transition-colors duration-300 relative group"
             >
-              <Quote className="absolute top-8 right-8 text-white/5 group-hover:text-primary/20 w-16 h-16 transition-colors duration-500" />
+              <Quote className="absolute top-6 right-6 text-white/5 group-hover:text-accent/20 w-12 h-12 transition-colors duration-500" />
               
-              <div className="flex items-center gap-1.5 mb-6">
+              <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <span key={i} className={`text-xl drop-shadow-md ${i < testimonial.rating ? 'text-yellow-500' : 'text-white/10'}`}>★</span>
+                  <span key={i} className={`text-lg ${i < testimonial.rating ? 'text-accent' : 'text-white/10'}`}>★</span>
                 ))}
               </div>
               
-              <p className="text-white/80 text-lg leading-relaxed mb-8 font-medium">"{testimonial.comment}"</p>
+              <p className="text-white/80 leading-relaxed mb-6 italic">"{testimonial.comment}"</p>
               
               <div className="flex items-center gap-4 mt-auto">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center font-black text-background shadow-lg overflow-hidden border border-white/20">
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-bold text-white shadow-lg overflow-hidden border border-white/20">
                   {/* Fallback avatar if image fails */}
                   {testimonial.user.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-bold text-white">{testimonial.user}</h4>
-                  <p className="text-sm text-primary font-bold">Verified Buyer</p>
+                  <h4 className="font-bold text-white text-sm">{testimonial.user}</h4>
+                  <p className="text-xs text-text-secondary">Verified Buyer</p>
                 </div>
               </div>
             </div>
