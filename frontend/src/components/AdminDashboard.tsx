@@ -33,6 +33,8 @@ export const AdminDashboard = () => {
     platforms: '',
     isRentable: false,
     outOfStock: false,
+    isGiveaway: false,
+    giveawayRules: '',
     rentPrice: '',
     rentDurationDays: 7,
     rentRules: '',
@@ -211,6 +213,8 @@ export const AdminDashboard = () => {
       platforms: game.platforms,
       isRentable: game.isRentable || false,
       outOfStock: game.outOfStock || false,
+      isGiveaway: game.isGiveaway || false,
+      giveawayRules: game.giveawayRules || '',
       rentPrice: game.rentPrice || '',
       rentDurationDays: game.rentDurationDays || 7,
       rentRules: game.rentRules || '',
@@ -280,6 +284,8 @@ export const AdminDashboard = () => {
       platforms: '',
       isRentable: false,
       outOfStock: false,
+      isGiveaway: false,
+      giveawayRules: '',
       rentPrice: '',
       rentDurationDays: 7,
       rentRules: '',
@@ -536,6 +542,36 @@ export const AdminDashboard = () => {
                       placeholder="Rental Rules / Details (Optional)" 
                       rows={2}
                       className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none resize-none" 
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Giveaway Options */}
+              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
+                    <input 
+                      type="checkbox" 
+                      name="isGiveaway" 
+                      checked={formData.isGiveaway} 
+                      onChange={handleInputChange} 
+                      className="absolute opacity-0 w-full h-full cursor-pointer"
+                    />
+                    {formData.isGiveaway && <div className="w-3 h-3 bg-[#00F0FF] rounded-sm"></div>}
+                  </div>
+                  <span className="font-bold text-white">This item is a Giveaway</span>
+                </label>
+
+                {formData.isGiveaway && (
+                  <div className="mt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-300">
+                    <textarea 
+                      name="giveawayRules" 
+                      value={formData.giveawayRules} 
+                      onChange={handleInputChange} 
+                      placeholder="How to participate full guide (e.g. Subscribe to channel, Comment below...)" 
+                      rows={4}
+                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#00F0FF] outline-none resize-none" 
                     />
                   </div>
                 )}

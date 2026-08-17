@@ -17,7 +17,9 @@ export interface Game {
   platforms: string[];
   isRentable?: boolean;
   outOfStock?: boolean;
-  rentPrice?: number;
+  isGiveaway?: boolean;
+  giveawayRules?: string;
+  rentPrice?: number | null;
   rentDurationDays?: number;
   rentRules?: string;
   minRequirements?: string;

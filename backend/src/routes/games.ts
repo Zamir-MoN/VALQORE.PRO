@@ -44,6 +44,11 @@ router.post('/', authMiddleware, async (req, res) => {
     gameData.price = parseFloat(gameData.price) || 0;
     gameData.discount = parseFloat(gameData.discount) || 0;
     
+    gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
+    if (gameData.giveawayRules === undefined || gameData.giveawayRules === null) {
+      gameData.giveawayRules = null;
+    }
+
     gameData.isRentable = gameData.isRentable === true || gameData.isRentable === 'true';
     if (gameData.rentPrice !== undefined && gameData.rentPrice !== null && gameData.rentPrice !== '') {
       gameData.rentPrice = parseFloat(gameData.rentPrice);
@@ -78,6 +83,14 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (gameData.rating !== undefined) gameData.rating = parseFloat(gameData.rating) || 0;
     if (gameData.price !== undefined) gameData.price = parseFloat(gameData.price) || 0;
     if (gameData.discount !== undefined) gameData.discount = parseFloat(gameData.discount) || 0;
+
+    if (gameData.isGiveaway !== undefined) {
+      gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
+    }
+    
+    if (gameData.giveawayRules !== undefined && gameData.giveawayRules === '') {
+      gameData.giveawayRules = null;
+    }
 
     if (gameData.isRentable !== undefined) {
       gameData.isRentable = gameData.isRentable === true || gameData.isRentable === 'true';
