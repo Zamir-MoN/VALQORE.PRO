@@ -10,7 +10,7 @@ import clsx from 'clsx';
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Profile = () => {
-  const { user, logout, loading: authLoading, openAuthModal } = useAuth();
+  const { user, token, logout, loading: authLoading, openAuthModal } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
@@ -42,7 +42,6 @@ export const Profile = () => {
   const fetchOrders = async () => {
     setLoadingOrders(true);
     try {
-      const token = localStorage.getItem('token');
       const res = await axios.get(`${API_URL}/orders`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -64,7 +63,6 @@ export const Profile = () => {
     
     setIsChangingPassword(true);
     try {
-      const token = localStorage.getItem('token');
       await axios.put(`${API_URL}/auth/password`, {
         currentPassword,
         newPassword
@@ -84,7 +82,6 @@ export const Profile = () => {
 
   const handleCancelOrder = async (orderId: string) => {
     try {
-      const token = localStorage.getItem('token');
       await axios.put(`${API_URL}/orders/${orderId}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });

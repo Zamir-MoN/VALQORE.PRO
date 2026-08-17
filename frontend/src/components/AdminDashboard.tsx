@@ -968,7 +968,7 @@ export const AdminDashboard = () => {
               <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
                 <h3 className="text-2xl font-bold mb-6 text-white font-heading">Create New Coupon</h3>
                 <form onSubmit={handleCouponSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
-                  <div className="flex flex-col gap-2 w-full sm:w-1/4">
+                  <div className="flex flex-col gap-2 w-full flex-1">
                     <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Admin</label>
                     <select 
                       value={couponFormData.createdBy} 
@@ -979,7 +979,7 @@ export const AdminDashboard = () => {
                       <option value="Zamir">Zamir</option>
                     </select>
                   </div>
-                  <div className="flex flex-col gap-2 w-full sm:w-1/3">
+                  <div className="flex flex-col gap-2 w-full flex-1">
                     <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Coupon Code</label>
                     <input 
                       type="text" 
@@ -990,7 +990,7 @@ export const AdminDashboard = () => {
                       className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none uppercase"
                     />
                   </div>
-                  <div className="flex flex-col gap-2 w-full sm:w-1/4">
+                  <div className="flex flex-col gap-2 w-full flex-1">
                     <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Discount Amount (₹)</label>
                     <input 
                       type="number" 
@@ -1003,7 +1003,7 @@ export const AdminDashboard = () => {
                       className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
                     />
                   </div>
-                  <div className="flex flex-col gap-2 w-full sm:w-1/4">
+                  <div className="flex flex-col gap-2 w-full flex-1">
                     <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Usage Limit</label>
                     <input 
                       type="number" 
