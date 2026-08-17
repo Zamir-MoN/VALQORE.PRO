@@ -51,7 +51,9 @@ function App() {
     // Initialize Lenis
     const lenis = new Lenis({
       autoRaf: true,
-      duration: 1.2,
+      duration: 1.0,
+      smoothWheel: true,
+      syncTouch: true,
     });
 
     // @ts-expect-error attaching to window for global access
@@ -83,7 +85,7 @@ function App() {
                     loop 
                     muted 
                     playsInline 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transform-gpu will-change-transform"
                   >
                     <source src="/videos/background.mp4" type="video/mp4" />
                   </video>

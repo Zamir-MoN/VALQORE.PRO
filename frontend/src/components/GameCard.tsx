@@ -22,6 +22,7 @@ export const GameCard = ({ game }: GameCardProps) => {
         <img 
           src={game.coverImage ? getImageUrl(game.coverImage) : '/images/hero-artwork.png'} 
           alt={game.title} 
+          loading="lazy"
           className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${game.outOfStock ? 'grayscale-[0.5] opacity-70' : ''}`}
         />
         
@@ -44,6 +45,7 @@ export const GameCard = ({ game }: GameCardProps) => {
           <img 
             src={getImageUrl(game.tagImage)} 
             alt="Tag" 
+            loading="lazy"
             className="absolute bottom-3 left-3 h-8 sm:h-9 object-contain drop-shadow-md z-10"
           />
         )}

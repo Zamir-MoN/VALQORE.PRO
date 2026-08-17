@@ -32,7 +32,7 @@ export const GiveawayGames = () => {
                 className="group flex flex-col text-left bg-cards/40 hover:bg-cards border border-white/5 hover:border-[#00F0FF]/50 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer shadow-lg w-full"
               >
                 <div className="relative aspect-video overflow-hidden bg-cards w-full">
-                  <img src={game.coverImage || '/images/hero-artwork.png'} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <img src={game.coverImage || '/images/hero-artwork.png'} alt={game.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   
                   {/* Top Left Badge */}
                   <div className="absolute top-0 left-0 bg-[#00F0FF] text-black font-black text-xs px-3 py-1.5 uppercase tracking-wider rounded-br-lg z-10 shadow-md">

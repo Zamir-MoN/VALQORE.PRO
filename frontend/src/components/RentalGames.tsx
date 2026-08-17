@@ -50,7 +50,7 @@ export const RentalGames = () => {
             {visibleGames.map((game) => (
               <Link to={`/game/${game.id}`} key={`rental-${game.id}`} className="group flex bg-cards/40 hover:bg-cards border border-white/5 hover:border-primary/50 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-lg">
                 <div className="w-1/3 min-w-[100px] aspect-[3/4] sm:aspect-square md:aspect-[3/4] overflow-hidden relative">
-                  <img src={game.coverImage || '/images/hero-artwork.png'} alt={game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <img src={game.coverImage || '/images/hero-artwork.png'} alt={game.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background/60"></div>
                 </div>
                 <div className="w-2/3 p-4 flex flex-col justify-center">

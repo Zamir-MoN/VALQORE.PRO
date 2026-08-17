@@ -52,6 +52,7 @@ export const TrendingGames = () => {
                     <img 
                       src={game.coverImage || '/images/hero-artwork.png'} 
                       alt={game.title} 
+                      loading="lazy"
                       className="w-16 h-16 rounded-xl object-cover group-hover:opacity-80 transition-opacity"
                     />
                     <div className="flex flex-col justify-center">
@@ -75,6 +76,7 @@ export const TrendingGames = () => {
                     <img 
                       src={game.coverImage || '/images/hero-artwork.png'} 
                       alt={game.title} 
+                      loading="lazy"
                       className="w-16 h-16 rounded-xl object-cover group-hover:opacity-80 transition-opacity"
                     />
                     <div className="flex flex-col justify-center">
