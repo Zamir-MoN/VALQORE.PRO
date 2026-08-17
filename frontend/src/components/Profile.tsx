@@ -106,6 +106,13 @@ export const Profile = () => {
 
       <div className="container mx-auto max-w-[1200px]">
         
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-primary bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 px-5 py-2.5 rounded-xl transition-all duration-300 font-bold text-sm shadow-sm hover:shadow-[0_0_15px_rgba(220,248,54,0.15)] group">
+            <ChevronRight className="rotate-180 transition-transform group-hover:-translate-x-1" size={16} /> Back to Store
+          </Link>
+        </div>
+
         {/* Premium Header Banner */}
         <div className="relative mb-10 rounded-3xl overflow-hidden border border-white/10 bg-cards/60 backdrop-blur-xl shadow-2xl">
           {/* Abstract banner background */}
