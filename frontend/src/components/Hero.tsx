@@ -54,14 +54,7 @@ export const Hero = () => {
       className="relative min-h-[100svh] pt-20 sm:pt-24 pb-8 sm:pb-12 px-6 lg:px-12 flex items-center perspective-1000 overflow-hidden"
       id="home"
     >
-      {/* Background Ambient Glows */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[60%] bg-primary/10 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] bg-white/5 rounded-full blur-[100px] mix-blend-screen" />
-      </div>
 
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40" />
 
       <div className="container mx-auto grid lg:grid-cols-2 gap-4 sm:gap-12 lg:gap-8 items-center z-10">
         
