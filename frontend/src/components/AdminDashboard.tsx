@@ -337,10 +337,14 @@ export const AdminDashboard = () => {
 
   // if (loading) return <div className="min-h-screen pt-32 text-center text-white">Loading...</div>;
 
+  const totalGames = games.filter(g => !g.isGiveaway).length;
+  const totalGiveaways = games.filter(g => g.isGiveaway).length;
+  const outOfStockCount = games.filter(g => !g.isGiveaway && g.outOfStock).length;
+
   return (
-    <div className="min-h-screen bg-background text-text-primary p-8 pt-24">
+    <div className="min-h-screen bg-background text-text-primary p-4 sm:p-8 pt-24">
       <div className="container mx-auto max-w-[1400px]">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <h2 className="text-4xl md:text-5xl font-heading font-bold">Admin Dashboard</h2>
           <button 
             onClick={handleLogout}
@@ -728,69 +732,99 @@ export const AdminDashboard = () => {
         )}
 
         <div className="w-full">
-          {/* Tabs */}
-          <div className="flex gap-4 mb-8 border-b border-white/10 pb-4 overflow-x-auto">
-            <button 
-              onClick={() => setActiveTab('games')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'games' ? 'bg-primary text-background' : 'bg-cards/40 text-text-secondary hover:text-white hover:bg-cards'}`}
-            >
-              <Gamepad2 size={20} /> Games
-            </button>
-            <button 
-              onClick={() => setActiveTab('giveaways')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black' : 'bg-cards/40 text-text-secondary hover:text-white hover:bg-cards'}`}
-            >
-              <Gift size={20} /> Giveaways
-            </button>
+          {/* Dashboard Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-primary/30 transition-colors shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-500"></div>
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <p className="text-text-secondary text-sm font-medium uppercase tracking-wider mb-1">Total Games</p>
+                  <h3 className="text-4xl font-black text-white">{totalGames}</h3>
+                </div>
+                <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+                  <Gamepad2 className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-[#00F0FF]/30 transition-colors shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#00F0FF]/10 rounded-full blur-3xl group-hover:bg-[#00F0FF]/20 transition-all duration-500"></div>
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <p className="text-text-secondary text-sm font-medium uppercase tracking-wider mb-1">Giveaways</p>
+                  <h3 className="text-4xl font-black text-white">{totalGiveaways}</h3>
+                </div>
+                <div className="p-3 bg-[#00F0FF]/10 rounded-xl border border-[#00F0FF]/20">
+                  <Gift className="w-6 h-6 text-[#00F0FF]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-red-500/30 transition-colors shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl group-hover:bg-red-500/20 transition-all duration-500"></div>
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <p className="text-text-secondary text-sm font-medium uppercase tracking-wider mb-1">Out of Stock</p>
+                  <h3 className="text-4xl font-black text-white">{outOfStockCount}</h3>
+                </div>
+                <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                  <AlertCircle className="w-6 h-6 text-red-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Tab Navigation & Actions */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 bg-white/[0.02] border border-white/5 p-2 rounded-2xl backdrop-blur-md shadow-xl">
+            <div className="flex gap-2 p-1 bg-black/40 rounded-xl overflow-x-auto w-full lg:w-auto">
+              <button 
+                onClick={() => setActiveTab('games')}
+                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <Gamepad2 size={20} /> Games
+              </button>
+              <button 
+                onClick={() => setActiveTab('giveaways')}
+                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <Gift size={20} /> Giveaways
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4">
+              <div className="relative w-full sm:w-80">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder={`Search ${activeTab}...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  resetForm(activeTab === 'giveaways');
+                  setIsModalOpen(true);
+                }}
+                className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
+              </button>
+            </div>
           </div>
 
           {/* List Section */}
           <div className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
-              <div>
-                <h2 className="text-3xl font-black bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent flex items-center gap-3 mb-2">
-                  {activeTab === 'games' ? <Gamepad2 className="w-8 h-8 text-primary" /> : <Gift className="w-8 h-8 text-[#00F0FF]" />}
-                  Manage {activeTab === 'games' ? 'Games' : 'Giveaways'}
-                </h2>
-                <p className="text-text-secondary text-sm">Control your {activeTab === 'games' ? 'store inventory' : 'giveaway events'}.</p>
-              </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-72">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search games..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-white/5 outline-none transition-all duration-300 shadow-inner"
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    resetForm(activeTab === 'giveaways');
-                    setIsModalOpen(true);
-                  }}
-                  className={`${activeTab === 'games' ? 'bg-primary shadow-[0_0_20px_rgba(var(--primary),0.3)]' : 'bg-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.3)] text-black'} font-bold py-3 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 whitespace-nowrap`}
-                >
-                  <Plus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
-                </button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
               {loading ? (
-                [...Array(6)].map((_, i) => (
-                  <div key={i} className="glass p-5 rounded-2xl border border-white/5 flex gap-5 items-center animate-pulse bg-white/[0.02]">
-                    <div className="w-20 h-28 bg-white/5 rounded-xl shadow-inner"></div>
+                [...Array(5)].map((_, i) => (
+                  <div key={i} className="glass p-4 rounded-2xl border border-white/5 flex gap-6 items-center animate-pulse bg-white/[0.02]">
+                    <div className="w-16 h-20 bg-white/5 rounded-xl shadow-inner"></div>
                     <div className="flex-1 flex flex-col gap-3">
-                      <div className="h-6 bg-white/10 rounded-md w-2/3"></div>
-                      <div className="h-4 bg-white/5 rounded w-1/3"></div>
-                      <div className="h-8 bg-white/5 rounded-full w-32 mt-2"></div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="w-10 h-10 bg-white/5 rounded-xl"></div>
-                      <div className="w-10 h-10 bg-white/5 rounded-xl"></div>
+                      <div className="h-5 bg-white/10 rounded-md w-1/4"></div>
+                      <div className="h-4 bg-white/5 rounded w-1/6"></div>
                     </div>
                   </div>
                 ))
@@ -802,73 +836,77 @@ export const AdminDashboard = () => {
                     .map(game => (
                     <div 
                       key={game.id} 
-                      className="group relative glass p-4 sm:p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row gap-5 items-start sm:items-center bg-gradient-to-br from-white/[0.03] to-transparent hover:from-white/[0.08] hover:border-white/20 transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden"
+                      className="group relative glass p-4 rounded-2xl border border-white/5 flex flex-col sm:flex-row gap-6 items-start sm:items-center bg-gradient-to-r from-white/[0.02] to-transparent hover:from-white/[0.06] hover:border-white/20 transition-all duration-500 shadow-md hover:shadow-2xl overflow-hidden hover:-translate-y-1"
                     >
-                      {game.outOfStock && (
-                        <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none opacity-80">
-                          <div className="absolute top-4 -right-8 w-32 bg-red-500/90 text-[10px] font-black tracking-wider text-white text-center py-1 shadow-lg shadow-red-500/20 rotate-45 backdrop-blur-sm border-y border-white/20">
-                            OUT OF STOCK
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-28">
+                      <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-24 shadow-lg border border-white/10">
                         <img 
-                          src={game.coverImage} 
+                          src={getImageUrl(game.coverImage)} 
                           alt={game.title} 
-                          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${game.outOfStock ? 'grayscale opacity-70' : ''}`} 
+                          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${game.outOfStock ? 'grayscale opacity-60' : ''}`} 
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent sm:hidden"></div>
                       </div>
                       
-                      <div className="flex-1 flex flex-col w-full z-10">
-                        <h3 className="font-bold text-xl text-white mb-1 leading-tight line-clamp-1">{game.title}</h3>
-                        <p className="text-primary font-semibold text-sm mb-4">{formatPrice(game.price)}</p>
-                        
-                        <div className="flex items-center gap-3">
-                          <label className="flex items-center gap-3 cursor-pointer group/toggle p-1.5 pr-3 rounded-full bg-black/40 hover:bg-black/60 border border-white/5 transition-colors">
-                            <div className="relative">
-                              <input 
-                                type="checkbox" 
-                                checked={game.outOfStock || false} 
-                                onChange={() => toggleOutOfStock(game.id, game.outOfStock || false)} 
-                                className="sr-only"
-                              />
-                              <div className={`block w-11 h-6 rounded-full transition-colors duration-300 ease-in-out ${game.outOfStock ? 'bg-red-500' : 'bg-white/10 group-hover/toggle:bg-white/20'}`}></div>
-                              <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ease-in-out shadow-sm ${game.outOfStock ? 'transform translate-x-5' : ''}`}></div>
-                            </div>
-                            <span className={`text-xs font-bold uppercase tracking-wide ${game.outOfStock ? 'text-red-400' : 'text-text-secondary group-hover/toggle:text-white'}`}>
+                      <div className="flex-1 flex flex-col w-full z-10 sm:py-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <h3 className="font-bold text-xl text-white mb-1 leading-tight group-hover:text-primary transition-colors">{game.title}</h3>
+                            <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
+                          </div>
+                          
+                          <div className="flex items-center gap-6">
+                            <button 
+                              onClick={() => toggleOutOfStock(game.id, game.outOfStock || false)}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 border ${
+                                game.outOfStock 
+                                ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
+                                : 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+                              }`}
+                            >
+                              <div className={`w-2 h-2 rounded-full ${game.outOfStock ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]'}`}></div>
                               {game.outOfStock ? 'Out of Stock' : 'In Stock'}
-                            </span>
-                          </label>
+                            </button>
+
+                            <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
+
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={() => editGame(game)} 
+                                className="p-2.5 bg-black/40 hover:bg-primary/20 border border-white/5 hover:border-primary/50 rounded-xl text-text-secondary hover:text-primary transition-all duration-300 tooltip-trigger"
+                                title="Edit Game"
+                              >
+                                <Edit2 size={18} />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(game.id)} 
+                                className="p-2.5 bg-black/40 hover:bg-error/20 border border-white/5 hover:border-error/50 rounded-xl text-text-secondary hover:text-error transition-all duration-300 tooltip-trigger"
+                                title="Delete Game"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0 z-10">
-                        <button 
-                          onClick={() => editGame(game)} 
-                          className="flex-1 sm:flex-none flex items-center justify-center p-3 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/50 rounded-xl text-white hover:text-primary transition-all duration-300 hover:shadow-[0_0_15px_rgba(var(--primary),0.2)] group/btn tooltip-trigger"
-                          title="Edit Game"
-                        >
-                          <Edit2 size={18} className="transition-transform group-hover/btn:scale-110" />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(game.id)} 
-                          className="flex-1 sm:flex-none flex items-center justify-center p-3 bg-white/5 hover:bg-error/20 border border-white/10 hover:border-error/50 rounded-xl text-white hover:text-error transition-all duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] group/btn tooltip-trigger"
-                          title="Delete Game"
-                        >
-                          <Trash2 size={18} className="transition-transform group-hover/btn:scale-110" />
-                        </button>
                       </div>
                     </div>
                   ))}
                   {games.length === 0 && (
-                    <div className="col-span-full py-16 px-8 flex flex-col items-center justify-center text-center glass rounded-2xl border border-white/10">
-                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                        <Package className="w-8 h-8 text-white/40" />
+                    <div className="col-span-full py-20 px-8 flex flex-col items-center justify-center text-center glass rounded-2xl border border-dashed border-white/20 bg-white/[0.01]">
+                      <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 shadow-inner relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl"></div>
+                        <Package className="w-10 h-10 text-white/40 relative z-10" />
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">No games found</h3>
-                      <p className="text-text-secondary">Try adjusting your search or add a new game to your inventory.</p>
+                      <h3 className="text-2xl font-bold text-white mb-2 font-heading">No {activeTab} found</h3>
+                      <p className="text-text-secondary max-w-md">Your inventory is looking a little empty. Try adding a new item to get started.</p>
+                      <button
+                        onClick={() => {
+                          resetForm(activeTab === 'giveaways');
+                          setIsModalOpen(true);
+                        }}
+                        className="mt-6 font-bold py-3 px-8 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all flex items-center gap-2"
+                      >
+                        <Plus size={18} /> Add Item
+                      </button>
                     </div>
                   )}
                 </>
