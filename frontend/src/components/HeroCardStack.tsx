@@ -20,36 +20,20 @@ export const HeroCardStack = () => {
           setImages(res.data.map((p: any) => p.imageUrl));
           setCards(res.data.map((_: any, i: number) => i));
         } else {
-          setFallbackImages();
+          setImages([]);
+          setCards([]);
         }
       } catch (err) {
         console.error("Failed to fetch posters", err);
-        setFallbackImages();
+        setImages([]);
+        setCards([]);
       } finally {
         setLoading(false);
       }
     };
 
-    const setFallbackImages = () => {
-      const validGames = games.filter(g => !g.isGiveaway);
-      const fallbackImages = validGames.length >= 3 
-        ? validGames.slice(0, 3).map(g => getImageUrl(g.coverImage))
-        : [
-            "https://gamegpu.com/images/1_2026/NEWS/Q2/june/Image_jyeghbjyeghbjyeg_ggpu.webp",
-            "https://m.media-amazon.com/images/M/MV5BM2E1YjYzMjQtNDM0YS00OWYwLTk1ZDMtMTEzNTdjMDUzMDBiXkEyXkFqcGc@._V1_.jpg",
-            "https://static0.hardcoregamerimages.com/wordpress/wp-content/uploads/sharedimages/2025/06/resident-evil-requiem-tag-page-cover-art.jpg"
-          ];
-      setImages(fallbackImages);
-      setCards(fallbackImages.map((_, i) => i));
-    };
-
-    if (games.length > 0) {
-      fetchPosters();
-    } else {
-      // If games aren't loaded yet, just try to fetch posters anyway
-      fetchPosters();
-    }
-  }, [games.length]);
+    fetchPosters();
+  }, []);
 
   useEffect(() => {
     if (loading || images.length <= 1) return;
