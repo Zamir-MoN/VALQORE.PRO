@@ -428,7 +428,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-4 sm:gap-6">
             <Link to="/cart" onClick={closeMenu} className="p-2 rounded-full text-text-secondary hover:text-white transition-all duration-300 group relative block pointer-events-auto">
               <ShoppingCart size={20} className={open ? 'text-white' : ''} />
               {cartItems && cartItems.length > 0 && (
