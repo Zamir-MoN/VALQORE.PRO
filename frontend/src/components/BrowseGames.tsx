@@ -118,98 +118,84 @@ export const BrowseGames = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-grow max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={20} />
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search games, genres or titles..." 
-              className="w-full bg-cards/50 border border-white/10 text-white rounded-lg py-3.5 pl-12 pr-4 outline-none focus:border-primary/50 transition-colors"
-            />
+        <div className="flex flex-col gap-4 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow max-w-2xl">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={20} />
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search games, genres or titles..." 
+                className="w-full bg-cards/50 border border-white/10 text-white rounded-lg py-3.5 pl-12 pr-4 outline-none focus:border-primary/50 transition-colors"
+              />
+            </div>
+            <div ref={filterRef}>
+              <button 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-sm font-semibold px-6 py-3.5 rounded-lg transition-colors w-full md:w-auto justify-center"
+              >
+                <Filter size={18} />
+                <span>Filters {activeGenre !== 'All' && `(${activeGenre})`}</span>
+                <ChevronDown size={16} className={`ml-2 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
-          <div className="relative" ref={filterRef}>
-            <button 
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-sm font-semibold px-6 py-3.5 rounded-lg transition-colors w-full md:w-auto justify-center"
-            >
-              <Filter size={18} />
-              <span>Filters {activeGenre !== 'All' && `(${activeGenre})`}</span>
-              <ChevronDown size={16} className={`ml-2 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
-            </button>
 
-            {isFilterOpen && (
-              <div className="absolute left-0 top-full mt-2 w-full md:w-[320px] bg-[#22242a] border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden text-white">
-                
-                {/* Platform Accordion */}
-                <div className="border-b border-white/5">
-                  <button 
-                    onClick={() => setIsDrmOpen(!isDrmOpen)}
-                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
-                  >
-                    <span className="font-bold tracking-widest text-sm text-white/90">PLATFORM</span>
-                    <ChevronDown size={16} className={`text-white/50 transition-transform duration-300 ${!isDrmOpen ? '-rotate-90' : ''}`} />
-                  </button>
-                  {isDrmOpen && (
-                    <div className="px-5 pb-5 pt-1 grid grid-cols-2 gap-2">
-                      <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Steam') ? [] : ['Steam'])}
-                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Steam') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
-                      >
-                        <span className="font-semibold tracking-wide text-xs">STEAM</span>
-                      </button>
-                      <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Ubisoft') ? [] : ['Ubisoft'])}
-                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Ubisoft') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
-                      >
-                        <span className="font-semibold tracking-wide text-xs">UBISOFT</span>
-                      </button>
-                      <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Epic') ? [] : ['Epic'])}
-                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Epic') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
-                      >
-                        <span className="font-semibold tracking-wide text-xs">EPIC GAMES</span>
-                      </button>
-                      <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Rockstar') ? [] : ['Rockstar'])}
-                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Rockstar') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
-                      >
-                        <span className="font-semibold tracking-wide text-xs">ROCKSTAR</span>
-                      </button>
-                    </div>
-                  )}
+          {isFilterOpen && (
+            <div className="w-full bg-[#22242a] border border-white/10 rounded-lg shadow-2xl overflow-hidden text-white flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/5">
+              
+              {/* Platform Section */}
+              <div className="flex-1 p-5">
+                <span className="font-bold tracking-widest text-sm text-white/90 block mb-4">PLATFORM</span>
+                <div className="grid grid-cols-2 xl:grid-cols-4 gap-2">
+                    <button 
+                      onClick={() => setActiveDrms(prev => prev.includes('Steam') ? [] : ['Steam'])}
+                      className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Steam') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                    >
+                      <span className="font-semibold tracking-wide text-xs">STEAM</span>
+                    </button>
+                    <button 
+                      onClick={() => setActiveDrms(prev => prev.includes('Ubisoft') ? [] : ['Ubisoft'])}
+                      className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Ubisoft') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                    >
+                      <span className="font-semibold tracking-wide text-xs">UBISOFT</span>
+                    </button>
+                    <button 
+                      onClick={() => setActiveDrms(prev => prev.includes('Epic') ? [] : ['Epic'])}
+                      className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Epic') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                    >
+                      <span className="font-semibold tracking-wide text-xs">EPIC GAMES</span>
+                    </button>
+                    <button 
+                      onClick={() => setActiveDrms(prev => prev.includes('Rockstar') ? [] : ['Rockstar'])}
+                      className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Rockstar') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                    >
+                      <span className="font-semibold tracking-wide text-xs">ROCKSTAR</span>
+                    </button>
                 </div>
-
-                {/* GENRE Accordion */}
-                <div className="border-b border-white/5">
-                  <button 
-                    onClick={() => setIsGenreOpen(!isGenreOpen)}
-                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
-                  >
-                    <span className="font-bold tracking-widest text-sm text-white/90">GENRE</span>
-                    <ChevronDown size={16} className={`text-white/50 transition-transform duration-300 ${!isGenreOpen ? '-rotate-90' : ''}`} />
-                  </button>
-                  {isGenreOpen && (
-                    <div className="px-5 pb-5 pt-1 max-h-60 overflow-y-auto">
-                      <div className="flex flex-wrap gap-2">
-                        {GENRES.map((genre) => (
-                          <button
-                            key={genre}
-                            className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${activeGenre === genre ? 'border-primary text-primary bg-primary/10' : 'border-white/10 text-white/70 hover:border-white/30'}`}
-                            onClick={() => setActiveGenre(genre)}
-                          >
-                            {genre}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
               </div>
-            )}
-          </div>
+
+              {/* Genre Section */}
+              <div className="flex-[2] p-5">
+                <span className="font-bold tracking-widest text-sm text-white/90 block mb-4">GENRE</span>
+                <div className="max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="flex flex-wrap gap-2">
+                    {GENRES.map((genre) => (
+                      <button
+                        key={genre}
+                        className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${activeGenre === genre ? 'border-primary text-primary bg-primary/10' : 'border-white/10 text-white/70 hover:border-white/30'}`}
+                        onClick={() => setActiveGenre(genre)}
+                      >
+                        {genre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
 
         {/* Main Grid Layout */}
