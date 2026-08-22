@@ -174,8 +174,8 @@ export const BrowseGames = () => {
             </div>
             
             {/* Game Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 gap-y-12">
-          {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 gap-y-8 sm:gap-y-12">
+                {loading ? (
             [...Array(10)].map((_, i) => (
               <div key={i} className="flex flex-col gap-4 animate-pulse">
                 <div className="w-full aspect-[3/4] bg-white/10 rounded-2xl"></div>
