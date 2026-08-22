@@ -2,6 +2,7 @@ import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 
 export interface StaggeredMenuItem {
   label: string;
@@ -50,6 +51,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
+  const { cartItems } = useCart();
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const preLayersRef = useRef<HTMLDivElement | null>(null);
@@ -417,21 +419,23 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header absolute top-8 left-0 w-full flex items-center justify-between px-6 py-6 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-20"
+          className="staggered-menu-header absolute top-8 left-0 w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-6 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-20"
           aria-label="Main navigation header"
         >
           <div className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Logo">
-            <Link to="/" onClick={closeMenu} className="text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300">
+            <Link to="/" onClick={closeMenu} className="text-xl sm:text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300">
               VALQORE.PRO
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/cart" onClick={closeMenu} className="p-2 rounded-full text-text-secondary hover:text-white transition-all duration-300 group relative block pointer-events-auto">
               <ShoppingCart size={20} className={open ? 'text-white' : ''} />
-              <span className="absolute top-1 right-1 bg-primary text-background text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(220,248,54,0.6)]">
-                2
-              </span>
+              {cartItems && cartItems.length > 0 && (
+                <span className="absolute top-1 right-1 bg-primary text-background text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(220,248,54,0.6)]">
+                  {cartItems.length}
+                </span>
+              )}
             </Link>
 
             <button
