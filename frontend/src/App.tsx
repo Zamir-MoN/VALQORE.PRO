@@ -46,6 +46,8 @@ const ScrollToTop = () => {
   return null;
 };
 
+import { PullToRefresh } from './components/PullToRefresh';
+
 function App() {
   const [loading, setLoading] = useState(true);
 
@@ -78,7 +80,8 @@ function App() {
         <GameProvider>
           <CartProvider>
             <WishlistProvider>
-              <Router>
+              <PullToRefresh>
+                <Router>
                 <ScrollToTop />
                 <AuthModal />
                 <div className="fixed inset-0 -z-50 pointer-events-none">
@@ -135,6 +138,7 @@ function App() {
                   <ScrollToTop />
                 </div>
               </Router>
+              </PullToRefresh>
             </WishlistProvider>
           </CartProvider>
         </GameProvider>
