@@ -19,27 +19,27 @@ export const Hero = () => {
     const splitTitle = new SplitType(titleRef.current, { types: 'words,chars' });
     const splitSubtitle = new SplitType(subtitleRef.current, { types: 'lines' });
 
-    const tl = gsap.timeline({ delay: 0.5 }); // Delay for loading screen finish
+    const tl = gsap.timeline({ delay: 0.3 }); // Delay for loading screen finish
 
-    // Title characters reveal
+    // Title reveal - smooth, premium fade up
     tl.fromTo(
-      splitTitle.chars,
-      { y: 100, opacity: 0, rotateX: -90 },
-      { y: 0, opacity: 1, rotateX: 0, duration: 1, stagger: 0.02, ease: 'back.out(1.7)' }
+      splitTitle.words,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: 'power3.out' }
     )
     // Subtitle lines reveal
     .fromTo(
       splitSubtitle.lines,
       { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out' },
-      '-=0.5'
+      { y: 0, opacity: 1, duration: 1, stagger: 0.1, ease: 'power3.out' },
+      '-=0.8'
     )
     // Buttons slide up
     .fromTo(
       buttonsRef.current?.children || [],
       { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' },
-      '-=0.4'
+      { y: 0, opacity: 1, duration: 1, stagger: 0.1, ease: 'power3.out' },
+      '-=0.8'
     );
 
     return () => {
