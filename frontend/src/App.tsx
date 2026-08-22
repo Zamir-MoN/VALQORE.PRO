@@ -58,7 +58,6 @@ function App() {
       autoRaf: true,
       duration: 1.0,
       smoothWheel: true,
-      touchMultiplier: 2,
     });
 
     // @ts-expect-error attaching to window for global access
@@ -136,7 +135,6 @@ function App() {
                       </Suspense>
                     </main>
                     <Footer />
-                    <ScrollToTop />
                   </div>
                 )}
               </Router>
