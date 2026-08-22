@@ -16,8 +16,7 @@ export const Hero = () => {
     if (!titleRef.current || !subtitleRef.current) return;
 
     // Split text for animation
-    const splitTitle = new SplitType(titleRef.current, { types: 'words,chars' });
-    const splitSubtitle = new SplitType(subtitleRef.current, { types: 'lines' });
+    const splitTitle = new SplitType(titleRef.current, { types: 'words' });
 
     const tl = gsap.timeline({ delay: 0.3 }); // Delay for loading screen finish
 
@@ -27,11 +26,11 @@ export const Hero = () => {
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, duration: 1.2, stagger: 0.1, ease: 'power3.out' }
     )
-    // Subtitle lines reveal
+    // Subtitle reveal
     .fromTo(
-      splitSubtitle.lines,
+      subtitleRef.current,
       { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, stagger: 0.1, ease: 'power3.out' },
+      { y: 0, opacity: 1, duration: 1, ease: 'power3.out' },
       '-=0.8'
     )
     // Buttons slide up
@@ -44,7 +43,6 @@ export const Hero = () => {
 
     return () => {
       splitTitle.revert();
-      splitSubtitle.revert();
     };
   }, []);
 
