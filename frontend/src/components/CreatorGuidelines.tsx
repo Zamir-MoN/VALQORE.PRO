@@ -254,7 +254,7 @@ export const CreatorGuidelines = () => {
                   : "bg-white/5 text-white/40 cursor-not-allowed border border-white/5"
               )}
             >
-              Continue to Creator Application <ArrowRight size={24} className="flex-shrink-0" />
+              Apply <ArrowRight size={24} className="flex-shrink-0" />
             </button>
           </div>
         </motion.div>
