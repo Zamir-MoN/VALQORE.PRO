@@ -30,6 +30,10 @@ export const BrowseGames = () => {
 
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isDrmOpen, setIsDrmOpen] = useState(true);
+  const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const [activeDrms, setActiveDrms] = useState<string[]>([]);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -62,8 +66,14 @@ export const BrowseGames = () => {
     } else {
       matchesGenre = game.genre.toLowerCase().includes(activeGenre.toLowerCase());
     }
+
+    // Check DRM
+    let matchesDrm = true;
+    if (activeDrms.length > 0) {
+      matchesDrm = activeDrms.some(drm => game.platforms?.map(p => p.toLowerCase()).includes(drm.toLowerCase()));
+    }
     
-    return matchesSearch && matchesGenre;
+    return matchesSearch && matchesGenre && matchesDrm;
   });
 
   const sortedGames = [...filteredGames].sort((a, b) => {
@@ -126,19 +136,64 @@ export const BrowseGames = () => {
             </button>
 
             {isFilterOpen && (
-              <div className="absolute left-0 top-full mt-2 w-full md:w-64 bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden shadow-xl z-50 max-h-80 overflow-y-auto">
-                {GENRES.map((genre) => (
-                  <div
-                    key={genre}
-                    className={`px-4 py-3 text-sm cursor-pointer transition-colors hover:bg-white/5 ${activeGenre === genre ? 'text-primary font-bold bg-white/5' : 'text-text-primary'}`}
-                    onClick={() => {
-                      setActiveGenre(genre);
-                      setIsFilterOpen(false);
-                    }}
+              <div className="absolute left-0 top-full mt-2 w-full md:w-[320px] bg-[#22242a] border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden text-white">
+                
+                {/* DRM Accordion */}
+                <div className="border-b border-white/5">
+                  <button 
+                    onClick={() => setIsDrmOpen(!isDrmOpen)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
                   >
-                    {genre}
-                  </div>
-                ))}
+                    <span className="font-bold tracking-widest text-sm text-white/90">DRM</span>
+                    <ChevronDown size={16} className={`text-white/50 transition-transform duration-300 ${!isDrmOpen ? '-rotate-90' : ''}`} />
+                  </button>
+                  {isDrmOpen && (
+                    <div className="px-5 pb-5 pt-1 flex gap-2">
+                      <button 
+                        onClick={() => setActiveDrms(prev => prev.includes('Steam') ? prev.filter(d => d !== 'Steam') : [...prev, 'Steam'])}
+                        className={`flex-1 py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Steam') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                      >
+                        <span className="font-semibold tracking-wide text-xs">STEAM</span>
+                      </button>
+                      <button 
+                        onClick={() => setActiveDrms(prev => prev.includes('Ubisoft') ? prev.filter(d => d !== 'Ubisoft') : [...prev, 'Ubisoft'])}
+                        className={`flex-1 py-2 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Ubisoft') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                      >
+                        <span className="text-[10px] font-semibold tracking-wide flex flex-col items-center leading-none">
+                          <span className="text-[8px] text-white/40">UBISOFT</span>
+                          CONNECT
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* GENRE Accordion */}
+                <div className="border-b border-white/5">
+                  <button 
+                    onClick={() => setIsGenreOpen(!isGenreOpen)}
+                    className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+                  >
+                    <span className="font-bold tracking-widest text-sm text-white/90">GENRE</span>
+                    <ChevronDown size={16} className={`text-white/50 transition-transform duration-300 ${!isGenreOpen ? '-rotate-90' : ''}`} />
+                  </button>
+                  {isGenreOpen && (
+                    <div className="px-5 pb-5 pt-1 max-h-60 overflow-y-auto">
+                      <div className="flex flex-wrap gap-2">
+                        {GENRES.map((genre) => (
+                          <button
+                            key={genre}
+                            className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${activeGenre === genre ? 'border-primary text-primary bg-primary/10' : 'border-white/10 text-white/70 hover:border-white/30'}`}
+                            onClick={() => setActiveGenre(genre)}
+                          >
+                            {genre}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
           </div>
