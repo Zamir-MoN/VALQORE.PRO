@@ -8,7 +8,39 @@ export const GiveawayGames = () => {
   // Filter games that are marked as giveaways
   const giveawayGamesData = games.filter(game => game.isGiveaway);
 
-  if (loading || giveawayGamesData.length === 0) return null;
+  if (loading) {
+    return (
+      <section className="py-20 px-6 lg:px-12 relative z-10" id="giveaway">
+        <div className="container mx-auto max-w-[1400px]">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4">
+              <h3 className="text-2xl font-bold font-heading">Giveaway Items</h3>
+            </div>
+            <div className="w-24 h-6 bg-white/5 rounded animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-xl overflow-hidden animate-pulse">
+                <div className="w-full aspect-video bg-white/5"></div>
+                <div className="p-6 flex flex-col justify-between flex-1 gap-4">
+                  <div>
+                    <div className="h-6 w-3/4 bg-white/10 rounded mb-2"></div>
+                    <div className="h-4 w-1/2 bg-white/5 rounded mb-4"></div>
+                    <div className="flex gap-2">
+                      <div className="h-5 w-16 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="h-10 w-full bg-white/10 rounded-lg"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (giveawayGamesData.length === 0) return null;
 
   return (
     <section className="py-20 px-6 lg:px-12 relative z-10" id="giveaway">

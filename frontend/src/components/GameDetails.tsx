@@ -38,7 +38,44 @@ export const GameDetails = () => {
     setActiveMedia(hasTrailer ? -1 : 0);
   }, [game?.id, hasTrailer]);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="game-details">
+        <div className="container mx-auto max-w-[1400px] animate-pulse">
+          <div className="flex flex-col gap-6">
+            <div className="w-20 h-6 bg-white/5 rounded"></div>
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 bg-primary rotate-45 flex-shrink-0"></div>
+              <div className="h-8 w-64 bg-white/10 rounded"></div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 flex flex-col gap-8">
+                <div className="w-full aspect-video bg-white/5 rounded-2xl border border-white/5"></div>
+                <div className="flex gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="w-1/4 aspect-video bg-white/5 rounded-xl border border-white/5"></div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="lg:col-span-1 space-y-6">
+                <div className="w-full aspect-[3/4] bg-white/5 rounded-2xl hidden lg:block border border-white/5"></div>
+                <div className="bg-cards/40 p-6 rounded-2xl space-y-4 border border-white/5">
+                  <div className="h-8 w-32 bg-white/10 rounded mb-6"></div>
+                  <div className="h-4 w-full bg-white/5 rounded"></div>
+                  <div className="h-4 w-3/4 bg-white/5 rounded"></div>
+                  <div className="h-4 w-5/6 bg-white/5 rounded"></div>
+                  <div className="h-12 w-full bg-white/10 rounded-xl mt-8"></div>
+                  <div className="h-12 w-full bg-white/10 rounded-xl mt-4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!game) {
     return (

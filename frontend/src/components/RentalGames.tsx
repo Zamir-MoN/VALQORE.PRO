@@ -12,7 +12,45 @@ export const RentalGames = () => {
   // Filter games to only show ones that are rentable and not giveaways
   const rentalGamesData = games.filter(game => game.isRentable && !game.isGiveaway);
 
-  if (loading || rentalGamesData.length === 0) return null;
+  if (loading) {
+    return (
+      <section className="pt-20 pb-4 px-6 lg:px-12 relative z-10" id="rental">
+        <div className="container mx-auto max-w-[1400px]">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4">
+              <h3 className="text-2xl font-bold font-heading">Rental Games</h3>
+            </div>
+            <div className="w-24 h-6 bg-white/5 rounded animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex bg-cards/40 border border-white/5 rounded-xl overflow-hidden animate-pulse h-[160px] sm:h-auto">
+                <div className="w-1/3 min-w-[100px] aspect-[3/4] sm:aspect-square md:aspect-[3/4] bg-white/5"></div>
+                <div className="p-4 sm:p-5 flex flex-col justify-between flex-1">
+                  <div>
+                    <div className="h-6 w-3/4 bg-white/10 rounded mb-2"></div>
+                    <div className="h-4 w-1/2 bg-white/5 rounded mb-4"></div>
+                    <div className="flex gap-2">
+                      <div className="h-5 w-16 bg-white/10 rounded-full"></div>
+                      <div className="h-5 w-16 bg-white/10 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-end mt-4">
+                    <div className="flex flex-col">
+                      <div className="h-4 w-12 bg-white/5 rounded mb-1"></div>
+                      <div className="h-6 w-20 bg-white/10 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (rentalGamesData.length === 0) return null;
 
   const nextSlide = () => {
     setStartIndex((prev) => (prev + 3 >= rentalGamesData.length ? 0 : prev + 3));

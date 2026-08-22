@@ -58,7 +58,7 @@ function App() {
       autoRaf: true,
       duration: 1.0,
       smoothWheel: true,
-      syncTouch: true,
+      touchMultiplier: 2,
     });
 
     // @ts-expect-error attaching to window for global access
