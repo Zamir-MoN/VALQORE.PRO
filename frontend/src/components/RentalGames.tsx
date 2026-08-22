@@ -46,7 +46,7 @@ export const RentalGames = () => {
             <ChevronLeft size={24} />
           </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {visibleGames.map((game) => (
               <Link to={`/game/${game.id}`} key={`rental-${game.id}`} className="group flex bg-cards/40 hover:bg-cards border border-white/5 hover:border-primary/50 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-1 shadow-lg">
                 <div className="w-1/3 min-w-[100px] aspect-[3/4] sm:aspect-square md:aspect-[3/4] overflow-hidden relative">
