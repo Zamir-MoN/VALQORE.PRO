@@ -4,7 +4,7 @@ import { Search, Filter, ChevronDown, ArrowLeft } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { GameCard } from './GameCard';
 
-const GENRES = ['All', 'Action', 'Action RPG', 'Adventure', 'RPG', 'Horror', 'Fighting', 'Racing'];
+const GENRES = ['All', 'Action', 'Action RPG', 'Adventure', 'RPG', 'Horror', 'Fighting', 'Racing', 'Rentals'];
 const SORT_OPTIONS = ['Relevance', 'Price: Low to High', 'Price: High to Low', 'Highest Rated', 'Newest'];
 
 export const BrowseGames = () => {
@@ -49,7 +49,14 @@ export const BrowseGames = () => {
                           game.developer.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Check if the game's genre contains the active genre (case-insensitive)
-    const matchesGenre = activeGenre === 'All' || game.genre.toLowerCase().includes(activeGenre.toLowerCase());
+    let matchesGenre = false;
+    if (activeGenre === 'All') {
+      matchesGenre = true;
+    } else if (activeGenre === 'Rentals') {
+      matchesGenre = !!game.isRentable;
+    } else {
+      matchesGenre = game.genre.toLowerCase().includes(activeGenre.toLowerCase());
+    }
     
     return matchesSearch && matchesGenre;
   });

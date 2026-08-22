@@ -14,6 +14,7 @@ import wishlistRouter from './routes/wishlist';
 import ordersRouter from './routes/orders';
 import couponsRouter from './routes/coupons';
 import postersRouter from './routes/posters';
+import creatorsRouter from './routes/creators';
 import http from 'http';
 import { initSocket } from './socket';
 
@@ -34,6 +35,7 @@ app.use('/api/wishlist', wishlistRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/posters', postersRouter);
+app.use('/api/creators', creatorsRouter);
 
 const PORT = process.env.PORT || 5000;
 

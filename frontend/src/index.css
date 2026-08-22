@@ -20,10 +20,6 @@
   body {
     @apply bg-background text-text-primary font-sans antialiased;
     overflow-x: hidden;
-    background-size: 50px 50px;
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   }
   
   h1, h2, h3, h4, h5, h6 {

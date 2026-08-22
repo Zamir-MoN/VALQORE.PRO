@@ -171,4 +171,105 @@ router.put('/:id/cancel', authMiddleware, async (req: Request, res: Response): P
   }
 });
 
+// Get all orders for admin
+router.get('/admin', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+
+    // Check if user is admin (admin does not have a userId in the payload, only username)
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Access denied. Admins only.' });
+      return;
+    }
+
+    const { search } = req.query;
+
+    let whereClause: any = {};
+
+    if (search && typeof search === 'string') {
+      const searchStr = search.trim();
+      // Check if it's a valid UUID
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      if (uuidRegex.test(searchStr)) {
+        whereClause = { id: searchStr };
+      } else {
+        whereClause = {
+          OR: [
+            { user: { username: { contains: searchStr, mode: 'insensitive' } } },
+            { user: { email: { contains: searchStr, mode: 'insensitive' } } },
+            { items: { some: { game: { title: { contains: searchStr, mode: 'insensitive' } } } } }
+          ]
+        };
+      }
+    }
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true
+          }
+        },
+        items: {
+          include: {
+            game: {
+              select: {
+                id: true,
+                title: true,
+                coverImage: true,
+                price: true,
+                developer: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.error('[GET ADMIN ORDERS ERROR]', error);
+    res.status(500).json({ error: 'Failed to fetch admin orders' });
+  }
+});
+
+// Update order status (Admin)
+router.put('/admin/:id/status', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Access denied. Admins only.' });
+      return;
+    }
+
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await prisma.order.findUnique({
+      where: { id }
+    });
+
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: { status }
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error('[UPDATE ADMIN ORDER STATUS ERROR]', error);
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
 export default router;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, ShoppingCart, Heart, User, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, User, ChevronDown } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -12,7 +12,7 @@ export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const { currency, setCurrency } = useCurrency();
-  const { user, logout, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { cartItems } = useCart();
   
   const currencies: Currency[] = ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD'];
@@ -29,7 +29,6 @@ export const Navbar = () => {
   const handleNavClick = (targetPath: string) => (e: React.MouseEvent) => {
     if (location.pathname === targetPath) {
       e.preventDefault();
-      // @ts-expect-error lenis is attached to window
       if (window.lenis) {
         // @ts-expect-error lenis is attached to window
         window.lenis.scrollTo(0, { duration: 1.2 });
@@ -45,9 +44,14 @@ export const Navbar = () => {
 
   return (
     <>
+      <div className="fixed top-0 left-0 right-0 z-[100] h-8 bg-primary text-background font-bold text-center text-xs sm:text-sm shadow-[0_0_15px_rgba(220,248,54,0.3)] flex justify-center items-center gap-2">
+        <span className="animate-pulse">🚧</span>
+        Valqore.pro is still in Development phase (coming soon)
+        <span className="animate-pulse">🚧</span>
+      </div>
       <nav
         className={clsx(
-          'hidden lg:flex fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 lg:px-12 items-center justify-between',
+          'hidden lg:flex fixed top-8 left-0 right-0 z-50 transition-all duration-500 px-6 lg:px-12 items-center justify-between',
           scrolled ? 'bg-background/60 backdrop-blur-xl py-4 shadow-2xl' : 'bg-gradient-to-b from-background/80 to-transparent py-6'
         )}
       >

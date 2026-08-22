@@ -43,9 +43,7 @@ export const Footer = () => {
             <ul className="space-y-4">
               {[
                 { name: 'Browse Games', url: '/store' },
-                { name: 'New Releases', url: '/store?sort=Newest' },
-                { name: 'Top Sellers', url: '/store?sort=Highest Rated' },
-                { name: 'Special Offers', url: '/store?sort=Price: Low to High' },
+                { name: 'Rental games', url: '/store?sort=Newest' },
                 { name: 'Valqore Exclusives', url: '/store?genre=Action' }
               ].map((link) => (
                 <li key={link.name}>
@@ -61,7 +59,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-heading font-bold text-white mb-6 uppercase tracking-wider text-sm">Support</h4>
             <ul className="space-y-4">
-              {['Help Center', 'Refund Policy', 'Account Settings', 'System Requirements', 'Contact Us'].map((link) => (
+              {['Help Center', 'Refund Policy', 'Contact Us'].map((link) => (
                 <li key={link}>
                   <a href="#" onClick={(e) => e.preventDefault()} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium cursor-default">
                     {link}
@@ -75,11 +73,21 @@ export const Footer = () => {
           <div>
             <h4 className="font-heading font-bold text-white mb-6 uppercase tracking-wider text-sm">Legal</h4>
             <ul className="space-y-4">
-              {['Terms of Service', 'Privacy Policy', 'Cookie Policy', 'EULA', 'Creator Guidelines'].map((link) => (
-                <li key={link}>
-                  <a href="#" onClick={(e) => e.preventDefault()} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium cursor-default">
-                    {link}
-                  </a>
+              {[
+                { name: 'Terms of Service', url: '#' },
+                { name: 'Privacy Policy', url: '#' },
+                { name: 'Creator Guidelines', url: '/creator/guidelines' }
+              ].map((link) => (
+                <li key={link.name}>
+                  {link.url === '#' ? (
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium cursor-default">
+                      {link.name}
+                    </a>
+                  ) : (
+                    <Link to={link.url} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium">
+                      {link.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

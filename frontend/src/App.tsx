@@ -21,6 +21,8 @@ import { Profile } from './components/Profile';
 import { AuthModal } from './components/Auth';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLogin } from './components/AdminLogin';
+import { CreatorGuidelines } from './components/CreatorGuidelines';
+import { CreatorApplication } from './components/CreatorApplication';
 
 import { AuthProvider } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
@@ -125,6 +127,8 @@ function App() {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/admin/login" element={<AdminLogin />} />
                       <Route path="/admin" element={<AdminDashboard />} />
+                      <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
+                      <Route path="/creator/apply" element={<CreatorApplication />} />
                     </Routes>
                   </main>
                   <Footer />
