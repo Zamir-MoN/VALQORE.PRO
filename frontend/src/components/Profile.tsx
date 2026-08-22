@@ -14,7 +14,8 @@ export const Profile = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'settings'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'settings' | 'creator'>('orders');
+  const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -38,6 +39,23 @@ export const Profile = () => {
       fetchOrders();
     }
   }, [user, activeTab]);
+
+  useEffect(() => {
+    if (user && token) {
+      fetchCreatorStatus();
+    }
+  }, [user, token]);
+
+  const fetchCreatorStatus = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/creators/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCreatorStatus(res.data.status);
+    } catch (err) {
+      console.error('Failed to fetch creator status', err);
+    }
+  };
 
   const fetchOrders = async () => {
     setLoadingOrders(true);
@@ -190,6 +208,24 @@ export const Profile = () => {
               </span>
               {activeTab === 'settings' && <ChevronRight size={16} className="hidden md:block opacity-70" />}
             </button>
+
+            {creatorStatus === 'APPROVED' && (
+              <button 
+                onClick={() => setActiveTab('creator')}
+                className={clsx(
+                  "flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group",
+                  activeTab === 'creator' 
+                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_20px_rgba(220,248,54,0.05)]' 
+                    : 'text-text-secondary hover:bg-white/5 hover:text-white border border-transparent'
+                )}
+              >
+                <span className="flex items-center gap-3">
+                  <User size={20} className={activeTab === 'creator' ? 'text-primary' : 'text-text-secondary group-hover:text-white'} /> 
+                  Creator Panel
+                </span>
+                {activeTab === 'creator' && <ChevronRight size={16} className="hidden md:block opacity-70" />}
+              </button>
+            )}
           </div>
 
           {/* Main Content Area */}
@@ -383,6 +419,60 @@ export const Profile = () => {
                     {isChangingPassword ? <><Loader2 size={20} className="animate-spin" /> Updating...</> : 'Update Password'}
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* CREATOR TAB */}
+            {activeTab === 'creator' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl">
+                <div className="mb-8">
+                  <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white flex items-center gap-3 mb-2">
+                    <span className="w-2 h-8 bg-primary rounded-full"></span> Creator Dashboard
+                  </h2>
+                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your creator partnership and track your impact.</p>
+                </div>
+                
+                <div className="bg-cards/40 border border-primary/20 rounded-3xl p-8 relative overflow-hidden group shadow-[0_0_30px_rgba(220,248,54,0.05)]">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] group-hover:bg-primary/20 transition-colors duration-700"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-widest border border-primary/30 mb-6">
+                      <CheckCircle2 size={14} /> Approved Partner
+                    </div>
+                    
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Welcome to the Valqore Creator Program!</h3>
+                    <p className="text-text-secondary mb-10 max-w-2xl leading-relaxed">
+                      We're thrilled to have you on board. This is your dedicated creator space. 
+                      Soon, you'll be able to access promotional assets, track your referrals, and manage your exclusive creator giveaways directly from here.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      <div className="bg-background/80 border border-white/5 rounded-2xl p-6 hover:border-primary/30 transition-colors group/card">
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover/card:bg-primary/10 transition-colors">
+                           <User size={20} className="text-white group-hover/card:text-primary transition-colors" />
+                        </div>
+                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Status</p>
+                        <p className="text-white font-black text-lg">Active</p>
+                      </div>
+                      
+                      <div className="bg-background/80 border border-white/5 rounded-2xl p-6 hover:border-primary/30 transition-colors group/card">
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover/card:bg-primary/10 transition-colors">
+                           <ShoppingBag size={20} className="text-white group-hover/card:text-primary transition-colors" />
+                        </div>
+                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Referrals</p>
+                        <p className="text-white font-black text-lg">Coming Soon</p>
+                      </div>
+
+                      <div className="bg-background/80 border border-white/5 rounded-2xl p-6 hover:border-primary/30 transition-colors group/card">
+                        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover/card:bg-primary/10 transition-colors">
+                           <Calendar size={20} className="text-white group-hover/card:text-primary transition-colors" />
+                        </div>
+                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Joined</p>
+                        <p className="text-white font-black text-lg">Today</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
