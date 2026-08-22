@@ -1417,7 +1417,7 @@ export const AdminDashboard = () => {
       {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+          <div data-lenis-prevent="true" className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
             <button 
               onClick={() => { setSelectedOrder(null); setIsCopied(false); }}
               className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
@@ -1531,7 +1531,7 @@ export const AdminDashboard = () => {
       {/* Creator Request Details Modal */}
       {selectedCreatorRequest && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
+          <div data-lenis-prevent="true" className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
             <button 
               onClick={() => setSelectedCreatorRequest(null)}
               className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
