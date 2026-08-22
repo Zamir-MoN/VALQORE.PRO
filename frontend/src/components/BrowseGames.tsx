@@ -143,7 +143,7 @@ export const BrowseGames = () => {
           </div>
 
           {isFilterOpen && (
-            <div className="w-full bg-[#22242a] border border-white/10 rounded-lg shadow-2xl overflow-hidden text-white flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/5 animate-slide-down">
+            <div className="w-full bg-cards border border-white/10 rounded-lg shadow-2xl overflow-hidden text-white flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/5 animate-slide-down">
               
               {/* Platform Section */}
               <div className="flex-1 p-5">
