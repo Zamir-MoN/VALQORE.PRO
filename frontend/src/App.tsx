@@ -70,10 +70,6 @@ function App() {
     };
   }, []);
 
-  if (loading) {
-    return <LoadingScreen onComplete={() => setLoading(false)} />;
-  }
-
   return (
     <AuthProvider>
       <CurrencyProvider>
@@ -82,6 +78,7 @@ function App() {
             <WishlistProvider>
               <PullToRefresh>
                 <Router>
+                {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
                 <ScrollToTop />
                 <AuthModal />
                 <div className="fixed inset-0 -z-50 pointer-events-none">
@@ -98,45 +95,47 @@ function App() {
                   <div className="absolute inset-0 bg-background/60"></div>
                 </div>
                 
-                <div className="min-h-screen text-text-primary flex flex-col font-body relative z-0">
-                  <Toaster 
-                    position="top-center"
-                    toastOptions={{
-                      className: 'glass text-white font-bold',
-                      style: {
-                        background: 'rgba(25, 25, 25, 0.9)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                      },
-                    }}
-                  />
-                  <Navbar />
-                  <main className="flex-grow">
-                    <Routes>
-                      <Route path="/" element={
-                        <>
-                          <Hero />
-                          <TrendingGames />
-                          <RentalGames />
-                          <GiveawayGames />
-                          <Testimonials />
-                          <FAQ />
-                          <Newsletter />
-                        </>
-                      } />
-                      <Route path="/store" element={<BrowseGames />} />
-                      <Route path="/game/:id" element={<GameDetails />} />
-                      <Route path="/cart" element={<Cart />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/admin/login" element={<AdminLogin />} />
-                      <Route path="/admin" element={<AdminDashboard />} />
-                      <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
-                      <Route path="/creator/apply" element={<CreatorApplication />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                  <ScrollToTop />
-                </div>
+                {!loading && (
+                  <div className="min-h-screen text-text-primary flex flex-col font-body relative z-0 animate-in fade-in duration-700">
+                    <Toaster 
+                      position="top-center"
+                      toastOptions={{
+                        className: 'glass text-white font-bold',
+                        style: {
+                          background: 'rgba(25, 25, 25, 0.9)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                        },
+                      }}
+                    />
+                    <Navbar />
+                    <main className="flex-grow">
+                      <Routes>
+                        <Route path="/" element={
+                          <>
+                            <Hero />
+                            <TrendingGames />
+                            <RentalGames />
+                            <GiveawayGames />
+                            <Testimonials />
+                            <FAQ />
+                            <Newsletter />
+                          </>
+                        } />
+                        <Route path="/store" element={<BrowseGames />} />
+                        <Route path="/game/:id" element={<GameDetails />} />
+                        <Route path="/cart" element={<Cart />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/admin/login" element={<AdminLogin />} />
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
+                        <Route path="/creator/apply" element={<CreatorApplication />} />
+                      </Routes>
+                    </main>
+                    <Footer />
+                    <ScrollToTop />
+                  </div>
+                )}
               </Router>
               </PullToRefresh>
             </WishlistProvider>
