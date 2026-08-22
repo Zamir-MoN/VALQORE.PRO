@@ -4,7 +4,7 @@ import gsap from 'gsap';
 export const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [displayText, setDisplayText] = useState("");
-  const fullText = "VALQORE.PRO";
+  const fullText = "VALQORE";
 
   useEffect(() => {
     const tl = gsap.timeline({
