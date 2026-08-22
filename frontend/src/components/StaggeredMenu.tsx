@@ -419,16 +419,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header absolute top-8 left-0 w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-6 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-20"
+          className="staggered-menu-header absolute top-8 left-0 w-full flex items-center justify-between px-3 sm:px-6 py-4 sm:py-6 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-20"
           aria-label="Main navigation header"
         >
-          <div className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Logo">
-            <Link to="/" onClick={closeMenu} className="text-xl sm:text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300">
+          <div className="sm-logo flex items-center select-none pointer-events-auto shrink-0" aria-label="Logo">
+            <Link to="/" onClick={closeMenu} className="text-lg sm:text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300">
               VALQORE.PRO
             </Link>
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
             <Link to="/cart" onClick={closeMenu} className="p-2 rounded-full text-text-secondary hover:text-white transition-all duration-300 group relative block pointer-events-auto">
               <ShoppingCart size={20} className={open ? 'text-white' : ''} />
               {cartItems && cartItems.length > 0 && (
