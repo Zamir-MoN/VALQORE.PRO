@@ -158,7 +158,7 @@ export const Navbar = () => {
             { label: 'Support', ariaLabel: 'Get help', link: '/#support' },
             ...(user 
               ? [{ label: 'Profile', ariaLabel: 'Go to your profile', link: '/profile' }]
-              : [{ label: 'Login', ariaLabel: 'Sign in to account', link: '/auth' }])
+              : [{ label: 'Login', ariaLabel: 'Sign in to account', link: '#', onClick: openAuthModal }])
           ]}
           socialItems={[
             { label: 'Discord', link: '#' },

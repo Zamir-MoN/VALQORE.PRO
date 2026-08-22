@@ -8,6 +8,7 @@ export interface StaggeredMenuItem {
   label: string;
   ariaLabel: string;
   link: string;
+  onClick?: () => void;
 }
 export interface StaggeredMenuSocialItem {
   label: string;
@@ -500,7 +501,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     <Link
                       className="sm-panel-item relative text-white font-heading font-black text-[3rem] sm:text-[4rem] cursor-pointer leading-[1.1] tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em] hover:drop-shadow-[0_0_10px_rgba(220,248,54,0.4)]"
                       to={it.link}
-                      onClick={closeMenu}
+                      onClick={(e) => {
+                        if (it.onClick) {
+                          e.preventDefault();
+                          it.onClick();
+                        }
+                        closeMenu();
+                      }}
                       aria-label={it.ariaLabel}
                       data-index={idx + 1}
                     >
