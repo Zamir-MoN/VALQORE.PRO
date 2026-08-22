@@ -52,6 +52,11 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
       if (totalAmount < 0) totalAmount = 0;
     }
 
+    let commissionEarned = null;
+    if (validCoupon && validCoupon.commissionRate) {
+      commissionEarned = (totalAmount * validCoupon.commissionRate) / 100;
+    }
+
     // 3. Create the order and order items in a transaction, and clear cart
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
@@ -59,6 +64,9 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
           userId: userPayload.userId,
           totalAmount,
           status: 'PENDING',
+          couponCode: validCoupon ? validCoupon.code : null,
+          couponDiscount: validCoupon ? validCoupon.discount : null,
+          commissionEarned: commissionEarned,
           items: {
             create: cartItems.map(item => ({
               gameId: item.gameId,

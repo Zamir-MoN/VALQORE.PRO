@@ -19,7 +19,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // Create a new coupon
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { code, discount, createdBy, usageLimit } = req.body;
+    const { code, discount, createdBy, usageLimit, creatorId, commissionRate } = req.body;
     
     if (!code || !discount || !createdBy) {
       return res.status(400).json({ error: 'Code, discount, and creator are required' });
@@ -35,7 +35,9 @@ router.post('/', authMiddleware, async (req, res) => {
         code: code.toUpperCase(),
         discount: parseFloat(discount),
         createdBy,
-        usageLimit: usageLimit ? parseInt(usageLimit, 10) : null
+        usageLimit: creatorId ? null : (usageLimit ? parseInt(usageLimit, 10) : null),
+        creatorId: creatorId || null,
+        commissionRate: commissionRate ? parseFloat(commissionRate) : null
       }
     });
     

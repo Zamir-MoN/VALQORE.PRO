@@ -33,6 +33,49 @@ router.get('/status', authMiddleware, async (req: Request, res: Response): Promi
   }
 });
 
+// Get creator stats (for approved creators)
+router.get('/stats', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+    
+    if (!userPayload.userId) {
+      res.status(403).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    // Find the coupon assigned to this creator
+    const coupon = await prisma.coupon.findFirst({
+      where: { creatorId: userPayload.userId }
+    });
+
+    if (!coupon) {
+      res.json({ couponCode: null, totalUses: 0, totalVCredit: 0 });
+      return;
+    }
+
+    // Fetch all completed orders that used this coupon
+    const completedOrders = await prisma.order.findMany({
+      where: {
+        couponCode: coupon.code,
+        status: 'COMPLETED'
+      }
+    });
+
+    const totalUses = completedOrders.length;
+    const totalVCredit = completedOrders.reduce((sum, order) => sum + (order.commissionEarned || 0), 0);
+
+    res.json({
+      couponCode: coupon.code,
+      totalUses,
+      totalVCredit,
+      commissionRate: coupon.commissionRate
+    });
+  } catch (error) {
+    console.error('[CREATOR STATS ERROR]', error);
+    res.status(500).json({ error: 'An error occurred while fetching creator stats' });
+  }
+});
+
 // Submit a new creator application
 router.post('/apply', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {

@@ -16,6 +16,7 @@ export const Profile = () => {
 
   const [activeTab, setActiveTab] = useState<'orders' | 'settings' | 'creator'>('orders');
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
+  const [creatorStats, setCreatorStats] = useState<any>(null);
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -52,6 +53,13 @@ export const Profile = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCreatorStatus(res.data.status);
+      
+      if (res.data.status === 'APPROVED') {
+        const statsRes = await axios.get(`${API_URL}/creators/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCreatorStats(statsRes.data);
+      }
     } catch (err) {
       console.error('Failed to fetch creator status', err);
     }
@@ -443,7 +451,7 @@ export const Profile = () => {
                     <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Welcome to the Valqore Creator Program!</h3>
                     <p className="text-text-secondary mb-10 max-w-2xl leading-relaxed">
                       We're thrilled to have you on board. This is your dedicated creator space. 
-                      Soon, you'll be able to access promotional assets, track your referrals, and manage your exclusive creator giveaways directly from here.
+                      Share your unique creator coupon code with your audience and earn V Credits (commission) on every completed order!
                     </p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -451,24 +459,24 @@ export const Profile = () => {
                         <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover/card:bg-primary/10 transition-colors">
                            <User size={20} className="text-white group-hover/card:text-primary transition-colors" />
                         </div>
-                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Status</p>
-                        <p className="text-white font-black text-lg">Active</p>
+                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Your Coupon</p>
+                        <p className="text-white font-black text-lg">{creatorStats?.couponCode || 'Pending Assignment'}</p>
                       </div>
                       
                       <div className="bg-background/80 border border-white/5 rounded-2xl p-6 hover:border-primary/30 transition-colors group/card">
                         <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover/card:bg-primary/10 transition-colors">
                            <ShoppingBag size={20} className="text-white group-hover/card:text-primary transition-colors" />
                         </div>
-                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Referrals</p>
-                        <p className="text-white font-black text-lg">Coming Soon</p>
+                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Redemptions</p>
+                        <p className="text-white font-black text-lg">{creatorStats?.totalUses || 0}</p>
                       </div>
 
                       <div className="bg-background/80 border border-white/5 rounded-2xl p-6 hover:border-primary/30 transition-colors group/card">
                         <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover/card:bg-primary/10 transition-colors">
                            <Calendar size={20} className="text-white group-hover/card:text-primary transition-colors" />
                         </div>
-                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Joined</p>
-                        <p className="text-white font-black text-lg">Today</p>
+                        <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">V Credit Earned</p>
+                        <p className="text-primary font-black text-lg">{formatPrice(creatorStats?.totalVCredit || 0)}</p>
                       </div>
                     </div>
                   </div>

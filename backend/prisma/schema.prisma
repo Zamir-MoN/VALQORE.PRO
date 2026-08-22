@@ -53,6 +53,7 @@ model User {
   wishlistItems WishlistItem[]
   orders        Order[]
   creatorApplications CreatorApplication[]
+  creatorCoupons      Coupon[]             @relation("CreatorCoupons")
 }
 
 model CartItem {
@@ -84,6 +85,9 @@ model Order {
   userId      String
   status      String      @default("PENDING") // PENDING, COMPLETED, CANCELLED
   totalAmount Float
+  couponCode       String?
+  couponDiscount   Float?
+  commissionEarned Float?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -108,10 +112,14 @@ model Coupon {
   discount    Float
   createdBy   String
   usageLimit  Int?
-  usageCount  Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  usageCount      Int      @default(0)
+  isActive        Boolean  @default(true)
+  creatorId       String?
+  commissionRate  Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  creator         User?    @relation("CreatorCoupons", fields: [creatorId], references: [id], onDelete: SetNull)
 }
 
 model Poster {

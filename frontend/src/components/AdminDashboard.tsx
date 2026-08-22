@@ -31,7 +31,7 @@ export const AdminDashboard = () => {
 
   // Coupon state
   const [coupons, setCoupons] = useState<any[]>([]);
-  const [couponFormData, setCouponFormData] = useState({ code: '', discount: '', createdBy: 'Sagar', usageLimit: '' });
+  const [couponFormData, setCouponFormData] = useState({ code: '', discount: '', createdBy: 'Sagar', usageLimit: '', creatorId: '', commissionRate: '' });
   const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
 
   // Poster state
@@ -203,7 +203,7 @@ export const AdminDashboard = () => {
     try {
       await axios.post(`${API_URL}/coupons`, couponFormData, { headers: { 'Authorization': `Bearer ${token}` } });
       toast.success('Coupon created successfully');
-      setCouponFormData({ ...couponFormData, code: '', discount: '', usageLimit: '' });
+      setCouponFormData({ ...couponFormData, code: '', discount: '', usageLimit: '', creatorId: '', commissionRate: '' });
       fetchCoupons();
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to create coupon');
@@ -1188,57 +1188,100 @@ export const AdminDashboard = () => {
             <div className="w-full mt-6">
               <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
                 <h3 className="text-2xl font-bold mb-6 text-white font-heading">Create New Coupon</h3>
-                <form onSubmit={handleCouponSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
-                  <div className="flex flex-col gap-2 w-full flex-1">
-                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Admin</label>
-                    <select 
-                      value={couponFormData.createdBy} 
-                      onChange={(e) => setCouponFormData({ ...couponFormData, createdBy: e.target.value })}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
-                    >
-                      <option value="Sagar">Sagar</option>
-                      <option value="Zamir">Zamir</option>
-                    </select>
+                <form onSubmit={handleCouponSubmit} className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex flex-col gap-2 w-full flex-1">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Admin</label>
+                      <select 
+                        value={couponFormData.createdBy} 
+                        onChange={(e) => setCouponFormData({ ...couponFormData, createdBy: e.target.value })}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                      >
+                        <option value="Sagar">Sagar</option>
+                        <option value="Zamir">Zamir</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2 w-full flex-1">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Assign Creator</label>
+                      <select 
+                        value={couponFormData.creatorId} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCouponFormData({ 
+                            ...couponFormData, 
+                            creatorId: val,
+                            usageLimit: val ? '' : couponFormData.usageLimit,
+                            commissionRate: val ? couponFormData.commissionRate : ''
+                          });
+                        }}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                      >
+                        <option value="">None (Standard Coupon)</option>
+                        {creatorRequests.filter(req => req.status === 'APPROVED').map(req => (
+                          <option key={req.userId} value={req.userId}>{req.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {couponFormData.creatorId && (
+                      <div className="flex flex-col gap-2 w-full flex-1">
+                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Commission (%)</label>
+                        <select 
+                          value={couponFormData.commissionRate} 
+                          onChange={(e) => setCouponFormData({ ...couponFormData, commissionRate: e.target.value })}
+                          className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                          required={!!couponFormData.creatorId}
+                        >
+                          <option value="">Select Rate</option>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(rate => (
+                            <option key={rate} value={rate}>{rate}%</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex flex-col gap-2 w-full flex-1">
-                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Coupon Code</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="e.g. SAGAR-20"
-                      value={couponFormData.code} 
-                      onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none uppercase"
-                    />
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 items-end mt-2">
+                    <div className="flex flex-col gap-2 w-full flex-1">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Coupon Code</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="e.g. SAGAR-20"
+                        value={couponFormData.code} 
+                        onChange={(e) => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none uppercase"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 w-full flex-1">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Discount Amount (₹)</label>
+                      <input 
+                        type="number" 
+                        required
+                        step="1"
+                        min="1"
+                        placeholder="e.g. 20"
+                        value={couponFormData.discount} 
+                        onChange={(e) => setCouponFormData({ ...couponFormData, discount: e.target.value })}
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 w-full flex-1">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Usage Limit</label>
+                      <input 
+                        type="number" 
+                        min="1"
+                        step="1"
+                        disabled={!!couponFormData.creatorId}
+                        placeholder={couponFormData.creatorId ? "No Limit (Creator)" : "e.g. 5 (or blank for unlmtd)"}
+                        value={couponFormData.creatorId ? '' : couponFormData.usageLimit} 
+                        onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: e.target.value })}
+                        className={`border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none ${couponFormData.creatorId ? 'bg-black/50 opacity-50 cursor-not-allowed' : 'bg-cards'}`}
+                      />
+                    </div>
+                    <button type="submit" className="w-full sm:w-auto bg-[#FF00F0] hover:bg-[#FF00F0]/80 text-white font-bold py-3 px-6 rounded-lg transition-colors h-[50px] shadow-[0_0_15px_rgba(255,0,240,0.3)]">
+                      Create Coupon
+                    </button>
                   </div>
-                  <div className="flex flex-col gap-2 w-full flex-1">
-                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Discount Amount (₹)</label>
-                    <input 
-                      type="number" 
-                      required
-                      step="1"
-                      min="1"
-                      placeholder="e.g. 20"
-                      value={couponFormData.discount} 
-                      onChange={(e) => setCouponFormData({ ...couponFormData, discount: e.target.value })}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 w-full flex-1">
-                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Usage Limit</label>
-                    <input 
-                      type="number" 
-                      min="1"
-                      step="1"
-                      placeholder="e.g. 5 (or blank for unlmtd)"
-                      value={couponFormData.usageLimit} 
-                      onChange={(e) => setCouponFormData({ ...couponFormData, usageLimit: e.target.value })}
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#FF00F0] outline-none"
-                    />
-                  </div>
-                  <button type="submit" className="w-full sm:w-auto bg-[#FF00F0] hover:bg-[#FF00F0]/80 text-white font-bold py-3 px-6 rounded-lg transition-colors h-[50px] shadow-[0_0_15px_rgba(255,0,240,0.3)]">
-                    Create Coupon
-                  </button>
                 </form>
               </div>
 
