@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle2, ShieldAlert, ArrowRight, ShieldCheck, Gamepad2, Megaphone } from 'lucide-react';
+import { 
+  CheckCircle2, ArrowRight, 
+  Gamepad2, Megaphone, Coins, Unlock, CheckSquare, AlertTriangle, Rocket 
+} from 'lucide-react';
 import clsx from 'clsx';
 
 export const CreatorGuidelines = () => {
@@ -17,7 +20,7 @@ export const CreatorGuidelines = () => {
     }
     
     if (!user) {
-      toast('Please log in to apply.', { icon: 'ðŸ”’' });
+      toast('Please log in to apply.', { icon: 'dY"'' });
       openAuthModal();
       return;
     }
@@ -45,56 +48,114 @@ export const CreatorGuidelines = () => {
           <div className="space-y-12">
             
             <section>
-              <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
-                <Gamepad2 className="text-primary" /> What is a Valqore Creator?
+              <h2 className="text-2xl font-heading font-bold text-white mb-4">
+                Collaborate with Valqore
               </h2>
               <p className="text-text-secondary leading-relaxed mb-4">
-                A Valqore Creator is an ambassador for our platform. You are a content creator, streamer, or community leader who loves gaming and wants to share the best premium titles with your audience. Valqore Creators gain access to exclusive perks, revenue sharing, and early access to upcoming features.
+                Are you a content creator, streamer, or gaming influencer? Partner with Valqore to access games for your content while helping your audience discover great gaming deals.
+              </p>
+              <p className="text-text-secondary leading-relaxed font-bold text-white">
+                Our Creator Program is designed to be simple, transparent, and rewarding.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
-                <ShieldCheck className="text-primary" /> Expected Behavior
+                <span className="animate-pulse"><Gamepad2 className="text-primary" /></span> 1. Get a Game for Your Content
               </h2>
               <ul className="space-y-3 text-text-secondary list-disc pl-5">
-                <li>Maintain a positive, inclusive environment in your community.</li>
-                <li>Accurately represent Valqore products and services.</li>
-                <li>Respect intellectual property rights and only share content you own or have permission to use.</li>
-                <li>Adhere to all applicable laws and platform-specific terms of service (e.g., Twitch, YouTube guidelines).</li>
+                <li><strong className="text-white">Approved creators</strong> can receive one game at a time for creating a YouTube video or livestream.</li>
+                <li>The provided game is intended specifically for <strong className="text-white">promotional content</strong> and remains available to you for the duration of the collaboration.</li>
+                <li>Once the agreed promotional content is completed, access to the promotional game may be revoked.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
-                <Megaphone className="text-primary" /> Promotion Expectations & Authenticity
+                <span className="animate-pulse"><Megaphone className="text-primary" /></span> 2. Promote Valqore in Your Content
               </h2>
               <p className="text-text-secondary leading-relaxed mb-4">
-                We value authenticity. When promoting Valqore, clearly disclose your relationship with us in accordance with FTC guidelines (or your local equivalent). Never use deceptive marketing practices, botting, or spam to artificially inflate your metrics or referral counts.
+                Creators must promote Valqore during the video or livestream in the following ways:
+              </p>
+              <ul className="space-y-3 text-text-secondary list-disc pl-5">
+                <li><strong className="text-white">On-screen / Stream Overlay</strong> — Display the Valqore promotion or required branding during the content.</li>
+                <li><strong className="text-white">Video Description</strong> — Include the provided Valqore link and promotional information in the description.</li>
+                <li><strong className="text-white">Verbal Promotion</strong> — Mention Valqore naturally during the video or livestream.</li>
+                <li><strong className="text-white">Promo Code</strong> — Share your unique Valqore creator promo code with your audience.</li>
+              </ul>
+              <p className="text-text-secondary text-sm mt-4 italic">
+                *The promotional requirements may vary depending on the specific collaboration.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
-                <ShieldAlert className="text-error" /> Prohibited Behavior
+                <span className="animate-pulse"><Coins className="text-primary" /></span> 3. Earn Credits Through Your Audience
+              </h2>
+              <ul className="space-y-3 text-text-secondary list-disc pl-5">
+                <li>Every approved creator receives a <strong className="text-white">unique promo code</strong>.</li>
+                <li>When someone uses your promo code and successfully purchases a game from Valqore, you <strong className="text-white">earn Creator Credits</strong>.</li>
+                <li>Your credits can accumulate over time and may be redeemed for eligible rewards.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
+                <span className="animate-pulse"><Unlock className="text-primary" /></span> 4. Unlock Permanent Game Bundles
+              </h2>
+              <ul className="space-y-3 text-text-secondary list-disc pl-5">
+                <li>As you earn more Creator Credits, you can work toward unlocking a <strong className="text-white">Permanent Game Bundle</strong>.</li>
+                <li>Once you reach the required credit threshold, you can redeem your accumulated credits for an eligible bundle and <strong className="text-white">keep those games permanently</strong>, subject to the applicable redemption terms.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
+                <span className="animate-pulse"><CheckSquare className="text-primary" /></span> 5. Creator Responsibilities
+              </h2>
+              <p className="text-text-secondary leading-relaxed mb-4">
+                To remain part of the Creator Program, creators are expected to:
+              </p>
+              <ul className="space-y-3 text-text-secondary list-disc pl-5">
+                <li><strong className="text-white">Create genuine gaming content</strong> featuring the provided game.</li>
+                <li>Follow the agreed <strong className="text-white">promotional requirements</strong>.</li>
+                <li>Clearly display and mention Valqore as required.</li>
+                <li>Use their assigned promo code when promoting Valqore.</li>
+                <li><strong className="text-white">Avoid misleading claims</strong> about Valqore, its products, or pricing.</li>
+                <li><strong className="text-white">Not share, resell, transfer, or distribute</strong> promotional game access.</li>
+                <li>Follow applicable platform rules and advertising/disclosure requirements.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-heading font-bold text-white mb-4 flex items-center gap-3">
+                <span className="animate-pulse"><AlertTriangle className="text-error" /></span> 6. Important Conditions
               </h2>
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
-                <p className="text-red-200 mb-4 font-bold">Engaging in any of the following will result in immediate termination from the program:</p>
-                <ul className="space-y-2 text-red-200/80 list-disc pl-5">
-                  <li>Hate speech, harassment, or bullying.</li>
-                  <li>Promoting illegal activities, piracy, or unauthorized game key reselling.</li>
-                  <li>Purchasing fake followers, views, or engagement.</li>
-                  <li>Misusing Valqore branding or passing yourself off as an official Valqore employee.</li>
+                <ul className="space-y-3 text-red-200/80 list-disc pl-5">
+                  <li>Promotional game access is <strong className="text-red-100">temporary</strong> unless otherwise stated.</li>
+                  <li>Games provided for promotional purposes may be <strong className="text-red-100">revoked</strong> after the collaboration or promotional period ends.</li>
+                  <li>Creator Credits are earned only from <strong className="text-red-100">eligible, completed purchases</strong> made using the creator's promo code.</li>
+                  <li>Credits may not be transferable, sold, or exchanged for cash unless explicitly stated.</li>
+                  <li>Valqore reserves the right to review transactions and <strong className="text-red-100">remove credits</strong> associated with fraudulent, refunded, cancelled, or abusive purchases.</li>
+                  <li>Failure to follow the Creator Guidelines may result in <strong className="text-red-100">suspension or removal</strong> from the Creator Program.</li>
+                  <li>Specific campaigns may have additional requirements communicated to the creator before participation.</li>
                 </ul>
               </div>
             </section>
-            
-            <section>
-              <h2 className="text-xl font-heading font-bold text-white mb-3">Application Review</h2>
-              <p className="text-text-secondary leading-relaxed">
-                Valqore reserves the right to review, accept, or reject any application at our sole discretion. Meeting the minimum requirements does not guarantee acceptance into the program.
+
+            <section className="bg-primary/10 border border-primary/20 rounded-xl p-8 text-center mt-12 shadow-[0_0_30px_rgba(220,248,54,0.1)]">
+              <h2 className="text-3xl font-heading font-black text-white mb-4 flex items-center justify-center gap-3">
+                <span className="animate-bounce"><Rocket className="text-primary w-8 h-8" /></span> Ready to Collaborate?
+              </h2>
+              <p className="text-xl text-primary font-bold mb-4 uppercase tracking-wider">
+                Create. Promote. Earn.
+              </p>
+              <p className="text-text-secondary leading-relaxed max-w-2xl mx-auto">
+                Join the Valqore Creator Program and turn your gaming audience into rewards while helping gamers discover their next game.
               </p>
             </section>
+
           </div>
         </div>
 
