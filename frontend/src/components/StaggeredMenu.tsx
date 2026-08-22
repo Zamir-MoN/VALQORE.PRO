@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
@@ -76,6 +76,15 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const busyRef = useRef(false);
 
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -420,7 +429,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header absolute top-8 left-0 w-full flex items-center justify-between px-3 sm:px-6 py-4 sm:py-6 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-20"
+          className={`staggered-menu-header absolute top-8 left-0 w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-6 transition-all duration-500 pointer-events-none z-20 ${
+            scrolled ? 'bg-background/60 backdrop-blur-xl shadow-2xl' : 'bg-gradient-to-b from-background/80 to-transparent'
+          }`}
           aria-label="Main navigation header"
         >
           <div className="sm-logo flex items-center select-none pointer-events-auto shrink-0" aria-label="Logo">
