@@ -118,7 +118,7 @@ export const BrowseGames = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-8" ref={filterRef}>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow max-w-2xl">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={20} />
@@ -130,7 +130,7 @@ export const BrowseGames = () => {
                 className="w-full bg-cards/50 border border-white/10 text-white rounded-lg py-3.5 pl-12 pr-4 outline-none focus:border-primary/50 transition-colors"
               />
             </div>
-            <div ref={filterRef}>
+            <div>
               <button 
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className="flex items-center gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-sm font-semibold px-6 py-3.5 rounded-lg transition-colors w-full md:w-auto justify-center"
