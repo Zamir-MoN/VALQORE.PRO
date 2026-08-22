@@ -387,7 +387,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   return (
     <div
-      className={`sm-scope z-[60] pointer-events-none ${isFixed ? 'fixed top-0 left-0 w-screen h-screen overflow-hidden' : 'w-full h-full'}`}
+      className={`sm-scope z-[60] pointer-events-none ${isFixed ? 'fixed top-0 left-0 w-screen h-[100dvh] overflow-hidden' : 'w-full h-full'}`}
     >
       <div
         className={
@@ -594,7 +594,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 .sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
 .sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: "0" counter(smItem, decimal); position: absolute; top: 0.4em; right: 1em; font-size: 16px; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: var(--sm-accent, #dcf836); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
 @media (max-width: 1024px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .sm-prelayers { width: 100%; } }
-@media (max-width: 640px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; padding-top: 7em; } .sm-scope .sm-prelayers { width: 100%; } }
+@media (max-width: 640px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; padding-top: 7em; padding-bottom: 6em; } .sm-scope .sm-prelayers { width: 100%; } }
       `}</style>
     </div>
   );
