@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters'>('games');
+  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -22,6 +22,12 @@ export const AdminDashboard = () => {
   const [gameToDelete, setGameToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
+
+  // Order state
+  const [adminOrders, setAdminOrders] = useState<any[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Coupon state
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -32,6 +38,11 @@ export const AdminDashboard = () => {
   const [posters, setPosters] = useState<any[]>([]);
   const [posterImageUrl, setPosterImageUrl] = useState('');
   const [posterToDelete, setPosterToDelete] = useState<string | null>(null);
+
+  // Creator Requests state
+  const [creatorRequests, setCreatorRequests] = useState<any[]>([]);
+  const [loadingCreatorRequests, setLoadingCreatorRequests] = useState(false);
+  const [selectedCreatorRequest, setSelectedCreatorRequest] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -87,6 +98,15 @@ export const AdminDashboard = () => {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (activeTab === 'orders' && token) {
+      fetchAdminOrders(searchQuery);
+    }
+    if (activeTab === 'creator_requests' && token) {
+      fetchCreatorRequests();
+    }
+  }, [activeTab]);
+
   if (!token) {
     return <Navigate to="/admin/login" replace />;
   }
@@ -117,6 +137,64 @@ export const AdminDashboard = () => {
       setPosters(res.data);
     } catch (err) {
       console.error('Failed to fetch posters', err);
+    }
+  };
+
+  const fetchAdminOrders = async (search: string = '') => {
+    setLoadingOrders(true);
+    try {
+      const res = await axios.get(`${API_URL}/orders/admin${search ? `?search=${encodeURIComponent(search)}` : ''}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setAdminOrders(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch orders');
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const fetchCreatorRequests = async () => {
+    setLoadingCreatorRequests(true);
+    try {
+      const res = await axios.get(`${API_URL}/creators/admin/applications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setCreatorRequests(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch creator requests');
+    } finally {
+      setLoadingCreatorRequests(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      await axios.put(`${API_URL}/orders/admin/${orderId}/status`, { status }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success(`Order marked as ${status}`);
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status });
+      }
+      setAdminOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+    } catch (err) {
+      toast.error('Failed to update order status');
+    }
+  };
+
+  const updateCreatorRequestStatus = async (requestId: string, status: 'APPROVED' | 'REJECTED') => {
+    try {
+      await axios.put(`${API_URL}/creators/admin/${requestId}/status`, { status }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success(`Application marked as ${status}`);
+      if (selectedCreatorRequest && selectedCreatorRequest.id === requestId) {
+        setSelectedCreatorRequest({ ...selectedCreatorRequest, status });
+      }
+      setCreatorRequests(prev => prev.map(r => r.id === requestId ? { ...r, status } : r));
+    } catch (err) {
+      toast.error('Failed to update creator request status');
     }
   };
 
@@ -855,31 +933,43 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Premium Tab Navigation & Actions */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 bg-white/[0.02] border border-white/5 p-2 rounded-2xl backdrop-blur-md shadow-xl">
-            <div className="flex gap-2 p-1 bg-black/40 rounded-xl overflow-x-auto w-full lg:w-auto">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10 bg-white/[0.02] border border-white/5 p-2 rounded-2xl backdrop-blur-md shadow-xl overflow-hidden">
+            <div className="flex gap-2 p-1 bg-black/40 rounded-xl overflow-x-auto w-full xl:w-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <button 
                 onClick={() => setActiveTab('games')}
-                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
               >
                 <Gamepad2 size={20} /> Games
               </button>
               <button 
                 onClick={() => setActiveTab('giveaways')}
-                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
               >
                 <Gift size={20} /> Giveaways
               </button>
               <button 
                 onClick={() => setActiveTab('coupons')}
-                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'coupons' ? 'bg-[#FF00F0] text-white shadow-[0_0_20px_rgba(255,0,240,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'coupons' ? 'bg-[#FF00F0] text-white shadow-[0_0_20px_rgba(255,0,240,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
               >
                 <Ticket size={20} /> Coupons
               </button>
               <button 
                 onClick={() => setActiveTab('posters')}
-                className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-lg font-bold transition-all duration-300 min-w-[160px] ${activeTab === 'posters' ? 'bg-[#00FFAA] text-black shadow-[0_0_20px_rgba(0,255,170,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'posters' ? 'bg-[#00FFAA] text-black shadow-[0_0_20px_rgba(0,255,170,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
               >
                 <ImageIcon size={20} /> Posters
+              </button>
+              <button 
+                onClick={() => setActiveTab('orders')}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'orders' ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <ShoppingCart size={20} /> Orders
+              </button>
+              <button 
+                onClick={() => setActiveTab('creator_requests')}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'creator_requests' ? 'bg-[#DCF836] text-black shadow-[0_0_20px_rgba(220,248,54,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <Users size={20} /> Creator Requests
               </button>
             </div>
 
@@ -891,10 +981,23 @@ export const AdminDashboard = () => {
                   placeholder={`Search ${activeTab}...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && activeTab === 'orders') {
+                      fetchAdminOrders(searchQuery);
+                    }
+                  }}
                   className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
                 />
               </div>
-              {activeTab !== 'coupons' && activeTab !== 'posters' && (
+              {activeTab === 'orders' ? (
+                <button
+                  onClick={() => fetchAdminOrders(searchQuery)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30"
+                >
+                  <Search className="w-5 h-5" />
+                  <span>Search</span>
+                </button>
+              ) : activeTab !== 'coupons' && activeTab !== 'posters' && (
                 <button
                   onClick={() => {
                     resetForm(activeTab === 'giveaways');
@@ -1169,8 +1272,408 @@ export const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {/* Orders Section */}
+          {activeTab === 'orders' && (
+            <div className="w-full mt-6">
+              <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
+                <h3 className="text-2xl font-bold mb-6 text-white font-heading">Order Management</h3>
+                
+                {loadingOrders ? (
+                  <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                ) : adminOrders.length === 0 ? (
+                  <div className="py-12 px-8 flex flex-col items-center justify-center text-center">
+                    <ShoppingCart className="w-12 h-12 text-white/20 mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">No Orders Found</h3>
+                    {searchQuery && <p className="text-text-secondary">Try searching with a different term.</p>}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/10 text-text-secondary text-sm">
+                          <th className="py-3 px-4 whitespace-nowrap">Order ID</th>
+                          <th className="py-3 px-4">Customer</th>
+                          <th className="py-3 px-4">Amount</th>
+                          <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4">Date</th>
+                          <th className="py-3 px-4">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminOrders.map(order => (
+                          <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="py-3 px-4 font-mono text-xs text-white/70">
+                              {order.id.substring(0, 8)}...
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="text-white font-bold">{order.user.username}</div>
+                              <div className="text-text-secondary text-xs">{order.user.email}</div>
+                            </td>
+                            <td className="py-3 px-4 font-bold text-white">
+                              {formatPrice(order.totalAmount)}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                order.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                order.status === 'CANCELLED' ? 'bg-red-500/20 text-red-400' :
+                                'bg-yellow-500/20 text-yellow-400'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-text-secondary">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4">
+                              <button 
+                                onClick={() => setSelectedOrder(order)}
+                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded text-sm transition-colors"
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Creator Requests Section */}
+          {activeTab === 'creator_requests' && (
+            <div className="w-full mt-6">
+              <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
+                <h3 className="text-2xl font-bold mb-6 text-white font-heading">Creator Applications</h3>
+                
+                {loadingCreatorRequests ? (
+                  <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-[#DCF836]" /></div>
+                ) : creatorRequests.length === 0 ? (
+                  <div className="py-12 px-8 flex flex-col items-center justify-center text-center">
+                    <Users className="w-12 h-12 text-white/20 mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">No Applications Found</h3>
+                    <p className="text-text-secondary">There are currently no creator requests to review.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/10 text-text-secondary text-sm">
+                          <th className="py-3 px-4 whitespace-nowrap">Applicant</th>
+                          <th className="py-3 px-4">Creator Email</th>
+                          <th className="py-3 px-4">Account Email</th>
+                          <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4">Date</th>
+                          <th className="py-3 px-4">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {creatorRequests.map(req => (
+                          <tr key={req.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="py-3 px-4">
+                              <div className="text-white font-bold">{req.name}</div>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-[#DCF836]">
+                              {req.creatorEmail}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-text-secondary">
+                              {req.user?.email || 'Unknown'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                req.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' :
+                                req.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
+                                'bg-yellow-500/20 text-yellow-400'
+                              }`}>
+                                {req.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-text-secondary">
+                              {new Date(req.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4">
+                              <button 
+                                onClick={() => setSelectedCreatorRequest(req)}
+                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded text-sm transition-colors"
+                              >
+                                View Details
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            <button 
+              onClick={() => { setSelectedOrder(null); setIsCopied(false); }}
+              className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-bold mb-6 text-white border-b border-white/10 pb-4">Order Details</h2>
+            
+            <div className="flex flex-col gap-6">
+              {/* Order Info */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">Order ID</p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-white font-mono text-sm">{selectedOrder.id}</code>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedOrder.id);
+                          setIsCopied(true);
+                          setTimeout(() => setIsCopied(false), 2000);
+                        }}
+                        className="text-orange-500 hover:text-white transition-colors p-1"
+                        title="Copy Order ID"
+                      >
+                        {isCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">Status</p>
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${
+                        selectedOrder.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                        selectedOrder.status === 'CANCELLED' ? 'bg-red-500/20 text-red-400' :
+                        'bg-yellow-500/20 text-yellow-400'
+                      }`}>
+                        {selectedOrder.status}
+                      </span>
+                      {selectedOrder.status === 'PENDING' && (
+                        <button 
+                          onClick={() => updateOrderStatus(selectedOrder.id, 'COMPLETED')}
+                          className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-2 py-1 rounded text-xs font-bold transition-colors"
+                        >
+                          Mark Paid
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <div>
+                    <span className="text-text-secondary">Created: </span>
+                    <span className="text-white">{new Date(selectedOrder.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-text-secondary">Updated: </span>
+                    <span className="text-white">{new Date(selectedOrder.updatedAt).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Info */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                  Customer Information
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-text-secondary text-xs uppercase">Username</p>
+                    <p className="text-white font-bold">{selectedOrder.user.username}</p>
+                  </div>
+                  <div>
+                    <p className="text-text-secondary text-xs uppercase">Email</p>
+                    <p className="text-white font-bold">{selectedOrder.user.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Info */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                  Order Items
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {selectedOrder.items.map((item: any) => (
+                    <div key={item.id} className="flex gap-4 items-center bg-black/20 p-3 rounded-lg border border-white/5">
+                      <img src={getImageUrl(item.game.coverImage)} alt={item.game.title} className="w-12 h-16 object-cover rounded" />
+                      <div className="flex-1">
+                        <p className="text-white font-bold">{item.game.title}</p>
+                        <p className="text-text-secondary text-xs">{item.game.developer}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-bold">{formatPrice(item.pricePaid)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                  <span className="text-white font-bold">{selectedOrder.status === 'COMPLETED' ? 'Total Paid' : 'Total Due'}</span>
+                  <span className="text-2xl text-orange-500 font-black">{formatPrice(selectedOrder.totalAmount)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Creator Request Details Modal */}
+      {selectedCreatorRequest && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
+            <button 
+              onClick={() => setSelectedCreatorRequest(null)}
+              className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-bold mb-6 text-white border-b border-white/10 pb-4">Creator Application Details</h2>
+            
+            <div className="flex flex-col gap-6">
+              {/* Applicant Info */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">Application ID</p>
+                    <code className="text-white font-mono text-sm">{selectedCreatorRequest.id}</code>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">Status</p>
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                      selectedCreatorRequest.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' :
+                      selectedCreatorRequest.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
+                      'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {selectedCreatorRequest.status}
+                    </span>
+                  </div>
+                </div>
+                
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-[#DCF836] rounded-full"></div>
+                  Applicant Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-text-secondary text-xs uppercase">Name</p>
+                    <p className="text-white font-bold">{selectedCreatorRequest.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-text-secondary text-xs uppercase">Account Email</p>
+                    <p className="text-white font-bold">{selectedCreatorRequest.user?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#DCF836] text-xs uppercase">Creator Email</p>
+                    <p className="text-[#DCF836] font-bold">{selectedCreatorRequest.creatorEmail}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Platforms */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-[#DCF836] rounded-full"></div>
+                  Social Media Platforms
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {selectedCreatorRequest.youtubeLink && (
+                    <div>
+                      <span className="text-red-500 font-bold text-sm mr-2">YouTube:</span>
+                      <a href={selectedCreatorRequest.youtubeLink} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm">{selectedCreatorRequest.youtubeLink}</a>
+                    </div>
+                  )}
+                  {selectedCreatorRequest.instagramLink && (
+                    <div>
+                      <span className="text-pink-500 font-bold text-sm mr-2">Instagram:</span>
+                      <a href={selectedCreatorRequest.instagramLink} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm">{selectedCreatorRequest.instagramLink}</a>
+                    </div>
+                  )}
+                  {selectedCreatorRequest.facebookLink && (
+                    <div>
+                      <span className="text-blue-500 font-bold text-sm mr-2">Facebook:</span>
+                      <a href={selectedCreatorRequest.facebookLink} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm">{selectedCreatorRequest.facebookLink}</a>
+                    </div>
+                  )}
+                  {selectedCreatorRequest.otherLink && (
+                    <div>
+                      <span className="text-white font-bold text-sm mr-2">Other:</span>
+                      <a href={selectedCreatorRequest.otherLink} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm">{selectedCreatorRequest.otherLink}</a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Creator Intent */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-[#DCF836] rounded-full"></div>
+                  Creator Intent
+                </h3>
+                <div className="bg-black/30 p-4 rounded-lg border border-white/5 whitespace-pre-wrap text-white text-sm">
+                  {selectedCreatorRequest.intent}
+                </div>
+              </div>
+
+              {/* Contact Platforms */}
+              <div className="bg-cards/50 p-4 rounded-xl border border-white/5">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-[#DCF836] rounded-full"></div>
+                  Preferred Contact Methods
+                </h3>
+                <div className="flex flex-wrap gap-4">
+                  {Object.entries(JSON.parse(selectedCreatorRequest.contactPlatforms || '{}')).map(([platform, detail]: [string, any]) => (
+                    <div key={platform} className="bg-black/40 px-3 py-2 rounded-lg border border-white/5">
+                      <span className="text-text-secondary text-xs uppercase block mb-1">{platform}</span>
+                      <span className="text-white font-bold">{detail}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dates & Guidelines */}
+              <div className="flex justify-between text-sm text-text-secondary px-2">
+                <div>
+                  <span>Submitted: </span>
+                  <span className="text-white">{new Date(selectedCreatorRequest.createdAt).toLocaleString()}</span>
+                </div>
+                <div>
+                  <span>Guidelines Accepted: </span>
+                  <span className="text-white">Yes</span>
+                </div>
+              </div>
+
+              {/* Manual Review Actions */}
+              {selectedCreatorRequest.status === 'PENDING' && (
+                <div className="mt-4 pt-6 border-t border-white/10 flex gap-4">
+                  <button 
+                    onClick={() => updateCreatorRequestStatus(selectedCreatorRequest.id, 'APPROVED')}
+                    className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/50 py-3 rounded-xl font-bold uppercase tracking-wider transition-colors"
+                  >
+                    Approve Application
+                  </button>
+                  <button 
+                    onClick={() => updateCreatorRequestStatus(selectedCreatorRequest.id, 'REJECTED')}
+                    className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 py-3 rounded-xl font-bold uppercase tracking-wider transition-colors"
+                  >
+                    Reject Application
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {gameToDelete && (
