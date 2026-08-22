@@ -997,7 +997,7 @@ export const AdminDashboard = () => {
                   <Search className="w-5 h-5" />
                   <span>Search</span>
                 </button>
-              ) : activeTab !== 'coupons' && activeTab !== 'posters' && (
+              ) : (activeTab === 'games' || activeTab === 'giveaways') && (
                 <button
                   onClick={() => {
                     resetForm(activeTab === 'giveaways');
