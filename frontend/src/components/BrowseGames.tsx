@@ -138,31 +138,40 @@ export const BrowseGames = () => {
             {isFilterOpen && (
               <div className="absolute left-0 top-full mt-2 w-full md:w-[320px] bg-[#22242a] border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden text-white">
                 
-                {/* DRM Accordion */}
+                {/* Platform Accordion */}
                 <div className="border-b border-white/5">
                   <button 
                     onClick={() => setIsDrmOpen(!isDrmOpen)}
                     className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
                   >
-                    <span className="font-bold tracking-widest text-sm text-white/90">DRM</span>
+                    <span className="font-bold tracking-widest text-sm text-white/90">PLATFORM</span>
                     <ChevronDown size={16} className={`text-white/50 transition-transform duration-300 ${!isDrmOpen ? '-rotate-90' : ''}`} />
                   </button>
                   {isDrmOpen && (
-                    <div className="px-5 pb-5 pt-1 flex gap-2">
+                    <div className="px-5 pb-5 pt-1 grid grid-cols-2 gap-2">
                       <button 
                         onClick={() => setActiveDrms(prev => prev.includes('Steam') ? prev.filter(d => d !== 'Steam') : [...prev, 'Steam'])}
-                        className={`flex-1 py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Steam') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Steam') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
                       >
                         <span className="font-semibold tracking-wide text-xs">STEAM</span>
                       </button>
                       <button 
                         onClick={() => setActiveDrms(prev => prev.includes('Ubisoft') ? prev.filter(d => d !== 'Ubisoft') : [...prev, 'Ubisoft'])}
-                        className={`flex-1 py-2 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Ubisoft') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Ubisoft') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
                       >
-                        <span className="text-[10px] font-semibold tracking-wide flex flex-col items-center leading-none">
-                          <span className="text-[8px] text-white/40">UBISOFT</span>
-                          CONNECT
-                        </span>
+                        <span className="font-semibold tracking-wide text-xs">UBISOFT</span>
+                      </button>
+                      <button 
+                        onClick={() => setActiveDrms(prev => prev.includes('Epic') ? prev.filter(d => d !== 'Epic') : [...prev, 'Epic'])}
+                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Epic') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                      >
+                        <span className="font-semibold tracking-wide text-xs">EPIC GAMES</span>
+                      </button>
+                      <button 
+                        onClick={() => setActiveDrms(prev => prev.includes('Rockstar') ? prev.filter(d => d !== 'Rockstar') : [...prev, 'Rockstar'])}
+                        className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Rockstar') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
+                      >
+                        <span className="font-semibold tracking-wide text-xs">ROCKSTAR</span>
                       </button>
                     </div>
                   )}
