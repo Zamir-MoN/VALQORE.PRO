@@ -119,25 +119,25 @@ export const BrowseGames = () => {
 
         {/* Search and Filters */}
         <div className="flex flex-col gap-4 mb-8" ref={filterRef}>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-grow max-w-2xl">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={20} />
+          <div className="flex flex-row gap-2 md:gap-4 w-full">
+            <div className="relative flex-[4] md:flex-grow md:max-w-2xl">
+              <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-white/50 w-4 h-4 md:w-5 md:h-5" />
               <input 
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search games, genres or titles..." 
-                className="w-full bg-cards/50 border border-white/10 text-white rounded-lg py-3.5 pl-12 pr-4 outline-none focus:border-primary/50 transition-colors"
+                className="w-full bg-cards/50 border border-white/10 text-white rounded-lg py-3 md:py-3.5 pl-10 md:pl-12 pr-3 md:pr-4 outline-none focus:border-primary/50 transition-colors text-sm md:text-base"
               />
             </div>
-            <div>
+            <div className="flex-[1] md:flex-none">
               <button 
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-sm font-semibold px-6 py-3.5 rounded-lg transition-colors w-full md:w-auto justify-center"
+                className="flex items-center gap-1 md:gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-[10px] sm:text-xs md:text-sm font-semibold px-2 md:px-6 py-3 md:py-3.5 rounded-lg transition-colors w-full h-full justify-center"
               >
-                <Filter size={18} />
-                <span>Filters {activeGenre !== 'All' && `(${activeGenre})`}</span>
-                <ChevronDown size={16} className={`ml-2 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                <Filter size={16} className="flex-shrink-0 md:w-[18px] md:h-[18px]" />
+                <span className="truncate">Filters {activeGenre !== 'All' && `(${activeGenre})`}</span>
+                <ChevronDown size={14} className={`hidden sm:block ml-1 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
               </button>
             </div>
           </div>
