@@ -933,8 +933,8 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Premium Tab Navigation & Actions */}
-          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10 bg-white/[0.02] border border-white/5 p-2 rounded-2xl backdrop-blur-md shadow-xl overflow-hidden">
-            <div className="flex gap-2 p-1 bg-black/40 rounded-xl overflow-x-auto w-full xl:w-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-10 bg-white/[0.02] border border-white/5 p-2 rounded-2xl backdrop-blur-md shadow-xl">
+            <div className="flex gap-2 p-1 bg-black/40 rounded-xl overflow-x-auto w-full lg:w-max [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <button 
                 onClick={() => setActiveTab('games')}
                 className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
@@ -973,7 +973,7 @@ export const AdminDashboard = () => {
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4 flex-shrink-0">
               <div className="relative w-full sm:w-80">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
                 <input
@@ -992,7 +992,7 @@ export const AdminDashboard = () => {
               {activeTab === 'orders' ? (
                 <button
                   onClick={() => fetchAdminOrders(searchQuery)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 whitespace-nowrap flex-shrink-0"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search</span>
@@ -1003,7 +1003,7 @@ export const AdminDashboard = () => {
                     resetForm(activeTab === 'giveaways');
                     setIsModalOpen(true);
                   }}
-                  className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
                 >
                   <Plus className="w-5 h-5" />
                   <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
