@@ -29,14 +29,19 @@ export const BrowseGames = () => {
   };
 
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
 
-  // Close sort dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
         setIsSortOpen(false);
+      }
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -110,27 +115,33 @@ export const BrowseGames = () => {
               className="w-full bg-cards/50 border border-white/10 text-white rounded-lg py-3.5 pl-12 pr-4 outline-none focus:border-primary/50 transition-colors"
             />
           </div>
-          <button className="flex items-center gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-sm font-semibold px-6 py-3.5 rounded-lg transition-colors">
-            <Filter size={18} />
-            <span>Filters</span>
-          </button>
-        </div>
-
-        {/* Genre Pills */}
-        <div className="flex flex-wrap items-center gap-2 mb-12">
-          {GENRES.map((genre) => (
-            <button
-              key={genre}
-              onClick={() => setActiveGenre(genre)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                activeGenre === genre 
-                  ? 'bg-primary text-background' 
-                  : 'bg-cards/30 text-white/70 hover:bg-cards hover:text-white'
-              }`}
+          <div className="relative" ref={filterRef}>
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center gap-2 bg-cards border border-white/10 hover:border-white/30 text-white text-sm font-semibold px-6 py-3.5 rounded-lg transition-colors w-full md:w-auto justify-center"
             >
-              {genre}
+              <Filter size={18} />
+              <span>Filters {activeGenre !== 'All' && `(${activeGenre})`}</span>
+              <ChevronDown size={16} className={`ml-2 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
             </button>
-          ))}
+
+            {isFilterOpen && (
+              <div className="absolute left-0 top-full mt-2 w-full md:w-64 bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden shadow-xl z-50 max-h-80 overflow-y-auto">
+                {GENRES.map((genre) => (
+                  <div
+                    key={genre}
+                    className={`px-4 py-3 text-sm cursor-pointer transition-colors hover:bg-white/5 ${activeGenre === genre ? 'text-primary font-bold bg-white/5' : 'text-text-primary'}`}
+                    onClick={() => {
+                      setActiveGenre(genre);
+                      setIsFilterOpen(false);
+                    }}
+                  >
+                    {genre}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Main Grid Layout */}
