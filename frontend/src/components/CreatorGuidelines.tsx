@@ -20,7 +20,7 @@ export const CreatorGuidelines = () => {
     }
     
     if (!user) {
-      toast('Please log in to apply.', { icon: 'dY"'' });
+      toast('Please log in to apply.', { icon: 'ðŸš§' });
       openAuthModal();
       return;
     }
@@ -78,10 +78,10 @@ export const CreatorGuidelines = () => {
                 Creators must promote Valqore during the video or livestream in the following ways:
               </p>
               <ul className="space-y-3 text-text-secondary list-disc pl-5">
-                <li><strong className="text-white">On-screen / Stream Overlay</strong> — Display the Valqore promotion or required branding during the content.</li>
-                <li><strong className="text-white">Video Description</strong> — Include the provided Valqore link and promotional information in the description.</li>
-                <li><strong className="text-white">Verbal Promotion</strong> — Mention Valqore naturally during the video or livestream.</li>
-                <li><strong className="text-white">Promo Code</strong> — Share your unique Valqore creator promo code with your audience.</li>
+                <li><strong className="text-white">On-screen / Stream Overlay</strong> - Display the Valqore promotion or required branding during the content.</li>
+                <li><strong className="text-white">Video Description</strong> - Include the provided Valqore link and promotional information in the description.</li>
+                <li><strong className="text-white">Verbal Promotion</strong> - Mention Valqore naturally during the video or livestream.</li>
+                <li><strong className="text-white">Promo Code</strong> - Share your unique Valqore creator promo code with your audience.</li>
               </ul>
               <p className="text-text-secondary text-sm mt-4 italic">
                 *The promotional requirements may vary depending on the specific collaboration.
