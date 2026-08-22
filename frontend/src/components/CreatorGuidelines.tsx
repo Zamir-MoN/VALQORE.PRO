@@ -230,8 +230,9 @@ export const CreatorGuidelines = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+          className="flex flex-col lg:flex-row items-stretch lg:items-center gap-6"
         >
-          <div className="bg-cards/40 backdrop-blur-md rounded-2xl border border-white/5 p-6 mb-8 flex items-center gap-5 cursor-pointer hover:bg-cards/80 transition-all duration-300 group" onClick={() => setAgreed(!agreed)}>
+          <div className="flex-1 bg-cards/40 backdrop-blur-md rounded-2xl border border-white/5 p-6 flex items-center gap-5 cursor-pointer hover:bg-cards/80 transition-all duration-300 group" onClick={() => setAgreed(!agreed)}>
             <div className={clsx(
               "w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all duration-300 flex-shrink-0 shadow-lg",
               agreed ? "bg-primary border-primary shadow-[0_0_15px_rgba(220,248,54,0.4)]" : "bg-transparent border-white/20 group-hover:border-primary/50"
@@ -243,11 +244,11 @@ export const CreatorGuidelines = () => {
             </p>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex-shrink-0 flex">
             <button 
               onClick={handleContinue}
               className={clsx(
-                "flex items-center gap-3 font-black text-lg px-10 py-5 rounded-2xl uppercase tracking-wider transition-all duration-300",
+                "w-full lg:w-auto h-full flex items-center justify-center gap-3 font-black text-lg px-10 py-5 rounded-2xl uppercase tracking-wider transition-all duration-300",
                 agreed 
                   ? "bg-primary text-background hover:bg-white hover:scale-105 active:scale-95 hover:shadow-[0_0_40px_rgba(220,248,54,0.5)]" 
                   : "bg-white/5 text-white/40 cursor-not-allowed border border-white/5"
