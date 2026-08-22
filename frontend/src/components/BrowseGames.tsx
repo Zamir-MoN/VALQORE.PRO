@@ -154,25 +154,25 @@ export const BrowseGames = () => {
                   {isDrmOpen && (
                     <div className="px-5 pb-5 pt-1 grid grid-cols-2 gap-2">
                       <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Steam') ? prev.filter(d => d !== 'Steam') : [...prev, 'Steam'])}
+                        onClick={() => setActiveDrms(prev => prev.includes('Steam') ? [] : ['Steam'])}
                         className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Steam') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
                       >
                         <span className="font-semibold tracking-wide text-xs">STEAM</span>
                       </button>
                       <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Ubisoft') ? prev.filter(d => d !== 'Ubisoft') : [...prev, 'Ubisoft'])}
+                        onClick={() => setActiveDrms(prev => prev.includes('Ubisoft') ? [] : ['Ubisoft'])}
                         className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Ubisoft') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
                       >
                         <span className="font-semibold tracking-wide text-xs">UBISOFT</span>
                       </button>
                       <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Epic') ? prev.filter(d => d !== 'Epic') : [...prev, 'Epic'])}
+                        onClick={() => setActiveDrms(prev => prev.includes('Epic') ? [] : ['Epic'])}
                         className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Epic') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
                       >
                         <span className="font-semibold tracking-wide text-xs">EPIC GAMES</span>
                       </button>
                       <button 
-                        onClick={() => setActiveDrms(prev => prev.includes('Rockstar') ? prev.filter(d => d !== 'Rockstar') : [...prev, 'Rockstar'])}
+                        onClick={() => setActiveDrms(prev => prev.includes('Rockstar') ? [] : ['Rockstar'])}
                         className={`w-full py-2.5 border flex items-center justify-center gap-2 transition-colors ${activeDrms.includes('Rockstar') ? 'border-primary text-primary bg-primary/10' : 'border-white/20 text-white/60 hover:border-white/40'}`}
                       >
                         <span className="font-semibold tracking-wide text-xs">ROCKSTAR</span>
