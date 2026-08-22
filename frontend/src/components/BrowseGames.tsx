@@ -67,10 +67,14 @@ export const BrowseGames = () => {
       matchesGenre = game.genre.toLowerCase().includes(activeGenre.toLowerCase());
     }
 
-    // Check DRM
+    // Check DRM/Platform
     let matchesDrm = true;
     if (activeDrms.length > 0) {
-      matchesDrm = activeDrms.some(drm => game.platforms?.map(p => p.toLowerCase()).includes(drm.toLowerCase()));
+      matchesDrm = activeDrms.some(drm => {
+        const inPlatforms = game.platforms?.map(p => p.toLowerCase()).includes(drm.toLowerCase());
+        const inTagImage = game.tagImage?.toLowerCase().includes(drm.toLowerCase());
+        return inPlatforms || inTagImage;
+      });
     }
     
     return matchesSearch && matchesGenre && matchesDrm;
