@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../prismaClient';
 import { authMiddleware } from '../middleware/auth';
+import { createSteamMonUser, generateSecurePassword, grantGameAccess } from '../utils/steamMonService';
 
 const router = Router();
 
@@ -92,6 +93,44 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
 
       return newOrder;
     });
+
+    // 4. Steam Mon Integration
+    try {
+      // Find games in this order that have a steamAppId
+      const gamesWithSteamApp = cartItems.filter(item => item.game.steamAppId);
+      
+      if (gamesWithSteamApp.length > 0) {
+        // Fetch the user from db to get current steamMon credentials
+        const user = await prisma.user.findUnique({ where: { id: userPayload.userId } });
+        
+        let steamMonUsername = user?.steamMonUsername;
+        let steamMonPassword = user?.steamMonPassword;
+
+        if (!steamMonUsername || !steamMonPassword) {
+           steamMonUsername = user?.username; // Use their Valqore.Pro username
+           steamMonPassword = generateSecurePassword();
+
+           // Update user in Valqore.Pro
+           await prisma.user.update({
+             where: { id: userPayload.userId },
+             data: { steamMonUsername, steamMonPassword }
+           });
+        }
+
+        // Create the user in Steam Mon (it safely handles if user already exists)
+        const steamUser = await createSteamMonUser(steamMonUsername as string, steamMonPassword as string);
+
+        // Grant access for each purchased game
+        for (const item of gamesWithSteamApp) {
+          if (item.game.steamAppId) {
+            await grantGameAccess(steamUser.id, item.game.steamAppId);
+          }
+        }
+      }
+    } catch (steamErr) {
+      console.error('[STEAM MON INTEGRATION ERROR]', steamErr);
+      // We don't fail the order if Steam Mon sync fails, but we log it.
+    }
 
     res.status(201).json(order);
   } catch (error) {

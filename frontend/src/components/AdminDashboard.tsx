@@ -65,7 +65,8 @@ export const AdminDashboard = () => {
     recRequirements: '',
     trailerUrl: '',
     screenshots: '',
-    tagImage: ''
+    tagImage: '',
+    steamAppId: ''
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tagImageFile, setTagImageFile] = useState<File | null>(null);
@@ -382,7 +383,8 @@ export const AdminDashboard = () => {
       recRequirements: game.recRequirements || '',
       trailerUrl: game.trailerUrl || '',
       screenshots: game.screenshots || '',
-      tagImage: game.tagImage || ''
+      tagImage: game.tagImage || '',
+      steamAppId: game.steamAppId || ''
     });
     setImageFile(null);
     setTagImageFile(null);
@@ -453,7 +455,8 @@ export const AdminDashboard = () => {
       recRequirements: '',
       trailerUrl: '',
       screenshots: '',
-      tagImage: ''
+      tagImage: '',
+      steamAppId: ''
     });
     setImageFile(null);
     setTagImageFile(null);
@@ -570,6 +573,11 @@ export const AdminDashboard = () => {
                         <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Platforms</label>
                         <input type="text" name="platforms" value={formData.platforms} onChange={handleInputChange} placeholder="E.g. PC, PS5" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
                       </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-[#00F0FF] uppercase tracking-wider font-bold ml-1 flex items-center gap-1"><Gamepad2 size={12}/> Steam Mon App ID (Optional)</label>
+                      <input type="text" name="steamAppId" value={formData.steamAppId} onChange={handleInputChange} placeholder="E.g. 1196590" className="bg-cards border border-[#00F0FF]/30 rounded-lg p-3 text-white focus:border-[#00F0FF] outline-none" />
                     </div>
                   </div>
                 </div>

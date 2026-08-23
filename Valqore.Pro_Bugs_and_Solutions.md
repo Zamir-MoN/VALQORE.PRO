@@ -17,6 +17,11 @@ This document tracks the major updates, squashed bugs, and essential VPS deploym
    - Built a custom "Coupons" tab in the Admin Dashboard for Sagar and Zamir to create and manage dynamic ₹ discount codes.
    - Integrated live coupon validation and price calculation into `Cart.tsx`.
 
+6. **Dynamic Posters System**:
+   - Built a fully dynamic `HeroCardStack` for the homepage.
+   - Created a "Posters" tab in the Admin Dashboard allowing the upload of multiple poster URLs at once (comma-separated).
+   - Integrated real-time Socket.IO events (`posters_updated`) so when posters are added or deleted by the admin, they instantly appear on the live website without anyone needing to refresh their browser.
+
 ---
 
 ## 🐛 Bugs & Solutions
@@ -35,6 +40,16 @@ This document tracks the major updates, squashed bugs, and essential VPS deploym
 **Bug**: Running `npm run build` on the VPS returned `[builtin:vite-transform] Expected corresponding JSX closing tag for 'div'` and failed to build.
 **Cause**: During a massive UI overhaul to the Admin Dashboard (adding the Coupons tab), a stray `</button>` and `)}` were accidentally left in the JSX hierarchy, breaking the tree structure.
 **Solution**: Found the broken `div` container around line 850 in `AdminDashboard.tsx`, added the missing `</div>` tag, wrapped the Add button in the correct `{activeTab !== 'coupons' && (...)}` condition, and pushed the fix.
+
+### 4. The "Admin Access Required" Fallback Bug
+**Bug**: When adding a new poster from the Admin Dashboard, the backend blocked the request with a `403 Admin access required` error, despite being logged in as the Admin.
+**Cause**: The newly created `posters.ts` endpoint was strictly checking for an `isAdmin` boolean on the JWT payload. However, the custom authentication system in `auth.ts` verified the root admin by checking that the token *omitted* the `userId` field (only including `username`), rather than attaching an `isAdmin: true` flag. 
+**Solution**: Updated the authorization check in `posters.ts` to `if (userPayload.userId) { return 403 }` to perfectly mirror the app's existing admin token architecture.
+
+### 5. Admin Dashboard Conditional Rendering Swap
+**Bug**: Clicking the "Coupons" tab showed the games list instead of the coupons form, and clicking "Games" showed nothing.
+**Cause**: A flawed find-and-replace during the addition of the Posters tab accidentally swapped the ternary render conditions, setting the games map to trigger on `activeTab === 'coupons'`.
+**Solution**: Corrected the JSX ternary logic so that the Games loop runs exclusively on `activeTab === 'games' || activeTab === 'giveaways'`, immediately restoring the intended UI state.
 
 ---
 

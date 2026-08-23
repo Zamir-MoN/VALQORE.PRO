@@ -256,6 +256,18 @@ export const Cart = () => {
                   </div>
                 </div>
                 
+                <div className="bg-[#00F0FF]/10 border border-[#00F0FF]/30 rounded-xl p-4 mb-6 flex gap-3 text-sm">
+                  <div className="text-[#00F0FF] mt-0.5 flex-shrink-0">
+                    <Shield size={18} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#00F0FF] uppercase tracking-wider text-xs mb-1">Important Notice</h4>
+                    <p className="text-text-secondary leading-relaxed">
+                      After checkout, you will receive login credentials for our <strong className="text-white">Custom Desktop Launcher</strong> to access your games automatically.
+                    </p>
+                  </div>
+                </div>
+                
                 <button 
                   onClick={handleCheckout}
                   disabled={isCheckingOut || cartItems.length === 0}

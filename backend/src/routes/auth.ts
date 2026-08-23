@@ -104,7 +104,7 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
 
     const user = await prisma.user.findUnique({
       where: { id: userPayload.userId },
-      select: { id: true, username: true, email: true, createdAt: true }
+      select: { id: true, username: true, email: true, createdAt: true, steamMonUsername: true, steamMonPassword: true }
     });
 
     if (!user) {
