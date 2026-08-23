@@ -184,6 +184,19 @@ export const AdminDashboard = () => {
     }
   };
 
+  const deleteAllOrders = async () => {
+    if (!window.confirm('Are you absolutely sure you want to delete ALL orders? This cannot be undone.')) return;
+    try {
+      await axios.delete(`${API_URL}/orders/admin/all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success('All orders deleted successfully');
+      setAdminOrders([]);
+    } catch (err) {
+      toast.error('Failed to delete orders');
+    }
+  };
+
   const updateCreatorRequestStatus = async (requestId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
       await axios.put(`${API_URL}/creators/admin/${requestId}/status`, { status }, {
@@ -1328,7 +1341,16 @@ export const AdminDashboard = () => {
           {activeTab === 'orders' && (
             <div className="w-full mt-6">
               <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
-                <h3 className="text-2xl font-bold mb-6 text-white font-heading">Order Management</h3>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold text-white font-heading">Order Management</h3>
+                  <button 
+                    onClick={deleteAllOrders}
+                    disabled={adminOrders.length === 0}
+                    className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 size={16} /> Delete All
+                  </button>
+                </div>
                 
                 {loadingOrders ? (
                   <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>

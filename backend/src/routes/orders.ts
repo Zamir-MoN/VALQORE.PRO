@@ -319,4 +319,27 @@ router.put('/admin/:id/status', authMiddleware, async (req: Request, res: Respon
   }
 });
 
+// Delete all orders (Admin)
+router.delete('/admin/all', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Access denied. Admins only.' });
+      return;
+    }
+
+    // Delete all OrderItems first (if cascade isn't working natively on their DB)
+    await prisma.orderItem.deleteMany({});
+    
+    // Delete all Orders
+    await prisma.order.deleteMany({});
+
+    res.json({ message: 'All orders deleted successfully' });
+  } catch (error) {
+    console.error('[DELETE ALL ORDERS ERROR]', error);
+    res.status(500).json({ error: 'Failed to delete all orders' });
+  }
+});
+
 export default router;
