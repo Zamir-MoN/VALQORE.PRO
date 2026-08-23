@@ -249,7 +249,7 @@ export const Profile = () => {
                 </div>
 
                 {/* Steam Mon Credentials Banner */}
-                {user.steamMonUsername && orders.length > 0 && (
+                {user.steamMonUsername && orders.some(order => order.status === 'COMPLETED') && (
                   <div className="mb-8 p-6 bg-gradient-to-r from-[#00F0FF]/10 to-transparent border border-[#00F0FF]/30 rounded-3xl shadow-[0_0_20px_rgba(0,240,255,0.1)] relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-[#00F0FF]/20 rounded-full blur-[60px] group-hover:bg-[#00F0FF]/30 transition-colors duration-700"></div>
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
