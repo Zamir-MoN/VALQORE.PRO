@@ -131,8 +131,16 @@ router.put('/:id', authMiddleware, async (req, res) => {
 // Delete a game
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
+    const gameId = req.params.id;
+    
+    // Manually delete related items first to avoid foreign key constraint errors
+    await prisma.cartItem.deleteMany({ where: { gameId } });
+    await prisma.wishlistItem.deleteMany({ where: { gameId } });
+    await prisma.orderItem.deleteMany({ where: { gameId } });
+    
+    // Now delete the game itself
     await prisma.game.delete({
-      where: { id: req.params.id }
+      where: { id: gameId }
     });
     getIO()?.emit('games_updated');
     res.json({ message: 'Game deleted' });

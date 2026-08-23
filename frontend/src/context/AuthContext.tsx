@@ -6,6 +6,8 @@ interface User {
   username: string;
   email?: string;
   role?: string;
+  steamMonUsername?: string;
+  steamMonPassword?: string;
 }
 
 interface AuthContextType {
