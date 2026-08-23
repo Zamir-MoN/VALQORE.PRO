@@ -144,8 +144,9 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     });
     getIO()?.emit('games_updated');
     res.json({ message: 'Game deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete game' });
+  } catch (error: any) {
+    console.error('[DELETE GAME ERROR]', error);
+    res.status(500).json({ error: 'Failed to delete game: ' + (error.message || String(error)) });
   }
 });
 

@@ -113,9 +113,9 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
     }
 
     res.json(user);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[GET ME ERROR]', error);
-    res.status(500).json({ error: 'Failed to fetch user profile' });
+    res.status(500).json({ error: 'Failed to fetch user profile: ' + (error.message || String(error)) });
   }
 });
 
