@@ -56,8 +56,13 @@ export const TrendingGames = () => {
 
   const validGames = games.filter(g => !g.isGiveaway);
   const trendingGames = validGames.slice(0, 12);
-  const dealsGames = validGames.slice(1, 3);
-  const newGames = validGames.slice(2, 4);
+  const dealsGames = validGames
+    .filter(g => (g.discount || 0) > 0)
+    .sort((a, b) => (b.discount || 0) - (a.discount || 0))
+    .slice(0, 3);
+  const newGames = [...validGames]
+    .sort((a, b) => new Date(b.createdAt || b.releaseDate).getTime() - new Date(a.createdAt || a.releaseDate).getTime())
+    .slice(0, 3);
 
   return (
     <section className="py-20 px-6 lg:px-12 relative z-10" id="trending">
@@ -99,28 +104,40 @@ export const TrendingGames = () => {
           <div className="lg:col-span-1 space-y-8">
             
             {/* Top Deals */}
-            <div className="bg-cards/40 rounded-2xl p-6 border border-white/5">
-              <h3 className="text-xl font-bold font-heading mb-6">Top Deals</h3>
-              <div className="space-y-6">
-                {dealsGames.map(game => (
-                  <Link to={`/game/${game.id}`} key={`deal-${game.id}`} className="flex gap-4 group cursor-pointer">
-                    <img 
-                      src={game.coverImage || '/images/hero-artwork.png'} 
-                      alt={game.title} 
-                      loading="lazy"
-                      className="w-16 h-16 rounded-xl object-cover group-hover:opacity-80 transition-opacity"
-                    />
-                    <div className="flex flex-col justify-center">
-                      <h4 className="font-bold text-sm text-white line-clamp-1 group-hover:text-primary transition-colors">{game.title}</h4>
-                      <div className="flex flex-col">
-                        <span className="text-xs text-text-secondary line-through">{formatPrice(game.price)}</span>
-                        <span className="text-sm font-bold text-primary">{formatPrice(game.price * 0.5)}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+            {dealsGames.length > 0 && (
+              <div className="bg-cards/40 rounded-2xl p-6 border border-white/5">
+                <h3 className="text-xl font-bold font-heading mb-6 flex items-center justify-between">
+                  <span>Top Deals</span>
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">Sale</span>
+                </h3>
+                <div className="space-y-6">
+                  {dealsGames.map(game => {
+                    const discountedPrice = game.price * (1 - (game.discount || 0) / 100);
+                    return (
+                      <Link to={`/game/${game.id}`} key={`deal-${game.id}`} className="flex gap-4 group cursor-pointer">
+                        <img 
+                          src={game.coverImage || '/images/hero-artwork.png'} 
+                          alt={game.title} 
+                          loading="lazy"
+                          className="w-16 h-16 rounded-xl object-cover group-hover:opacity-80 transition-opacity flex-shrink-0"
+                        />
+                        <div className="flex flex-col justify-center min-w-0">
+                          <h4 className="font-bold text-sm text-white truncate group-hover:text-primary transition-colors">{game.title}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-text-secondary line-through">{formatPrice(game.price)}</span>
+                            <span className="text-sm font-bold text-primary">{formatPrice(discountedPrice)}</span>
+                            <span className="text-[10px] font-black text-black bg-primary px-1.5 py-0.5 rounded">
+                              -{game.discount}%
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
+
 
             {/* New Arrivals */}
             <div className="bg-cards/40 rounded-2xl p-6 border border-white/5">
