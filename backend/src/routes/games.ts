@@ -146,10 +146,15 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.json({ message: 'Game deleted' });
   } catch (error: any) {
     console.error('[DELETE GAME ERROR]', error);
+    res.status(500).json({ error: 'Failed to delete game: ' + (error.message || String(error)) });
+  }
+});
+
 // Export all games backup (JSON)
 router.get('/backup/export', authMiddleware, async (req, res) => {
   try {
     const userPayload = (req as any).user;
+
     if (userPayload.userId) {
       res.status(403).json({ error: 'Access denied. Admins only.' });
       return;
