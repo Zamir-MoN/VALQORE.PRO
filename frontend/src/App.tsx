@@ -89,7 +89,7 @@ function App() {
                     playsInline 
                     className="w-full h-full object-cover transform-gpu will-change-transform"
                   >
-                    <source src="/videos/background.mp4" type="video/mp4" />
+                    <source src="/videos/bg-nexus.mp4" type="video/mp4" />
                   </video>
                   {/* Optional overlay to darken video */}
                   <div className="absolute inset-0 bg-background/60"></div>
