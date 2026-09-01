@@ -29,7 +29,7 @@ export const Footer = () => {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="Discord"
-                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-white hover:bg-[#5865F2] hover:border-[#5865F2] hover:shadow-[0_0_15px_rgba(88,101,242,0.6)] hover:-translate-y-1 transition-all duration-300"
               >
                 <Discord size={18} />
               </a>
@@ -38,7 +38,7 @@ export const Footer = () => {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="Telegram"
-                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-white hover:bg-[#24A1DE] hover:border-[#24A1DE] hover:shadow-[0_0_15px_rgba(36,161,222,0.6)] hover:-translate-y-1 transition-all duration-300"
               >
                 <Telegram size={18} />
               </a>
@@ -47,7 +47,7 @@ export const Footer = () => {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="Instagram"
-                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-white hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:border-[#dc2743] hover:shadow-[0_0_15px_rgba(220,39,67,0.6)] hover:-translate-y-1 transition-all duration-300"
               >
                 <Instagram size={18} />
               </a>
@@ -56,12 +56,13 @@ export const Footer = () => {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="YouTube"
-                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-white hover:bg-[#FF0000] hover:border-[#FF0000] hover:shadow-[0_0_15px_rgba(255,0,0,0.6)] hover:-translate-y-1 transition-all duration-300"
               >
                 <Youtube size={18} />
               </a>
             </div>
           </div>
+
 
           
           {/* Links: Store */}
