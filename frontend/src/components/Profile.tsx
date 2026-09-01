@@ -22,7 +22,19 @@ export const Profile = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordOtp, setPasswordOtp] = useState('');
+  const [passwordStep, setPasswordStep] = useState<'form' | 'otp'>('form');
+  const [otpCooldown, setOtpCooldown] = useState(0);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  useEffect(() => {
+    let timer: any;
+    if (otpCooldown > 0) {
+      timer = setInterval(() => setOtpCooldown(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [otpCooldown]);
 
   // Orders state
   const [orders, setOrders] = useState<any[]>([]);
@@ -61,7 +73,78 @@ export const Profile = () => {
         setCreatorStats(statsRes.data);
       }
     } catch (err) {
-      console.error('Failed to fetch creator status', err);
+      console.error(err);
+    }
+  };
+
+  const handleRequestPasswordOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      const res = await axios.post(`${API_URL}/auth/password/send-otp`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(res.data.message || 'Verification code sent to your email!');
+      setPasswordStep('otp');
+      setOtpCooldown(60);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to send verification code');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleResendPasswordOtp = async () => {
+    if (otpCooldown > 0 || isSendingOtp) return;
+    setIsSendingOtp(true);
+    try {
+      const res = await axios.post(`${API_URL}/auth/password/send-otp`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(res.data.message || 'New verification code sent!');
+      setOtpCooldown(60);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to resend code');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordOtp || passwordOtp.trim().length !== 6) {
+      toast.error('Please enter the 6-digit verification code');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await axios.put(`${API_URL}/auth/password`, {
+        currentPassword,
+        newPassword,
+        otp: passwordOtp.trim()
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(res.data.message || 'Password updated successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordOtp('');
+      setPasswordStep('form');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -72,37 +155,11 @@ export const Profile = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch orders', err);
       toast.error('Failed to load your orders');
     } finally {
       setLoadingOrders(false);
-    }
-  };
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error('New passwords do not match');
-      return;
-    }
-    
-    setIsChangingPassword(true);
-    try {
-      await axios.put(`${API_URL}/auth/password`, {
-        currentPassword,
-        newPassword
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast.success('Password updated successfully!');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to change password');
-    } finally {
-      setIsChangingPassword(false);
     }
   };
 
@@ -365,71 +422,126 @@ export const Profile = () => {
                   <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white flex items-center gap-3 mb-2">
                     <span className="w-2 h-8 bg-primary rounded-full"></span> Security Settings
                   </h2>
-                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your password and secure your account.</p>
+                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your password with Email OTP verification.</p>
                 </div>
                 
-                <form onSubmit={handlePasswordChange} className="flex flex-col gap-6 bg-cards/60 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl relative overflow-hidden">
-                  
-                  {/* Subtle top gradient line */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+                {passwordStep === 'form' ? (
+                  <form onSubmit={handleRequestPasswordOtp} className="flex flex-col gap-6 bg-cards/60 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl relative overflow-hidden">
+                    {/* Subtle top gradient line */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
 
-                  <div className="flex flex-col gap-2.5 group">
-                    <label className="text-xs text-text-secondary group-focus-within:text-white transition-colors uppercase font-bold tracking-widest ml-1">Current Password</label>
-                    <div className="relative">
-                      <Key size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
-                      <input 
-                        type="password" 
-                        value={currentPassword}
-                        onChange={e => setCurrentPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all duration-300 font-medium"
-                      />
+                    <div className="flex flex-col gap-2.5 group">
+                      <label className="text-xs text-text-secondary group-focus-within:text-white transition-colors uppercase font-bold tracking-widest ml-1">Current Password</label>
+                      <div className="relative">
+                        <Key size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                        <input 
+                          type="password" 
+                          value={currentPassword}
+                          onChange={e => setCurrentPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all duration-300 font-medium"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
-                  
-                  <div className="flex flex-col gap-2.5 group">
-                    <label className="text-xs text-text-secondary group-focus-within:text-white transition-colors uppercase font-bold tracking-widest ml-1">New Password</label>
-                    <div className="relative">
-                      <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
-                      <input 
-                        type="password" 
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all duration-300 font-medium"
-                      />
+                    
+                    <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-2"></div>
+                    
+                    <div className="flex flex-col gap-2.5 group">
+                      <label className="text-xs text-text-secondary group-focus-within:text-white transition-colors uppercase font-bold tracking-widest ml-1">New Password</label>
+                      <div className="relative">
+                        <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                        <input 
+                          type="password" 
+                          value={newPassword}
+                          onChange={e => setNewPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all duration-300 font-medium"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex flex-col gap-2.5 group">
-                    <label className="text-xs text-text-secondary group-focus-within:text-white transition-colors uppercase font-bold tracking-widest ml-1">Confirm New Password</label>
-                    <div className="relative">
-                      <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
-                      <input 
-                        type="password" 
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all duration-300 font-medium"
-                      />
+                    
+                    <div className="flex flex-col gap-2.5 group">
+                      <label className="text-xs text-text-secondary group-focus-within:text-white transition-colors uppercase font-bold tracking-widest ml-1">Confirm New Password</label>
+                      <div className="relative">
+                        <ShieldCheck size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                        <input 
+                          type="password" 
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all duration-300 font-medium"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <button 
-                    type="submit" 
-                    disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
-                    className="mt-6 bg-primary text-background font-black text-lg py-4 rounded-xl hover:bg-white hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-primary shadow-[0_0_20px_rgba(220,248,54,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] uppercase tracking-wide"
-                  >
-                    {isChangingPassword ? <><Loader2 size={20} className="animate-spin" /> Updating...</> : 'Update Password'}
-                  </button>
-                </form>
+                    <button 
+                      type="submit" 
+                      disabled={isSendingOtp || !currentPassword || !newPassword || !confirmPassword}
+                      className="mt-4 bg-primary text-background font-black text-lg py-4 rounded-xl hover:bg-white hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-primary shadow-[0_0_20px_rgba(220,248,54,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] uppercase tracking-wide cursor-pointer"
+                    >
+                      {isSendingOtp ? <><Loader2 size={20} className="animate-spin" /> Sending Verification Code...</> : 'Send OTP & Continue'}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handlePasswordChange} className="flex flex-col gap-6 bg-cards/60 backdrop-blur-md p-8 rounded-3xl border border-primary/30 shadow-xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-primary/20 text-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <Mail size={24} />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-1">Verify Password Change</h3>
+                      <p className="text-text-secondary text-xs">
+                        Enter the 6-digit verification code sent to <strong className="text-white">{user.email}</strong>
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 group">
+                      <label className="text-xs text-text-secondary uppercase font-bold tracking-widest text-center">6-Digit Code</label>
+                      <input 
+                        type="text" 
+                        maxLength={6}
+                        value={passwordOtp}
+                        onChange={e => setPasswordOtp(e.target.value.replace(/\D/g, ''))}
+                        required
+                        placeholder="123456"
+                        className="w-full bg-background/80 border border-primary/40 rounded-xl py-4 text-center text-2xl font-mono tracking-[0.5em] text-primary focus:border-primary outline-none transition-all"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs text-text-secondary">
+                      <button 
+                        type="button" 
+                        onClick={() => setPasswordStep('form')}
+                        className="hover:text-white underline cursor-pointer"
+                      >
+                        Change Password Inputs
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={handleResendPasswordOtp}
+                        disabled={otpCooldown > 0 || isSendingOtp}
+                        className="text-primary hover:underline font-bold disabled:text-text-secondary/50 disabled:no-underline cursor-pointer"
+                      >
+                        {otpCooldown > 0 ? `Resend in ${otpCooldown}s` : 'Resend Code'}
+                      </button>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={isChangingPassword || passwordOtp.length !== 6}
+                      className="bg-primary text-background font-black text-lg py-4 rounded-xl hover:bg-white hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:bg-primary shadow-[0_0_20px_rgba(220,248,54,0.2)] uppercase tracking-wide cursor-pointer"
+                    >
+                      {isChangingPassword ? <><Loader2 size={20} className="animate-spin" /> Verifying & Updating...</> : 'Confirm & Update Password'}
+                    </button>
+                  </form>
+                )}
               </div>
             )}
+
 
             {/* CREATOR TAB */}
             {activeTab === 'creator' && (

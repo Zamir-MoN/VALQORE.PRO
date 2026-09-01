@@ -349,14 +349,63 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
   }
 });
 
-// Change user password
+// ----------------------------------------------------
+// Request OTP for changing password
+// ----------------------------------------------------
+router.post('/password/send-otp', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+
+    if (!userPayload.userId && userPayload.username === (process.env.ADMIN_USERNAME || 'admin')) {
+      res.status(403).json({ error: 'Cannot change default admin password via OTP' });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userPayload.userId }
+    });
+
+    if (!user || !user.email) {
+      res.status(404).json({ error: 'User email not found' });
+      return;
+    }
+
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Delete existing OTPs
+    await prisma.otpVerification.deleteMany({
+      where: { email: user.email }
+    });
+
+    // Save new OTP
+    await prisma.otpVerification.create({
+      data: {
+        email: user.email,
+        otp,
+        expiresAt
+      }
+    });
+
+    await sendOtpEmail(user.email, otp, user.username);
+    res.json({ message: `Verification code sent to ${user.email}` });
+  } catch (error: any) {
+    console.error('[SEND PASSWORD OTP ERROR]', error);
+    res.status(500).json({ error: error.message || 'Failed to send verification code' });
+  }
+});
+
+// ----------------------------------------------------
+// Change user password with OTP verification
+// ----------------------------------------------------
 router.put('/password', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, otp } = req.body;
 
-    if (!currentPassword || !newPassword) {
-      res.status(400).json({ error: 'Current and new password are required' });
+    if (!currentPassword || !newPassword || !otp) {
+      res.status(400).json({ error: 'Current password, new password, and OTP code are required' });
       return;
     }
 
@@ -374,10 +423,29 @@ router.put('/password', authMiddleware, async (req: Request, res: Response): Pro
       return;
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-    if (!isPasswordValid) {
-      res.status(401).json({ error: 'Incorrect current password' });
+    // Verify OTP first
+    const trimmedOtp = otp.toString().trim();
+    const otpRecord = await prisma.otpVerification.findFirst({
+      where: {
+        email: user.email,
+        otp: trimmedOtp,
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!otpRecord) {
+      res.status(400).json({ error: 'Invalid or expired verification code' });
       return;
+    }
+
+    // Verify current password if user has password set
+    if (user.password) {
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isPasswordValid) {
+        res.status(401).json({ error: 'Incorrect current password' });
+        return;
+      }
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -386,12 +454,18 @@ router.put('/password', authMiddleware, async (req: Request, res: Response): Pro
       data: { password: hashedPassword }
     });
 
-    res.json({ message: 'Password updated successfully' });
-  } catch (error) {
+    // Delete used OTP
+    await prisma.otpVerification.deleteMany({
+      where: { email: user.email }
+    });
+
+    res.json({ message: 'Password updated successfully!' });
+  } catch (error: any) {
     console.error('[CHANGE PASSWORD ERROR]', error);
-    res.status(500).json({ error: 'Failed to change password' });
+    res.status(500).json({ error: error.message || 'Failed to change password' });
   }
 });
+
 
 // Get all users (Admin only)
 router.get('/admin/users', authMiddleware, async (req: Request, res: Response): Promise<void> => {
