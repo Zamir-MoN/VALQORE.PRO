@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Gamepad2, Search, Play, ArrowRight, ShieldCheck, Download, Loader2, Sparkles, Star, Key, ExternalLink } from 'lucide-react';
+import { Gamepad2, Search, Play, ArrowRight, ArrowLeft, ShieldCheck, Download, Loader2, Sparkles, Star, Key, ExternalLink } from 'lucide-react';
+
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getImageUrl } from '../utils/image';
@@ -118,9 +119,14 @@ export const Library = () => {
         {/* Header section */}
         <div className="flex flex-col gap-5 sm:gap-6 mb-8 sm:mb-10 pb-5 sm:pb-6 border-b border-white/10">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-widest border border-primary/20 mb-2 sm:mb-3">
-              <Sparkles size={13} /> My Collection
-            </div>
+            {/* Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors w-fit mb-3 group cursor-pointer"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="font-bold tracking-wider uppercase text-xs sm:text-sm">Back</span>
+            </button>
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-heading font-black tracking-tight text-white flex items-center gap-3 sm:gap-4">
               <Gamepad2 className="text-primary w-8 h-8 sm:w-11 sm:h-11 flex-shrink-0" />
               <span>Game Library</span>
@@ -129,6 +135,7 @@ export const Library = () => {
               Access and manage all your purchased game accounts and licenses.
             </p>
           </div>
+
 
           {/* Controls: Search and Filter Tabs */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 w-full">
