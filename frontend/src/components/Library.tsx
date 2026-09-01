@@ -266,8 +266,9 @@ export const Library = () => {
                       className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)] active:scale-95"
                     >
                       {item.isCreatorGame ? <Key size={13} className="flex-shrink-0" /> : <ShieldCheck size={13} className="flex-shrink-0" />}
-                      <span>{item.isCreatorGame ? 'Play Now' : 'Account Info'}</span>
+                      <span>{item.isCreatorGame ? 'Claim' : 'Account Info'}</span>
                     </Link>
+
                   </div>
                 </div>
               </div>
