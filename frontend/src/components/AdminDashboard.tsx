@@ -1386,30 +1386,41 @@ export const AdminDashboard = () => {
                         {filtered.map((game, index) => {
                           const isDragging = draggedGameIndex === index;
                           const isOver = dragOverIndex === index;
+                          const isDroppingAbove = isOver && draggedGameIndex !== null && draggedGameIndex > index;
+                          const isDroppingBelow = isOver && draggedGameIndex !== null && draggedGameIndex < index;
 
                           return (
-                            <div 
-                              key={game.id} 
-                              draggable={!searchQuery} // enable drag when not filtering by search
-                              onDragStart={() => handleDragStart(index)}
-                              onDragOver={(e) => handleDragOver(e, index)}
-                              onDragEnd={handleDragEnd}
-                              onDrop={() => handleDrop(index, filtered)}
-                              className={`group relative glass p-4 rounded-2xl border flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center transition-all duration-300 shadow-md hover:shadow-2xl select-none ${
-                                isDragging 
-                                  ? 'opacity-30 scale-95 border-primary/50 bg-primary/10' 
-                                  : isOver 
-                                  ? 'border-primary shadow-[0_0_20px_rgba(220,248,54,0.3)] scale-[1.01] bg-white/[0.08]' 
-                                  : 'border-white/5 bg-gradient-to-r from-white/[0.02] to-transparent hover:from-white/[0.06] hover:border-white/20 hover:-translate-y-0.5'
-                              }`}
-                            >
-                              {/* Drag Handle */}
+                            <div key={game.id} className="relative transition-all duration-200">
+                              {/* Glowing Drop Line Indicator - TOP */}
+                              {isDroppingAbove && (
+                                <div className="absolute -top-2 left-0 right-0 h-1 bg-primary rounded-full shadow-[0_0_15px_rgba(220,248,54,1)] z-30 animate-pulse flex items-center justify-between px-2">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-primary -ml-1"></div>
+                                  <div className="w-2.5 h-2.5 rounded-full bg-primary -mr-1"></div>
+                                </div>
+                              )}
+
                               <div 
-                                className="hidden sm:flex items-center justify-center p-2 text-white/30 group-hover:text-primary transition-colors cursor-grab active:cursor-grabbing hover:bg-white/5 rounded-lg"
-                                title="Drag to reorder"
+                                draggable={!searchQuery} // enable drag when not filtering by search
+                                onDragStart={() => handleDragStart(index)}
+                                onDragOver={(e) => handleDragOver(e, index)}
+                                onDragEnd={handleDragEnd}
+                                onDrop={() => handleDrop(index, filtered)}
+                                className={`group relative glass p-4 rounded-2xl border flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center transition-all duration-300 shadow-md hover:shadow-2xl select-none ${
+                                  isDragging 
+                                    ? 'opacity-25 scale-95 border-dashed border-primary/40 bg-primary/5' 
+                                    : isOver 
+                                    ? 'border-primary/80 bg-white/[0.08] shadow-[0_0_25px_rgba(220,248,54,0.2)] -translate-y-0.5' 
+                                    : 'border-white/5 bg-gradient-to-r from-white/[0.02] to-transparent hover:from-white/[0.06] hover:border-white/20 hover:-translate-y-0.5'
+                                }`}
                               >
-                                <GripVertical size={20} />
-                              </div>
+                                {/* Drag Handle */}
+                                <div 
+                                  className="hidden sm:flex items-center justify-center p-2 text-white/30 group-hover:text-primary transition-colors cursor-grab active:cursor-grabbing hover:bg-white/5 rounded-lg"
+                                  title="Drag to reorder"
+                                >
+                                  <GripVertical size={20} />
+                                </div>
+
 
                               <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-24 shadow-lg border border-white/10">
                                 <img 
@@ -1472,9 +1483,20 @@ export const AdminDashboard = () => {
                                 </div>
                               </div>
                             </div>
+
+                            {/* Glowing Drop Line Indicator - BOTTOM */}
+                            {isDroppingBelow && (
+                              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary rounded-full shadow-[0_0_15px_rgba(220,248,54,1)] z-30 animate-pulse flex items-center justify-between px-2">
+                                <div className="w-2.5 h-2.5 rounded-full bg-primary -ml-1"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-primary -mr-1"></div>
+                              </div>
+                            )}
+                          </div>
+
                           );
                         })}
                       </div>
+
                     );
                   })()}
                 </>
