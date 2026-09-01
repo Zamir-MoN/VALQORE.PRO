@@ -15,16 +15,19 @@ export const TrendingGames = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             <div className="lg:col-span-3">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold font-heading">Trending Now</h3>
-                <div className="w-20 h-6 bg-white/5 rounded animate-pulse"></div>
+                <div className="h-8 w-44 skeleton-shimmer rounded-xl"></div>
+                <div className="w-20 h-6 skeleton-shimmer rounded-lg"></div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-6 sm:gap-y-8 gap-x-4">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="flex flex-col gap-4 animate-pulse">
-                    <div className="w-full aspect-[3/4] bg-white/5 rounded-2xl"></div>
-                    <div className="flex flex-col gap-2">
-                      <div className="h-5 bg-white/10 rounded-md w-3/4"></div>
-                      <div className="h-4 bg-white/5 rounded w-1/2"></div>
+                  <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-2xl p-2.5">
+                    <div className="w-full aspect-[3/4] skeleton-shimmer rounded-xl mb-3"></div>
+                    <div className="flex flex-col gap-2 px-1">
+                      <div className="h-4 skeleton-shimmer rounded w-3/4"></div>
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="h-3 skeleton-shimmer rounded w-1/2"></div>
+                        <div className="h-4 skeleton-shimmer rounded w-1/4"></div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -32,15 +35,15 @@ export const TrendingGames = () => {
             </div>
             <div className="lg:col-span-1 space-y-8">
               {[...Array(2)].map((_, sectionIdx) => (
-                <div key={sectionIdx} className="bg-cards/40 rounded-2xl p-6 border border-white/5 animate-pulse">
-                  <div className="h-6 w-32 bg-white/10 rounded mb-6"></div>
+                <div key={sectionIdx} className="bg-cards/40 rounded-2xl p-6 border border-white/5">
+                  <div className="h-6 w-32 skeleton-shimmer rounded-lg mb-6"></div>
                   <div className="space-y-6">
-                    {[...Array(2)].map((_, i) => (
+                    {[...Array(3)].map((_, i) => (
                       <div key={i} className="flex gap-4">
-                        <div className="w-16 h-16 rounded-xl bg-white/5 shrink-0"></div>
+                        <div className="w-16 h-16 rounded-xl skeleton-shimmer shrink-0"></div>
                         <div className="flex flex-col justify-center gap-2 w-full">
-                          <div className="h-4 bg-white/10 rounded w-full"></div>
-                          <div className="h-4 bg-white/5 rounded w-1/2"></div>
+                          <div className="h-4 skeleton-shimmer rounded w-3/4"></div>
+                          <div className="h-3 skeleton-shimmer rounded w-1/2"></div>
                         </div>
                       </div>
                     ))}
@@ -53,6 +56,7 @@ export const TrendingGames = () => {
       </section>
     );
   }
+
 
   const validGames = games.filter(g => !g.isGiveaway);
   const trendingGames = validGames.slice(0, 12);

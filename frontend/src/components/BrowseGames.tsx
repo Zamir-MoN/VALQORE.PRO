@@ -253,27 +253,30 @@ export const BrowseGames = () => {
             </div>
             
             {/* Game Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 gap-y-8 sm:gap-y-12">
-                {loading ? (
-            [...Array(10)].map((_, i) => (
-              <div key={i} className="flex flex-col gap-4 animate-pulse">
-                <div className="w-full aspect-[3/4] bg-white/10 rounded-2xl"></div>
-                <div className="flex flex-col gap-2">
-                  <div className="h-5 bg-white/10 rounded w-3/4"></div>
-                  <div className="h-4 bg-white/5 rounded w-1/2"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 gap-y-8 sm:gap-y-12">
+              {loading ? (
+                [...Array(10)].map((_, i) => (
+                  <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-2xl p-2.5">
+                    <div className="w-full aspect-[3/4] skeleton-shimmer rounded-xl mb-3"></div>
+                    <div className="flex flex-col gap-2 px-1">
+                      <div className="h-4 skeleton-shimmer rounded w-3/4"></div>
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="h-3 skeleton-shimmer rounded w-1/2"></div>
+                        <div className="h-4 skeleton-shimmer rounded w-1/4"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : displayGames.length > 0 ? (
+                displayGames.map((game) => (
+                  <GameCard key={game.id} game={game} />
+                ))
+              ) : (
+                <div className="col-span-full py-16 text-center text-white/50 bg-cards/30 border border-white/5 rounded-2xl">
+                  No games found matching your search.
                 </div>
-              </div>
-            ))
-          ) : displayGames.length > 0 ? (
-            displayGames.map((game) => (
-              <GameCard key={game.id} game={game} />
-            ))
-          ) : (
-            <div className="col-span-full py-12 text-center text-white/50">
-              No games found matching your search.
+              )}
             </div>
-          )}
-        </div>
           </div>
         </div>
         
@@ -281,3 +284,4 @@ export const BrowseGames = () => {
     </section>
   );
 };
+
