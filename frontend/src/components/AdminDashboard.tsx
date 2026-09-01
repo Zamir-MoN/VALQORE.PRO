@@ -19,13 +19,15 @@ export const AdminDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [gameToDelete, setGameToDelete] = useState<string | null>(null);
   const [draggedGameIndex, setDraggedGameIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isReordering, setIsReordering] = useState(false);
+  const [draggedScreenshotIndex, setDraggedScreenshotIndex] = useState<number | null>(null);
+  const [dragOverScreenshotIndex, setDragOverScreenshotIndex] = useState<number | null>(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
   const backupFileInputRef = useRef<HTMLInputElement>(null);
+
 
 
   // Order state
@@ -277,6 +279,42 @@ export const AdminDashboard = () => {
       setIsReordering(false);
     }
   };
+
+  const handleScreenshotDragStart = (index: number) => {
+    setDraggedScreenshotIndex(index);
+  };
+
+  const handleScreenshotDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragOverScreenshotIndex !== index) {
+      setDragOverScreenshotIndex(index);
+    }
+  };
+
+  const handleScreenshotDragEnd = () => {
+    setDraggedScreenshotIndex(null);
+    setDragOverScreenshotIndex(null);
+  };
+
+  const handleScreenshotDrop = (dropIndex: number) => {
+    if (draggedScreenshotIndex === null || draggedScreenshotIndex === dropIndex) {
+      setDraggedScreenshotIndex(null);
+      setDragOverScreenshotIndex(null);
+      return;
+    }
+
+    const currentUrls = formData.screenshots ? formData.screenshots.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (draggedScreenshotIndex >= currentUrls.length || dropIndex >= currentUrls.length) return;
+
+    const reordered = [...currentUrls];
+    const [movedUrl] = reordered.splice(draggedScreenshotIndex, 1);
+    reordered.splice(dropIndex, 0, movedUrl);
+
+    setFormData({ ...formData, screenshots: reordered.join(',') });
+    setDraggedScreenshotIndex(null);
+    setDragOverScreenshotIndex(null);
+  };
+
 
 
   const fetchCoupons = async () => {
@@ -1018,27 +1056,81 @@ export const AdminDashboard = () => {
                       onChange={handleScreenshotFilesChange} 
                       className="bg-cards border border-white/10 rounded-lg p-2 text-white" 
                     />
-                    {/* Visual display of current URLs */}
+                    {/* Visual display of current URLs with Drag & Drop */}
                     {formData.screenshots && formData.screenshots.split(',').filter(s => s.trim()).length > 0 && (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                        {formData.screenshots.split(',').map(s => s.trim()).filter(Boolean).map((url, idx) => (
-                          <div key={idx} className="relative group">
-                            <img src={url} alt={`Screenshot ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border border-white/10" />
-                            <button 
-                              type="button"
-                              onClick={() => {
-                                const newUrls = formData.screenshots.split(',').map(s => s.trim()).filter(Boolean).filter((_, i) => i !== idx);
-                                setFormData({ ...formData, screenshots: newUrls.join(',') });
-                              }}
-                              className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Remove image"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ))}
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        <div className="flex items-center justify-between text-[11px] text-text-secondary font-bold px-1">
+                          <span className="flex items-center gap-1">
+                            <ArrowUpDown size={12} className="text-primary" />
+                            Drag screenshots to rearrange gallery order
+                          </span>
+                          <span>{formData.screenshots.split(',').filter(s => s.trim()).length} images</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                          {formData.screenshots.split(',').map(s => s.trim()).filter(Boolean).map((url, idx) => {
+                            const isDragging = draggedScreenshotIndex === idx;
+                            const isOver = dragOverScreenshotIndex === idx;
+                            const isDroppingLeft = isOver && draggedScreenshotIndex !== null && draggedScreenshotIndex > idx;
+                            const isDroppingRight = isOver && draggedScreenshotIndex !== null && draggedScreenshotIndex < idx;
+
+                            return (
+                              <div key={idx} className="relative transition-all duration-200">
+                                {/* Left Drop Indicator Line */}
+                                {isDroppingLeft && (
+                                  <div className="absolute -left-1.5 top-0 bottom-0 w-1 bg-primary rounded-full shadow-[0_0_12px_rgba(220,248,54,1)] z-30 animate-pulse"></div>
+                                )}
+
+                                <div 
+                                  draggable
+                                  onDragStart={() => handleScreenshotDragStart(idx)}
+                                  onDragOver={(e) => handleScreenshotDragOver(e, idx)}
+                                  onDragEnd={handleScreenshotDragEnd}
+                                  onDrop={() => handleScreenshotDrop(idx)}
+                                  className={`relative group rounded-xl overflow-hidden border transition-all duration-300 shadow-md cursor-grab active:cursor-grabbing select-none ${
+                                    isDragging 
+                                      ? 'opacity-25 scale-90 border-dashed border-primary/50 bg-primary/10' 
+                                      : isOver 
+                                      ? 'border-primary shadow-[0_0_20px_rgba(220,248,54,0.4)] scale-105' 
+                                      : 'border-white/10 hover:border-primary/40'
+                                  }`}
+                                >
+                                  <img 
+                                    src={getImageUrl(url)} 
+                                    alt={`Screenshot ${idx + 1}`} 
+                                    className="w-full h-24 object-cover" 
+                                  />
+
+                                  {/* Position badge */}
+                                  <div className="absolute top-1.5 left-1.5 bg-black/70 backdrop-blur-sm text-white/90 text-[10px] font-bold px-1.5 py-0.5 rounded border border-white/10 flex items-center gap-1">
+                                    <GripVertical size={10} className="text-primary" />
+                                    <span>#{idx + 1}</span>
+                                  </div>
+
+                                  <button 
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const newUrls = formData.screenshots.split(',').map(s => s.trim()).filter(Boolean).filter((_, i) => i !== idx);
+                                      setFormData({ ...formData, screenshots: newUrls.join(',') });
+                                    }}
+                                    className="absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg cursor-pointer"
+                                    title="Remove image"
+                                  >
+                                    <X size={13} />
+                                  </button>
+                                </div>
+
+                                {/* Right Drop Indicator Line */}
+                                {isDroppingRight && (
+                                  <div className="absolute -right-1.5 top-0 bottom-0 w-1 bg-primary rounded-full shadow-[0_0_12px_rgba(220,248,54,1)] z-30 animate-pulse"></div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
+
                     
                     <span className="text-xs text-text-secondary mt-2">Or add image URL (can be comma-separated):</span>
                     <div className="flex gap-2">
