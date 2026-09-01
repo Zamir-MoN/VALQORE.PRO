@@ -252,11 +252,12 @@ export const Profile = () => {
               )}
             >
               <div className="flex items-center gap-3">
-                <Gamepad2 size={18} className={clsx(activeTab === 'orders' ? "text-primary" : "text-text-secondary group-hover:text-white transition-colors")} />
-                <span>My Library</span>
+                <ShoppingBag size={18} className={clsx(activeTab === 'orders' ? "text-primary" : "text-text-secondary group-hover:text-white transition-colors")} />
+                <span>Order History</span>
               </div>
               <ChevronRight size={16} className={clsx("hidden md:block transition-transform duration-300", activeTab === 'orders' ? "rotate-90 md:rotate-0 translate-x-1" : "opacity-0 group-hover:opacity-100")} />
             </button>
+
             
             <button 
               onClick={() => setActiveTab('settings')}

@@ -20,10 +20,12 @@ const BrowseGames = lazy(() => import('./components/BrowseGames').then(m => ({ d
 const GameDetails = lazy(() => import('./components/GameDetails').then(m => ({ default: m.GameDetails })));
 const Cart = lazy(() => import('./components/Cart').then(m => ({ default: m.Cart })));
 const Profile = lazy(() => import('./components/Profile').then(m => ({ default: m.Profile })));
+const Library = lazy(() => import('./components/Library').then(m => ({ default: m.Library })));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminLogin = lazy(() => import('./components/AdminLogin').then(m => ({ default: m.AdminLogin })));
 const CreatorGuidelines = lazy(() => import('./components/CreatorGuidelines').then(m => ({ default: m.CreatorGuidelines })));
 const CreatorApplication = lazy(() => import('./components/CreatorApplication').then(m => ({ default: m.CreatorApplication })));
+
 
 import { AuthProvider } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
@@ -127,7 +129,9 @@ function App() {
                           <Route path="/game/:id" element={<GameDetails />} />
                           <Route path="/cart" element={<Cart />} />
                           <Route path="/profile" element={<Profile />} />
+                          <Route path="/library" element={<Library />} />
                           <Route path="/admin/login" element={<AdminLogin />} />
+
                           <Route path="/admin" element={<AdminDashboard />} />
                           <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
                           <Route path="/creator/apply" element={<CreatorApplication />} />
