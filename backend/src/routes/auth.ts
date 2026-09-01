@@ -413,6 +413,24 @@ router.get('/admin/users', authMiddleware, async (req: Request, res: Response): 
         email: true,
         createdAt: true,
         steamMonUsername: true,
+        orders: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            items: {
+              include: {
+                game: {
+                  select: {
+                    id: true,
+                    title: true,
+                    coverImage: true,
+                    developer: true,
+                    price: true
+                  }
+                }
+              }
+            }
+          }
+        },
         _count: {
           select: {
             orders: true,
@@ -428,6 +446,7 @@ router.get('/admin/users', authMiddleware, async (req: Request, res: Response): 
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
+
 
 // Delete user (Admin only)
 router.delete('/admin/users/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {

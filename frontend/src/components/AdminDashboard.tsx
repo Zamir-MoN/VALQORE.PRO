@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -34,6 +34,8 @@ export const AdminDashboard = () => {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
 
   // Coupon state
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -1679,17 +1681,27 @@ export const AdminDashboard = () => {
                                 {new Date(u.createdAt).toLocaleDateString()}
                               </td>
                               <td className="py-3 px-4 text-right">
-                                <button 
-                                  onClick={() => setUserToDelete(u.id)}
-                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-lg text-sm transition-colors cursor-pointer border border-red-500/20"
-                                  title="Delete user"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                  <button 
+                                    onClick={() => setSelectedUser(u)}
+                                    className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-blue-500/20 flex items-center gap-1.5"
+                                  >
+                                    <Eye size={14} />
+                                    <span>View Details</span>
+                                  </button>
+                                  <button 
+                                    onClick={() => setUserToDelete(u.id)}
+                                    className="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-lg text-sm transition-colors cursor-pointer border border-red-500/20"
+                                    title="Delete user"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
                       </tbody>
+
 
                     </table>
                   </div>
@@ -1962,10 +1974,110 @@ export const AdminDashboard = () => {
         </div>
       )}
 
+      {/* User Details & Orders Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div data-lenis-prevent="true" className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative shadow-2xl">
+            <button 
+              onClick={() => setSelectedUser(null)}
+              className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-bold mb-6 text-white border-b border-white/10 pb-4 font-heading flex items-center gap-3">
+              <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
+              User Profile & Ordered Games
+            </h2>
+
+            <div className="flex flex-col gap-6">
+              {/* User Account Info */}
+              <div className="bg-cards/50 p-5 rounded-xl border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/20 border border-blue-500/30 text-blue-400 flex items-center justify-center text-2xl font-black uppercase">
+                    {selectedUser.username.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">{selectedUser.username}</h3>
+                    <p className="text-text-secondary text-sm">{selectedUser.email}</p>
+                  </div>
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className="text-text-secondary text-xs uppercase tracking-wider">Member Since</p>
+                  <p className="text-white font-bold text-sm">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              {/* User Order History & Games */}
+              <div className="bg-cards/50 p-5 rounded-xl border border-white/5">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-white flex items-center gap-2">
+                    <ShoppingCart size={18} className="text-primary" />
+                    Purchased / Ordered Games ({selectedUser.orders?.length || 0})
+                  </h3>
+                </div>
+
+                {!selectedUser.orders || selectedUser.orders.length === 0 ? (
+                  <div className="py-10 text-center text-text-secondary">
+                    <Gamepad2 className="w-10 h-10 text-white/10 mx-auto mb-2" />
+                    <p className="text-sm">This user has not placed any orders yet.</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {selectedUser.orders.map((order: any) => (
+                      <div key={order.id} className="bg-black/30 p-4 rounded-xl border border-white/5 flex flex-col gap-3">
+                        <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                          <div className="text-xs text-text-secondary">
+                            <span>Order </span>
+                            <span className="font-mono text-white/70">#{order.id.slice(0, 8)}</span>
+                            <span className="mx-2">•</span>
+                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                            order.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                            order.status === 'CANCELLED' ? 'bg-red-500/20 text-red-400' :
+                            'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="flex flex-col gap-2">
+                          {order.items?.map((item: any) => (
+                            <div key={item.id} className="flex items-center gap-3 bg-black/20 p-2.5 rounded-lg border border-white/5">
+                              {item.game?.coverImage && (
+                                <img src={getImageUrl(item.game.coverImage)} alt={item.game?.title} className="w-10 h-14 object-cover rounded" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-white font-bold text-sm truncate">{item.game?.title || 'Unknown Game'}</p>
+                                <p className="text-text-secondary text-xs">{item.game?.developer || 'Developer'}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-primary font-bold text-sm">{formatPrice(item.pricePaid)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs pt-2 border-t border-white/5">
+                          <span className="text-text-secondary">Total Amount</span>
+                          <span className="text-white font-black text-sm">{formatPrice(order.totalAmount)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {gameToDelete && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-cards border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+
             <h3 className="text-xl font-bold text-white mb-2">Confirm Deletion</h3>
             <p className="text-text-secondary mb-6">Are you sure you want to delete this game? This action cannot be undone.</p>
             <div className="flex justify-end gap-3">
