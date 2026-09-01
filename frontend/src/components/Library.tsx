@@ -147,26 +147,21 @@ export const Library = () => {
             <div className="flex flex-wrap bg-cards/60 p-1 rounded-xl border border-white/10 text-xs font-bold gap-1">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`px-3 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'ALL' ? 'bg-primary text-background font-black shadow-[0_0_10px_rgba(220,248,54,0.3)]' : 'text-text-secondary hover:text-white'}`}
+                className={`px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'ALL' ? 'bg-primary text-background font-black shadow-[0_0_10px_rgba(220,248,54,0.3)]' : 'text-text-secondary hover:text-white'}`}
               >
                 Purchased ({allLibraryGames.length})
-              </button>
-              <button
-                onClick={() => setFilter('COMPLETED')}
-                className={`px-3 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'COMPLETED' ? 'bg-green-500 text-black font-black' : 'text-text-secondary hover:text-white'}`}
-              >
-                Active
               </button>
               {creatorStatus === 'APPROVED' && (
                 <button
                   onClick={() => setFilter('CREATOR_ACCESS')}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'CREATOR_ACCESS' ? 'bg-gradient-to-r from-primary to-lime-400 text-black font-black shadow-[0_0_15px_rgba(220,248,54,0.4)]' : 'text-primary hover:bg-primary/10 border border-primary/20'}`}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'CREATOR_ACCESS' ? 'bg-gradient-to-r from-primary to-lime-400 text-black font-black shadow-[0_0_15px_rgba(220,248,54,0.4)]' : 'text-primary hover:bg-primary/10 border border-primary/20'}`}
                 >
                   <Star size={13} className="fill-current" />
                   Creator Access ({creatorAccessGames.length})
                 </button>
               )}
             </div>
+
           </div>
         </div>
 
