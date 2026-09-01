@@ -76,8 +76,10 @@ export const AdminDashboard = () => {
     trailerUrl: '',
     screenshots: '',
     tagImage: '',
-    steamAppId: ''
+    steamAppId: '',
+    creatorAccess: false
   });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tagImageFile, setTagImageFile] = useState<File | null>(null);
   const [screenshotFiles, setScreenshotFiles] = useState<File[]>([]);
@@ -488,7 +490,8 @@ export const AdminDashboard = () => {
       trailerUrl: game.trailerUrl || '',
       screenshots: game.screenshots || '',
       tagImage: game.tagImage || '',
-      steamAppId: game.steamAppId || ''
+      steamAppId: game.steamAppId || '',
+      creatorAccess: game.creatorAccess || false
     });
     setImageFile(null);
     setTagImageFile(null);
@@ -560,8 +563,10 @@ export const AdminDashboard = () => {
       trailerUrl: '',
       screenshots: '',
       tagImage: '',
-      steamAppId: ''
+      steamAppId: '',
+      creatorAccess: false
     });
+
     setImageFile(null);
     setTagImageFile(null);
     setScreenshotFiles([]);
@@ -844,22 +849,47 @@ export const AdminDashboard = () => {
                 </div>
               )}
 
-              {/* Inventory Management */}
-              <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
-                <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
-                    <input 
-                      type="checkbox" 
-                      name="outOfStock" 
-                      checked={formData.outOfStock} 
-                      onChange={handleInputChange} 
-                      className="absolute opacity-0 w-full h-full cursor-pointer"
-                    />
-                    {formData.outOfStock && <div className="w-3 h-3 bg-red-500 rounded-sm"></div>}
-                  </div>
-                  <span className="font-bold text-white text-red-500">Mark as Out of Stock</span>
-                </label>
+              {/* Inventory Management & Creator Access */}
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 border border-white/10 rounded-xl bg-cards/30">
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-white/20">
+                      <input 
+                        type="checkbox" 
+                        name="outOfStock" 
+                        checked={formData.outOfStock} 
+                        onChange={handleInputChange} 
+                        className="absolute opacity-0 w-full h-full cursor-pointer"
+                      />
+                      {formData.outOfStock && <div className="w-3 h-3 bg-red-500 rounded-sm"></div>}
+                    </div>
+                    <span className="font-bold text-red-400">Mark as Out of Stock</span>
+                  </label>
+                </div>
+
+                <div className="p-4 border border-primary/20 rounded-xl bg-cards/30">
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <div className="relative flex items-center justify-center w-6 h-6 rounded bg-background border border-primary/40">
+                      <input 
+                        type="checkbox" 
+                        name="creatorAccess" 
+                        checked={formData.creatorAccess} 
+                        onChange={handleInputChange} 
+                        className="absolute opacity-0 w-full h-full cursor-pointer"
+                      />
+                      {formData.creatorAccess && <div className="w-3 h-3 bg-primary rounded-sm shadow-[0_0_8px_rgba(220,248,54,0.8)]"></div>}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        Creator Access
+                      </span>
+                      <span className="text-[11px] text-text-secondary">Enable creator program access for this game</span>
+                    </div>
+                  </label>
+                </div>
               </div>
+
 
               {/* System Requirements */}
               {!formData.isGiveaway && (

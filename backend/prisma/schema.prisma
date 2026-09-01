@@ -35,8 +35,10 @@ model Game {
   screenshots      String?
   tagImage         String?
   steamAppId       String?
+  creatorAccess    Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
   
   cartItems        CartItem[]
   wishlistItems    WishlistItem[]

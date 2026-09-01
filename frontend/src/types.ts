@@ -27,7 +27,10 @@ export interface Game {
   trailerUrl?: string;
   screenshots?: string;
   tagImage?: string;
+  steamAppId?: string;
+  creatorAccess?: boolean;
 }
+
 
 export interface Testimonial {
   id: string;
