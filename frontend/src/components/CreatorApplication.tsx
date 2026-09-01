@@ -154,12 +154,13 @@ export const CreatorApplication = () => {
       }
     }
 
-    const finalEmail = emailOption === 'existing' ? user.email : customEmail;
+    const finalEmail = user.email;
     
     if (!finalEmail) {
-      toast.error('Please provide a valid creator email.');
+      toast.error('No account email found. Please ensure your account has a valid email.');
       return;
     }
+
 
     // Build payload
     const payload = {
@@ -488,75 +489,23 @@ export const CreatorApplication = () => {
               )}
             </div>
             
-            {/* Section 5: Email Selection */}
+            {/* Section 5: Creator Email (Existing Account Email) */}
             <div className="pt-6 border-t border-white/10">
-              <h3 className="text-lg font-heading font-bold text-white mb-4">Creator Email</h3>
-              <p className="text-sm text-text-secondary mb-6">This is the email we will use for official creator communications and approvals.</p>
+              <h3 className="text-lg font-heading font-bold text-white mb-2">Creator Account Email</h3>
+              <p className="text-sm text-text-secondary mb-4">Official creator communications and approval decisions will be sent to your account email:</p>
               
-              <div className="space-y-4">
-                <label className={clsx(
-                  "flex items-center gap-4 p-4 rounded-xl cursor-pointer border transition-all",
-                  emailOption === 'existing' ? "bg-primary/5 border-primary/50" : "bg-background/50 border-white/10"
-                )}>
-                  <div className={clsx(
-                    "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                    emailOption === 'existing' ? "border-primary" : "border-text-secondary"
-                  )}>
-                    {emailOption === 'existing' && <div className="w-2.5 h-2.5 bg-primary rounded-full" />}
-                  </div>
-                  <input 
-                    type="radio" 
-                    name="emailOption"
-                    value="existing"
-                    className="hidden"
-                    checked={emailOption === 'existing'}
-                    onChange={() => setEmailOption('existing')}
-                  />
-                  <div>
-                    <div className="font-bold text-white">Use my existing account email</div>
-                    <div className="text-sm text-text-secondary">{user.email || 'Not provided'}</div>
-                  </div>
-                </label>
-                
-                <label className={clsx(
-                  "flex items-center gap-4 p-4 rounded-xl cursor-pointer border transition-all",
-                  emailOption === 'another' ? "bg-primary/5 border-primary/50" : "bg-background/50 border-white/10"
-                )}>
-                  <div className={clsx(
-                    "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                    emailOption === 'another' ? "border-primary" : "border-text-secondary"
-                  )}>
-                    {emailOption === 'another' && <div className="w-2.5 h-2.5 bg-primary rounded-full" />}
-                  </div>
-                  <input 
-                    type="radio" 
-                    name="emailOption"
-                    value="another"
-                    className="hidden"
-                    checked={emailOption === 'another'}
-                    onChange={() => setEmailOption('another')}
-                  />
-                  <div className="font-bold text-white">Use another email</div>
-                </label>
-                
-                {emailOption === 'another' && (
-                  <div className="pl-9 animate-in slide-in-from-top-2 fade-in duration-300">
-                    <div className="relative">
-                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
-                      <input 
-                        type="email" 
-                        value={customEmail}
-                        onChange={e => setCustomEmail(e.target.value)}
-                        placeholder="Enter preferred creator email"
-                        className="w-full bg-background/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all"
-                        required={emailOption === 'another'}
-                      />
-                    </div>
-                  </div>
-                )}
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                  <Mail size={16} />
+                </div>
+                <div>
+                  <div className="font-bold text-white text-sm">{user.email || 'Not provided'}</div>
+                  <div className="text-xs text-text-secondary">Primary account email</div>
+                </div>
               </div>
             </div>
           </div>
+
 
           <button 
             type="submit"
