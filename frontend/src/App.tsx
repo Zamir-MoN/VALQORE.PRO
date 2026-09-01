@@ -80,68 +80,68 @@ function App() {
             <WishlistProvider>
               <PullToRefresh>
                 <Router>
-                {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
-                <ScrollToTop />
-                <AuthModal />
-                <div className="fixed inset-0 -z-50 pointer-events-none">
-                  <video 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline 
-                    className="w-full h-full object-cover transform-gpu will-change-transform"
-                  >
-                    <source src="/videos/bg-nexus.mp4" type="video/mp4" />
-                  </video>
-                  {/* Optional overlay to darken video */}
-                  <div className="absolute inset-0 bg-background/60"></div>
-                </div>
-                
-                {!loading && (
-                  <div className="min-h-screen text-text-primary flex flex-col font-body relative z-0 animate-in fade-in duration-700">
-                    <Toaster 
-                      position="top-center"
-                      toastOptions={{
-                        className: 'glass text-white font-bold',
-                        style: {
-                          background: 'rgba(25, 25, 25, 0.9)',
-                          backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                        },
-                      }}
-                    />
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Suspense fallback={<div className="min-h-[60vh] w-full flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div></div>}>
-                        <Routes>
-                          <Route path="/" element={
-                            <>
-                              <Hero />
-                              <TrendingGames />
-                              <RentalGames />
-                              <GiveawayGames />
-                              <Testimonials />
-                              <FAQ />
-                              <Newsletter />
-                            </>
-                          } />
-                          <Route path="/store" element={<BrowseGames />} />
-                          <Route path="/game/:id" element={<GameDetails />} />
-                          <Route path="/cart" element={<Cart />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route path="/library" element={<Library />} />
-                          <Route path="/admin/login" element={<AdminLogin />} />
-
-                          <Route path="/admin" element={<AdminDashboard />} />
-                          <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
-                          <Route path="/creator/apply" element={<CreatorApplication />} />
-                        </Routes>
-                      </Suspense>
-                    </main>
-                    <Footer />
+                  {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
+                  <ScrollToTop />
+                  <AuthModal />
+                  <div className="fixed inset-0 -z-50 pointer-events-none">
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full h-full object-cover transform-gpu will-change-transform"
+                    >
+                      <source src="/videos/bg-nexus.mp4" type="video/mp4" />
+                    </video>
+                    {/* Optional overlay to darken video */}
+                    <div className="absolute inset-0 bg-background/60"></div>
                   </div>
-                )}
-              </Router>
+
+                  {!loading && (
+                    <div className="min-h-screen text-text-primary flex flex-col font-body relative z-0 animate-in fade-in duration-700">
+                      <Toaster
+                        position="top-center"
+                        toastOptions={{
+                          className: 'glass text-white font-bold',
+                          style: {
+                            background: 'rgba(25, 25, 25, 0.9)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                          },
+                        }}
+                      />
+                      <Navbar />
+                      <main className="flex-grow">
+                        <Suspense fallback={<div className="min-h-[60vh] w-full flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div></div>}>
+                          <Routes>
+                            <Route path="/" element={
+                              <>
+                                <Hero />
+                                <TrendingGames />
+                                <RentalGames />
+                                <GiveawayGames />
+                                <Testimonials />
+                                <FAQ />
+                                <Newsletter />
+                              </>
+                            } />
+                            <Route path="/store" element={<BrowseGames />} />
+                            <Route path="/game/:id" element={<GameDetails />} />
+                            <Route path="/cart" element={<Cart />} />
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/library" element={<Library />} />
+                            <Route path="/admin/login" element={<AdminLogin />} />
+
+                            <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
+                            <Route path="/creator/apply" element={<CreatorApplication />} />
+                          </Routes>
+                        </Suspense>
+                      </main>
+                      <Footer />
+                    </div>
+                  )}
+                </Router>
               </PullToRefresh>
             </WishlistProvider>
           </CartProvider>
@@ -152,3 +152,4 @@ function App() {
 }
 
 export default App;
+
