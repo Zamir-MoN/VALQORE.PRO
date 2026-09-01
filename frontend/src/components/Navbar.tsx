@@ -62,25 +62,58 @@ export const Navbar = () => {
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
-          <Link to="/" onClick={handleNavClick('/')} className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
+          <Link 
+            to="/" 
+            onClick={handleNavClick('/')} 
+            className={clsx(
+              "relative text-sm font-bold transition-colors duration-300 group py-2",
+              location.pathname === '/' ? "text-white" : "text-text-secondary hover:text-white"
+            )}
+          >
             Home
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
+            <span className={clsx(
+              "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 rounded-full",
+              location.pathname === '/' ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
+            )}></span>
           </Link>
-          <Link to="/store" onClick={handleNavClick('/store')} className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
+          <Link 
+            to="/store" 
+            onClick={handleNavClick('/store')} 
+            className={clsx(
+              "relative text-sm font-bold transition-colors duration-300 group py-2",
+              location.pathname === '/store' || location.pathname.startsWith('/game/') ? "text-white" : "text-text-secondary hover:text-white"
+            )}
+          >
             Store
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
+            <span className={clsx(
+              "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 rounded-full",
+              location.pathname === '/store' || location.pathname.startsWith('/game/') ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
+            )}></span>
           </Link>
           {user && (
-            <Link to="/library" className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
+            <Link 
+              to="/library" 
+              className={clsx(
+                "relative text-sm font-bold transition-colors duration-300 group py-2",
+                location.pathname === '/library' ? "text-white" : "text-text-secondary hover:text-white"
+              )}
+            >
               Library
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
+              <span className={clsx(
+                "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 rounded-full",
+                location.pathname === '/library' ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
+              )}></span>
             </Link>
           )}
-          <a href="/#support" className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
+          <a 
+            href="/#support" 
+            className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2"
+          >
             Support
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
           </a>
         </div>
+
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
