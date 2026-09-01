@@ -382,10 +382,18 @@ router.put('/password', authMiddleware, async (req: Request, res: Response): Pro
       data: { password: hashedPassword }
     });
 
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('[CHANGE PASSWORD ERROR]', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 // Get all users (Admin only)
 router.get('/admin/users', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
+
 
     // Check if user is admin
     if (userPayload.userId) {
