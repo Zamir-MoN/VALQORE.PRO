@@ -68,11 +68,18 @@ export const Navbar = () => {
             Store
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
           </Link>
+          {user && (
+            <Link to="/profile" className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
+              Library
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </Link>
+          )}
           <a href="/#support" className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
             Support
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
           </a>
         </div>
+
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
@@ -155,11 +162,13 @@ export const Navbar = () => {
           items={[
             { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
             { label: 'Store', ariaLabel: 'Browse the store', link: '/store' },
+            ...(user ? [{ label: 'Library', ariaLabel: 'View your purchased games', link: '/profile' }] : []),
             { label: 'Support', ariaLabel: 'Get help', link: '/#support' },
             ...(user 
               ? [{ label: 'Profile', ariaLabel: 'Go to your profile', link: '/profile' }]
               : [{ label: 'Login', ariaLabel: 'Sign in to account', link: '#', onClick: openAuthModal }])
           ]}
+
           socialItems={[
             { label: 'Discord', link: '#' },
             { label: 'Twitter', link: '#' },

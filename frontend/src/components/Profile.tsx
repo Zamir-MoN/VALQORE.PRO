@@ -248,14 +248,14 @@ export const Profile = () => {
                 "flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group",
                 activeTab === 'orders' 
                   ? 'bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_20px_rgba(220,248,54,0.05)]' 
-                  : 'text-text-secondary hover:bg-white/5 hover:text-white border border-transparent'
+                  : 'text-text-secondary hover:text-white hover:bg-white/5'
               )}
             >
-              <span className="flex items-center gap-3">
-                <ShoppingBag size={20} className={activeTab === 'orders' ? 'text-primary' : 'text-text-secondary group-hover:text-white'} /> 
-                Order History
-              </span>
-              {activeTab === 'orders' && <ChevronRight size={16} className="hidden md:block opacity-70" />}
+              <div className="flex items-center gap-3">
+                <Gamepad2 size={18} className={clsx(activeTab === 'orders' ? "text-primary" : "text-text-secondary group-hover:text-white transition-colors")} />
+                <span>My Library</span>
+              </div>
+              <ChevronRight size={16} className={clsx("hidden md:block transition-transform duration-300", activeTab === 'orders' ? "rotate-90 md:rotate-0 translate-x-1" : "opacity-0 group-hover:opacity-100")} />
             </button>
             
             <button 
@@ -296,14 +296,15 @@ export const Profile = () => {
           {/* Main Content Area */}
           <div className="flex-1 w-full min-h-[500px]">
             
-            {/* ORDERS TAB */}
+            {/* ORDERS / LIBRARY TAB */}
             {activeTab === 'orders' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white flex items-center gap-3">
-                    <span className="w-2 h-8 bg-primary rounded-full"></span> My Orders
+                    <span className="w-2 h-8 bg-primary rounded-full"></span> My Library & Purchased Games
                   </h2>
                 </div>
+
 
                 
                 {loadingOrders ? (
