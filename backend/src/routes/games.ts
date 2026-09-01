@@ -18,22 +18,141 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get a single game
+// Get a single game (including real like/dislike counts and user reaction)
 router.get('/:id', async (req, res) => {
   try {
     const game = await prisma.game.findUnique({
       where: { id: req.params.id }
     });
-    if (game) {
-      res.json(game);
-    } else {
+    if (!game) {
       res.status(404).json({ error: 'Game not found' });
+      return;
     }
+
+    const [likesCount, dislikesCount] = await Promise.all([
+      prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'LIKE' } }),
+      prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
+    ]);
+
+    res.json({
+      ...game,
+      likesCount,
+      dislikesCount
+    });
   } catch (error) {
     console.error('[GET /:id ERROR]:', error);
     res.status(500).json({ error: 'Failed to fetch game' });
   }
 });
+
+// Get user reaction for a game
+router.get('/:id/reaction', authMiddleware, async (req, res) => {
+  try {
+    const userPayload = (req as any).user;
+    if (!userPayload.userId) {
+      res.json({ reaction: null });
+      return;
+    }
+
+    const userReaction = await prisma.gameReaction.findUnique({
+      where: {
+        userId_gameId: {
+          userId: userPayload.userId,
+          gameId: req.params.id
+        }
+      }
+    });
+
+    const [likesCount, dislikesCount] = await Promise.all([
+      prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'LIKE' } }),
+      prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
+    ]);
+
+    res.json({
+      userReaction: userReaction ? userReaction.type : null,
+      likesCount,
+      dislikesCount
+    });
+  } catch (error) {
+    console.error('[GET REACTION ERROR]', error);
+    res.status(500).json({ error: 'Failed to fetch reaction' });
+  }
+});
+
+// Toggle Like / Dislike reaction on a game
+router.post('/:id/react', authMiddleware, async (req, res) => {
+  try {
+    const userPayload = (req as any).user;
+    if (!userPayload.userId) {
+      res.status(401).json({ error: 'Only logged-in users can like or dislike games' });
+      return;
+    }
+
+    const { type } = req.body; // "LIKE" or "DISLIKE"
+    if (!['LIKE', 'DISLIKE'].includes(type)) {
+      res.status(400).json({ error: 'Reaction type must be LIKE or DISLIKE' });
+      return;
+    }
+
+    const existing = await prisma.gameReaction.findUnique({
+      where: {
+        userId_gameId: {
+          userId: userPayload.userId,
+          gameId: req.params.id
+        }
+      }
+    });
+
+    if (existing) {
+      if (existing.type === type) {
+        // Clicking same button again removes reaction (toggle off)
+        await prisma.gameReaction.delete({
+          where: { id: existing.id }
+        });
+      } else {
+        // Switch between LIKE and DISLIKE
+        await prisma.gameReaction.update({
+          where: { id: existing.id },
+          data: { type }
+        });
+      }
+    } else {
+      // Create new reaction
+      await prisma.gameReaction.create({
+        data: {
+          userId: userPayload.userId,
+          gameId: req.params.id,
+          type
+        }
+      });
+    }
+
+    const [likesCount, dislikesCount, currentReaction] = await Promise.all([
+      prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'LIKE' } }),
+      prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
+      prisma.gameReaction.findUnique({
+        where: {
+          userId_gameId: {
+            userId: userPayload.userId,
+            gameId: req.params.id
+          }
+        }
+      })
+    ]);
+
+    getIO()?.emit('games_updated');
+    res.json({
+      success: true,
+      userReaction: currentReaction ? currentReaction.type : null,
+      likesCount,
+      dislikesCount
+    });
+  } catch (error: any) {
+    console.error('[REACT GAME ERROR]', error);
+    res.status(500).json({ error: error.message || 'Failed to react to game' });
+  }
+});
+
 
 // Create a new game
 router.post('/', authMiddleware, async (req, res) => {

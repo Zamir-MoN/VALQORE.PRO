@@ -2,17 +2,19 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift } from 'lucide-react';
 import { useGames } from '../context/GameContext';
-import { useCurrency } from '../context/CurrencyContext';
-import { useCart } from '../context/CartContext';
-
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 import { getYouTubeVideoId } from '../utils/youtube';
 import { getImageUrl } from '../utils/image';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const GameDetails = () => {
   const { games, loading } = useGames();
   const { formatPrice } = useCurrency();
   const { addToCart, isInCart } = useCart();
-
+  const { user, token, openAuthModal } = useAuth();
   
   const { id } = useParams();
   const navigate = useNavigate();
@@ -20,6 +22,67 @@ export const GameDetails = () => {
   const game = games.find(g => g.id === id);
   const hasTrailer = !!(game?.trailerUrl && getYouTubeVideoId(game.trailerUrl));
   const [activeMedia, setActiveMedia] = useState<number>(hasTrailer ? -1 : 0);
+
+  // Real reaction state
+  const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
+  const [likesCount, setLikesCount] = useState<number>(0);
+  const [dislikesCount, setDislikesCount] = useState<number>(0);
+  const [isReacting, setIsReacting] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      // Fetch public reactions or user reaction if logged in
+      const fetchReaction = async () => {
+        try {
+          if (token) {
+            const res = await axios.get(`${API_URL}/games/${id}/reaction`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setUserReaction(res.data.userReaction);
+            setLikesCount(res.data.likesCount || 0);
+            setDislikesCount(res.data.dislikesCount || 0);
+          } else {
+            const res = await axios.get(`${API_URL}/games/${id}`);
+            setLikesCount(res.data.likesCount || 0);
+            setDislikesCount(res.data.dislikesCount || 0);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      fetchReaction();
+    }
+  }, [id, token]);
+
+  const handleReaction = async (type: 'LIKE' | 'DISLIKE') => {
+    if (!user || !token) {
+      toast.error('Please log in to like or dislike this game');
+      openAuthModal();
+      return;
+    }
+
+    if (isReacting || !id) return;
+    setIsReacting(true);
+
+    try {
+      const res = await axios.post(`${API_URL}/games/${id}/react`, { type }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserReaction(res.data.userReaction);
+      setLikesCount(res.data.likesCount);
+      setDislikesCount(res.data.dislikesCount);
+      if (res.data.userReaction === type) {
+        toast.success(type === 'LIKE' ? 'Liked!' : 'Disliked');
+      } else {
+        toast.success('Reaction removed');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to update reaction');
+    } finally {
+      setIsReacting(false);
+    }
+  };
+
 
 
   const inCart = game ? isInCart(game.id) : false;
@@ -295,19 +358,46 @@ export const GameDetails = () => {
 
               <div className="flex items-center justify-between bg-cards/40 border border-white/5 rounded-2xl p-4">
                 <div className="flex gap-2">
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-cards border border-white/10 hover:bg-[#a3e635]/20 hover:border-[#a3e635]/50 transition-colors group">
-                    <ThumbsUp size={16} className="text-white group-hover:text-[#a3e635]" />
-                    <span className="text-xs font-bold text-text-secondary group-hover:text-white">765</span>
+                  <button 
+                    onClick={() => handleReaction('LIKE')}
+                    disabled={isReacting}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border transition-all cursor-pointer ${
+                      userReaction === 'LIKE' 
+                        ? 'bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' 
+                        : 'bg-cards border-white/10 hover:bg-primary/10 hover:border-primary/40 text-text-secondary hover:text-white'
+                    }`}
+                    title="Like this game"
+                  >
+                    <ThumbsUp size={16} className={userReaction === 'LIKE' ? 'text-primary fill-primary/30' : ''} />
+                    <span className="text-xs font-bold font-mono">{likesCount}</span>
                   </button>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-cards border border-white/10 hover:bg-red-500/20 hover:border-red-500/50 transition-colors group">
-                    <ThumbsDown size={16} className="text-white group-hover:text-red-500" />
-                    <span className="text-xs font-bold text-text-secondary group-hover:text-white">66</span>
+
+                  <button 
+                    onClick={() => handleReaction('DISLIKE')}
+                    disabled={isReacting}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg border transition-all cursor-pointer ${
+                      userReaction === 'DISLIKE' 
+                        ? 'bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]' 
+                        : 'bg-cards border-white/10 hover:bg-red-500/10 hover:border-red-500/40 text-text-secondary hover:text-white'
+                    }`}
+                    title="Dislike this game"
+                  >
+                    <ThumbsDown size={16} className={userReaction === 'DISLIKE' ? 'text-red-400 fill-red-500/30' : ''} />
+                    <span className="text-xs font-bold font-mono">{dislikesCount}</span>
                   </button>
                 </div>
-                <button className="p-2 rounded-lg bg-cards border border-white/10 hover:bg-white/10 text-white transition-colors">
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success('Game link copied to clipboard!');
+                  }}
+                  className="p-2 rounded-lg bg-cards border border-white/10 hover:bg-white/10 text-white transition-colors cursor-pointer"
+                  title="Share game"
+                >
                   <Share2 size={16} />
                 </button>
               </div>
+
             </div>
           </div>
 

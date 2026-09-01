@@ -41,6 +41,7 @@ model Game {
   cartItems        CartItem[]
   wishlistItems    WishlistItem[]
   orderItems       OrderItem[]
+  reactions        GameReaction[]
 }
 
 model User {
@@ -56,9 +57,25 @@ model User {
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
   orders        Order[]
+  reactions     GameReaction[]
   creatorApplications CreatorApplication[]
   creatorCoupons      Coupon[]             @relation("CreatorCoupons")
 }
+
+model GameReaction {
+  id        String   @id @default(uuid())
+  userId    String
+  gameId    String
+  type      String   // "LIKE" or "DISLIKE"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId])
+}
+
 
 model CartItem {
   id        String   @id @default(uuid())
