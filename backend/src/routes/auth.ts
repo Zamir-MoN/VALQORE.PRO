@@ -153,14 +153,18 @@ router.post('/send-register-otp', async (req: Request, res: Response): Promise<v
     });
 
     // Send email
-    await sendOtpEmail(trimmedEmail, otp, trimmedUsername);
+    const emailSent = await sendOtpEmail(trimmedEmail, otp, trimmedUsername);
+    if (!emailSent) {
+      console.warn('[SEND REGISTER OTP] Email service returned false, but OTP created.');
+    }
 
     res.json({ message: 'Verification code sent to your email' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[SEND REGISTER OTP ERROR]', error);
-    res.status(500).json({ error: 'Failed to send verification code' });
+    res.status(500).json({ error: error.message || 'Failed to send verification code' });
   }
 });
+
 
 // ----------------------------------------------------
 // Verify Registration OTP & Create User

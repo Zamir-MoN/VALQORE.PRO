@@ -1,24 +1,26 @@
 import { Resend } from 'resend';
 
-const resendApiKey = process.env.RESEND_API_KEY;
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@valqore.pro';
-
 export const sendOtpEmail = async (email: string, otp: string, username: string): Promise<boolean> => {
   console.log('====================================================');
   console.log(`[OTP VERIFICATION] To: ${email} (${username}) | CODE: ${otp}`);
   console.log('====================================================');
 
-  if (!resend) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@valqore.pro';
+
+  if (!resendApiKey) {
     console.log('[RESEND] No RESEND_API_KEY found in .env, logged OTP to console above.');
     return true;
   }
+
+  const resend = new Resend(resendApiKey);
 
   try {
     const { data, error } = await resend.emails.send({
       from: `Valqore Security <${fromEmail}>`,
       to: [email],
       subject: `[${otp}] Your Valqore Verification Code`,
+
       html: `
         <!DOCTYPE html>
         <html>
