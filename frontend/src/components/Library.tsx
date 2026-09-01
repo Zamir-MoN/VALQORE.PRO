@@ -109,98 +109,98 @@ export const Library = () => {
   }
 
   return (
-    <div className="pt-32 pb-24 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen" id="library-page">
+    <div className="pt-24 sm:pt-32 pb-20 sm:pb-24 px-3 sm:px-6 lg:px-12 relative z-10 min-h-screen" id="library-page">
       {/* Background ambient glow */}
-      <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-primary/5 rounded-[100%] blur-[140px] -z-10 pointer-events-none"></div>
+      <div className="absolute top-28 sm:top-40 left-1/2 -translate-x-1/2 w-[350px] sm:w-[800px] h-[250px] sm:h-[350px] bg-primary/5 rounded-[100%] blur-[100px] sm:blur-[140px] -z-10 pointer-events-none"></div>
 
       <div className="container mx-auto max-w-[1400px]">
         
         {/* Header section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 pb-6 border-b border-white/10">
+        <div className="flex flex-col gap-5 sm:gap-6 mb-8 sm:mb-10 pb-5 sm:pb-6 border-b border-white/10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20 mb-3">
-              <Sparkles size={14} /> My Collection
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-widest border border-primary/20 mb-2 sm:mb-3">
+              <Sparkles size={13} /> My Collection
             </div>
-            <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-tight text-white flex items-center gap-4">
-              <Gamepad2 className="text-primary w-10 h-10 sm:w-12 sm:h-12" />
-              Game Library
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-heading font-black tracking-tight text-white flex items-center gap-3 sm:gap-4">
+              <Gamepad2 className="text-primary w-8 h-8 sm:w-11 sm:h-11 flex-shrink-0" />
+              <span>Game Library</span>
             </h1>
-            <p className="text-text-secondary text-sm sm:text-base mt-2">
+            <p className="text-text-secondary text-xs sm:text-base mt-1.5 sm:mt-2">
               Access and manage all your purchased game accounts and licenses.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          {/* Controls: Search and Filter Tabs */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 w-full">
             {/* Search */}
-            <div className="relative flex-1 md:w-72">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+            <div className="relative flex-1 w-full sm:max-w-xs">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search your games..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-cards/60 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:border-primary focus:bg-cards/90 outline-none transition-all"
+                className="w-full bg-cards/60 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white focus:border-primary focus:bg-cards/90 outline-none transition-all placeholder:text-text-secondary/60"
               />
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex flex-wrap bg-cards/60 p-1 rounded-xl border border-white/10 text-xs font-bold gap-1">
+            <div className="flex items-center bg-cards/70 p-1 rounded-xl border border-white/10 text-xs font-bold gap-1 self-start sm:self-auto w-full sm:w-auto overflow-x-auto">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'ALL' ? 'bg-primary text-background font-black shadow-[0_0_10px_rgba(220,248,54,0.3)]' : 'text-text-secondary hover:text-white'}`}
+                className={`flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${filter === 'ALL' ? 'bg-primary text-background font-black shadow-[0_0_12px_rgba(220,248,54,0.3)]' : 'text-text-secondary hover:text-white'}`}
               >
                 Purchased ({allLibraryGames.length})
               </button>
               {creatorStatus === 'APPROVED' && (
                 <button
                   onClick={() => setFilter('CREATOR_ACCESS')}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'CREATOR_ACCESS' ? 'bg-gradient-to-r from-primary to-lime-400 text-black font-black shadow-[0_0_15px_rgba(220,248,54,0.4)]' : 'text-primary hover:bg-primary/10 border border-primary/20'}`}
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${filter === 'CREATOR_ACCESS' ? 'bg-gradient-to-r from-primary to-lime-400 text-black font-black shadow-[0_0_15px_rgba(220,248,54,0.4)]' : 'text-primary hover:bg-primary/10 border border-primary/20'}`}
                 >
-                  <Star size={13} className="fill-current" />
-                  Creator Access ({creatorAccessGames.length})
+                  <Star size={12} className="fill-current flex-shrink-0" />
+                  <span>Creator Access ({creatorAccessGames.length})</span>
                 </button>
               )}
             </div>
-
           </div>
         </div>
 
         {/* Content */}
         {loading ? (
-          <div className="py-32 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
-            <p className="text-text-secondary font-bold text-sm">Loading your library...</p>
+          <div className="py-24 sm:py-32 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
+            <p className="text-text-secondary font-bold text-xs sm:text-sm">Loading your library...</p>
           </div>
         ) : filteredGames.length === 0 ? (
-          <div className="py-24 px-6 bg-cards/30 border border-white/5 rounded-3xl text-center max-w-2xl mx-auto backdrop-blur-sm shadow-2xl">
-            <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(220,248,54,0.15)]">
-              <Gamepad2 size={40} />
+          <div className="py-16 sm:py-24 px-4 sm:px-6 bg-cards/40 border border-white/5 rounded-3xl text-center max-w-xl mx-auto backdrop-blur-md shadow-2xl">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-[0_0_30px_rgba(220,248,54,0.15)]">
+              <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
-            <h2 className="text-2xl font-heading font-bold text-white mb-2">
+            <h2 className="text-xl sm:text-2xl font-heading font-bold text-white mb-2">
               {filter === 'CREATOR_ACCESS' ? 'No Creator Access Games Available' : 'No Games in Library Yet'}
             </h2>
-            <p className="text-text-secondary text-sm mb-8 leading-relaxed">
+            <p className="text-text-secondary text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed max-w-md mx-auto">
               {filter === 'CREATOR_ACCESS' 
-                ? 'No games are currently marked for Creator Access. Check back soon as new games are added!'
+                ? 'No games are currently marked for Creator Access. Check back soon as new creator games are added!'
                 : "You haven't purchased any games yet or your search filter didn't match any items. Explore our store to find your next adventure!"}
             </p>
             <Link
               to="/store"
-              className="inline-flex items-center gap-3 bg-primary text-background font-heading font-black text-sm px-8 py-4 rounded-xl hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(220,248,54,0.3)] uppercase tracking-wider"
+              className="inline-flex items-center justify-center gap-2 sm:gap-3 bg-primary text-background font-heading font-black text-xs sm:text-sm px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(220,248,54,0.3)] uppercase tracking-wider w-full sm:w-auto"
             >
               <span>Browse Games Store</span>
-              <ArrowRight size={18} />
+              <ArrowRight size={16} />
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredGames.map((item, idx) => (
               <div 
                 key={`${item.id}-${item.orderId}-${idx}`} 
-                className="group bg-cards/40 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col backdrop-blur-sm relative overflow-hidden"
+                className="group bg-cards/40 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-2xl p-3.5 sm:p-4 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col backdrop-blur-sm relative overflow-hidden"
               >
                 {/* Cover Art */}
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-4 bg-black/40">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-3 sm:mb-4 bg-black/40">
                   <img 
                     src={item.coverImage ? getImageUrl(item.coverImage) : '/images/hero-artwork.png'} 
                     alt={item.title} 
@@ -210,8 +210,8 @@ export const Library = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-80"></div>
                   
                   {/* Status Badge */}
-                  <div className="absolute top-3 right-3 z-10">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg ${
+                  <div className="absolute top-2.5 right-2.5 z-10">
+                    <span className={`px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg ${
                       item.isCreatorGame
                         ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.4)]'
                         : item.orderStatus === 'COMPLETED' 
@@ -224,8 +224,8 @@ export const Library = () => {
                     </span>
                   </div>
 
-                  <div className="absolute bottom-3 left-3 right-3 z-10">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 backdrop-blur-md">
                       {item.genre || 'Game'}
                     </span>
                   </div>
@@ -233,14 +233,14 @@ export const Library = () => {
 
                 {/* Title & Info */}
                 <div className="flex flex-col flex-1">
-                  <h3 className="font-heading font-black text-lg text-white group-hover:text-primary transition-colors truncate mb-1">
+                  <h3 className="font-heading font-black text-base sm:text-lg text-white group-hover:text-primary transition-colors truncate mb-1">
                     {item.title}
                   </h3>
-                  <p className="text-text-secondary text-xs truncate mb-4">{item.developer || 'Publisher'}</p>
+                  <p className="text-text-secondary text-xs truncate mb-3 sm:mb-4">{item.developer || 'Publisher'}</p>
 
-                  <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between text-xs text-text-secondary mb-4">
+                  <div className="mt-auto pt-2.5 sm:pt-3 border-t border-white/5 flex items-center justify-between text-xs text-text-secondary mb-3 sm:mb-4">
                     <span>{item.isCreatorGame ? 'Access Type' : 'Purchased'}</span>
-                    <span className="text-white font-mono font-bold">
+                    <span className="text-white font-mono font-bold text-[11px] sm:text-xs">
                       {item.isCreatorGame ? 'Creator Free Pass' : new Date(item.orderDate).toLocaleDateString()}
                     </span>
                   </div>
@@ -249,16 +249,16 @@ export const Library = () => {
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       to={`/game/${item.id}`}
-                      className="flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl py-2.5 text-xs font-bold transition-all text-center"
+                      className="flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center active:scale-95"
                     >
-                      <Play size={14} className="text-primary" />
+                      <Play size={13} className="text-primary flex-shrink-0" />
                       <span>Details</span>
                     </Link>
                     <Link
                       to={item.isCreatorGame ? `/game/${item.id}` : "/profile"}
-                      className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)]"
+                      className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)] active:scale-95"
                     >
-                      {item.isCreatorGame ? <Key size={14} /> : <ShieldCheck size={14} />}
+                      {item.isCreatorGame ? <Key size={13} className="flex-shrink-0" /> : <ShieldCheck size={13} className="flex-shrink-0" />}
                       <span>{item.isCreatorGame ? 'Play Now' : 'Account Info'}</span>
                     </Link>
                   </div>
@@ -271,4 +271,5 @@ export const Library = () => {
     </div>
   );
 };
+
 
