@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -22,6 +22,7 @@ export const AdminDashboard = () => {
   const [gameToDelete, setGameToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
+  const backupFileInputRef = useRef<HTMLInputElement>(null);
 
   // Order state
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
@@ -48,6 +49,7 @@ export const AdminDashboard = () => {
   const [creatorRequests, setCreatorRequests] = useState<any[]>([]);
   const [loadingCreatorRequests, setLoadingCreatorRequests] = useState(false);
   const [selectedCreatorRequest, setSelectedCreatorRequest] = useState<any>(null);
+
 
 
   const [formData, setFormData] = useState({
@@ -151,7 +153,55 @@ export const AdminDashboard = () => {
   };
 
 
+  const exportGamesBackup = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/games/backup/export`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `valqore_games_backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      toast.success(`Exported ${res.data.totalGames || res.data.games?.length} games to JSON!`);
+    } catch (err) {
+      toast.error('Failed to export backup');
+    }
+  };
+
+  const handleBackupFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        const gamesArray = Array.isArray(json) ? json : json.games;
+        if (!gamesArray || !Array.isArray(gamesArray)) {
+          toast.error('Invalid JSON format. File must contain a games array.');
+          return;
+        }
+
+        const res = await axios.post(`${API_URL}/games/backup/import`, { games: gamesArray }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        toast.success(res.data.message || 'Games imported successfully!');
+        fetchGames();
+      } catch (err: any) {
+        toast.error(err.response?.data?.error || 'Failed to import backup file');
+      } finally {
+        if (backupFileInputRef.current) backupFileInputRef.current.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const fetchGames = async () => {
+
     try {
       const res = await axios.get(`${API_URL}/games`);
       setGames(res.data);
@@ -1059,23 +1109,58 @@ export const AdminDashboard = () => {
               {activeTab === 'orders' ? (
                 <button
                   onClick={() => fetchAdminOrders(searchQuery)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 whitespace-nowrap flex-shrink-0"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search</span>
                 </button>
               ) : (activeTab === 'games' || activeTab === 'giveaways') && (
-                <button
-                  onClick={() => {
-                    resetForm(activeTab === 'giveaways');
-                    setIsModalOpen(true);
-                  }}
-                  className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  {/* Hidden file input for Import */}
+                  <input 
+                    type="file" 
+                    accept=".json" 
+                    ref={backupFileInputRef}
+                    onChange={handleBackupFileUpload}
+                    className="hidden"
+                  />
+
+                  {/* Export Backup Button */}
+                  <button
+                    onClick={exportGamesBackup}
+                    type="button"
+                    title="Download complete JSON backup of all games"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-4 rounded-xl transition-all duration-300 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 whitespace-nowrap cursor-pointer text-sm"
+                  >
+                    <Download className="w-4 h-4 text-primary" />
+                    <span>Export</span>
+                  </button>
+
+                  {/* Import Backup Button */}
+                  <button
+                    onClick={() => backupFileInputRef.current?.click()}
+                    type="button"
+                    title="Upload JSON file to restore games"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-4 rounded-xl transition-all duration-300 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 whitespace-nowrap cursor-pointer text-sm"
+                  >
+                    <Upload className="w-4 h-4 text-[#00F0FF]" />
+                    <span>Import</span>
+                  </button>
+
+                  {/* Add Game / Giveaway Button */}
+                  <button
+                    onClick={() => {
+                      resetForm(activeTab === 'giveaways');
+                      setIsModalOpen(true);
+                    }}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
+                  </button>
+                </div>
               )}
+
             </div>
           </div>
 
