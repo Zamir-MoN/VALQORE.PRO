@@ -19,7 +19,9 @@ export const AdminDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [gameToDelete, setGameToDelete] = useState<string | null>(null);
   const [draggedGameIndex, setDraggedGameIndex] = useState<number | null>(null);
+
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [draggedScreenshotIndex, setDraggedScreenshotIndex] = useState<number | null>(null);
