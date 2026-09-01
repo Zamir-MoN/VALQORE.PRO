@@ -1,4 +1,4 @@
-import { FaTwitter as Twitter, FaInstagram as Instagram, FaYoutube as Youtube, FaGithub as Github } from 'react-icons/fa';
+import { FaInstagram as Instagram, FaYoutube as Youtube, FaDiscord as Discord, FaTelegramPlane as Telegram } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 
 export const Footer = () => {
@@ -20,25 +20,49 @@ export const Footer = () => {
               <span>ALQORE.PRO</span>
             </Link>
 
-
             <p className="text-text-secondary text-sm leading-relaxed mb-6">
               The ultimate digital destination for gamers. Play beyond reality with premium titles, exclusive deals, and an unmatched community experience.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors">
-                <Twitter size={18} />
+              <a 
+                href="https://discord.gg/WKWqt7DGAd" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Discord"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <Discord size={18} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors">
+              <a 
+                href="https://t.me/+T-Bi0njiKPo2M2U1" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Telegram"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+              >
+                <Telegram size={18} />
+              </a>
+              <a 
+                href="https://www.instagram.com/valqore.pro/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Instagram"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+              >
                 <Instagram size={18} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors">
+              <a 
+                href="https://www.youtube.com/@Valqore.pro-insta" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="YouTube"
+                className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors"
+              >
                 <Youtube size={18} />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-cards border border-white/10 flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/50 transition-colors">
-                <Github size={18} />
               </a>
             </div>
           </div>
+
           
           {/* Links: Store */}
           <div>

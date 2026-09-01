@@ -204,10 +204,12 @@ export const Navbar = () => {
               : [{ label: 'Login', ariaLabel: 'Sign in to account', link: '#', onClick: openAuthModal }])
           ]}
           socialItems={[
-            { label: 'Discord', link: '#' },
-            { label: 'Twitter', link: '#' },
-            { label: 'Steam', link: '#' }
+            { label: 'Discord', link: 'https://discord.gg/WKWqt7DGAd' },
+            { label: 'Telegram', link: 'https://t.me/+T-Bi0njiKPo2M2U1' },
+            { label: 'Instagram', link: 'https://www.instagram.com/valqore.pro/' },
+            { label: 'YouTube', link: 'https://www.youtube.com/@Valqore.pro-insta' }
           ]}
+
 
           displaySocials={true}
           displayItemNumbering={true}
