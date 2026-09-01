@@ -39,17 +39,9 @@ export const BrowseGames = () => {
   const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (searchQuery) {
-      document.title = `Search: "${searchQuery}" | VALQORE Store`;
-    } else if (activeGenre && activeGenre !== 'All') {
-      document.title = `${activeGenre} Games | VALQORE Store`;
-    } else {
-      document.title = 'Browse PC Games & Accounts | VALQORE Store';
-    }
-    return () => {
-      document.title = 'VALQORE | Premium Digital Games, Accounts & Licenses';
-    };
+    document.title = 'VALQORE';
   }, [searchQuery, activeGenre]);
+
 
   // Close dropdowns when clicking outside
   useEffect(() => {

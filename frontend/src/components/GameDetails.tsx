@@ -33,13 +33,9 @@ export const GameDetails = () => {
   const [isReacting, setIsReacting] = useState(false);
 
   useEffect(() => {
-    if (game) {
-      document.title = `${game.title} - Buy & Download | VALQORE`;
-    }
-    return () => {
-      document.title = 'VALQORE | Premium Digital Games, Accounts & Licenses';
-    };
+    document.title = 'VALQORE';
   }, [game]);
+
 
   useEffect(() => {
     if (id) {
