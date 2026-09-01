@@ -18,7 +18,21 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get a single game (including real like/dislike counts and user reaction)
+// Stable pseudo-random base counts between 10-250 for each game ID
+const getBaseReactions = (gameId: string) => {
+  let hash = 0;
+  for (let i = 0; i < gameId.length; i++) {
+    hash = (hash * 31 + gameId.charCodeAt(i)) & 0xffffffff;
+  }
+  const positiveHash = Math.abs(hash);
+  // Base likes between 40 and 245
+  const baseLikes = 40 + (positiveHash % 206);
+  // Base dislikes between 10 and 65
+  const baseDislikes = 10 + ((positiveHash >> 3) % 56);
+  return { baseLikes, baseDislikes };
+};
+
+// Get a single game (including base + real like/dislike counts and user reaction)
 router.get('/:id', async (req, res) => {
   try {
     const game = await prisma.game.findUnique({
@@ -34,10 +48,12 @@ router.get('/:id', async (req, res) => {
       prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
     ]);
 
+    const { baseLikes, baseDislikes } = getBaseReactions(game.id);
+
     res.json({
       ...game,
-      likesCount,
-      dislikesCount
+      likesCount: baseLikes + likesCount,
+      dislikesCount: baseDislikes + dislikesCount
     });
   } catch (error) {
     console.error('[GET /:id ERROR]:', error);
@@ -49,8 +65,10 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/reaction', authMiddleware, async (req, res) => {
   try {
     const userPayload = (req as any).user;
+    const { baseLikes, baseDislikes } = getBaseReactions(req.params.id);
+
     if (!userPayload.userId) {
-      res.json({ reaction: null });
+      res.json({ reaction: null, likesCount: baseLikes, dislikesCount: baseDislikes });
       return;
     }
 
@@ -70,8 +88,8 @@ router.get('/:id/reaction', authMiddleware, async (req, res) => {
 
     res.json({
       userReaction: userReaction ? userReaction.type : null,
-      likesCount,
-      dislikesCount
+      likesCount: baseLikes + likesCount,
+      dislikesCount: baseDislikes + dislikesCount
     });
   } catch (error) {
     console.error('[GET REACTION ERROR]', error);
@@ -140,18 +158,21 @@ router.post('/:id/react', authMiddleware, async (req, res) => {
       })
     ]);
 
+    const { baseLikes, baseDislikes } = getBaseReactions(req.params.id);
+
     getIO()?.emit('games_updated');
     res.json({
       success: true,
       userReaction: currentReaction ? currentReaction.type : null,
-      likesCount,
-      dislikesCount
+      likesCount: baseLikes + likesCount,
+      dislikesCount: baseDislikes + dislikesCount
     });
   } catch (error: any) {
     console.error('[REACT GAME ERROR]', error);
     res.status(500).json({ error: error.message || 'Failed to react to game' });
   }
 });
+
 
 
 // Create a new game
