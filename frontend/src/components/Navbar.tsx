@@ -56,9 +56,11 @@ export const Navbar = () => {
         )}
       >
       <div className="flex items-center gap-10">
-        <Link to="/" onClick={handleNavClick('/')} className="text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300 hover:scale-105">
-          VALQORE.PRO
+        <Link to="/" onClick={handleNavClick('/')} className="flex items-center gap-3 text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300 hover:scale-105">
+          <img src="/logo.png" alt="VALQORE Logo" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(220,248,54,0.5)]" />
+          <span>VALQORE.PRO</span>
         </Link>
+
         <div className="hidden lg:flex items-center gap-8">
           <Link to="/" onClick={handleNavClick('/')} className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2">
             Home
