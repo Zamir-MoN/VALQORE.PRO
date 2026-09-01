@@ -248,46 +248,6 @@ export const Profile = () => {
                   </h2>
                 </div>
 
-                {/* Steam Mon Credentials Banner */}
-                {user.steamMonUsername && orders.some(order => order.status === 'COMPLETED') && (
-                  <div className="mb-8 p-6 bg-gradient-to-r from-[#00F0FF]/10 to-transparent border border-[#00F0FF]/30 rounded-3xl shadow-[0_0_20px_rgba(0,240,255,0.1)] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#00F0FF]/20 rounded-full blur-[60px] group-hover:bg-[#00F0FF]/30 transition-colors duration-700"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                      <div>
-                        <h3 className="text-xl font-bold text-[#00F0FF] mb-2 flex items-center gap-2">
-                          <Gamepad2 size={24} /> Steam Launcher Access
-                        </h3>
-                        <p className="text-text-secondary text-sm mb-4 max-w-lg">
-                          Use these credentials to log in to our custom desktop launcher and access your purchased Steam games automatically.
-                        </p>
-                        <div className="flex flex-wrap gap-4">
-                          <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex flex-col">
-                            <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Username</span>
-                            <span className="text-white font-mono">{user.steamMonUsername}</span>
-                          </div>
-                          <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex flex-col">
-                            <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Password</span>
-                            <span className="text-white font-mono">{user.steamMonPassword}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="w-full md:w-auto flex-shrink-0 mt-4 md:mt-0">
-                        <a 
-                          href="#" 
-                          className="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-[#00F0FF] hover:bg-white text-black font-black px-6 py-3 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)] hover:scale-105"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toast.success('Download starting shortly!');
-                            window.open('/SteamMon-Installer.exe', '_blank'); // Adjust the URL if it's hosted elsewhere
-                          }}
-                        >
-                          <Gamepad2 size={18} />
-                          Download App
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 
                 {loadingOrders ? (
                   <div className="flex justify-center items-center py-32 bg-cards/20 rounded-3xl border border-white/5">

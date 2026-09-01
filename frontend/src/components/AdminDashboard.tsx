@@ -1561,7 +1561,6 @@ export const AdminDashboard = () => {
                           <th className="py-3 px-4">Username</th>
                           <th className="py-3 px-4">Email</th>
                           <th className="py-3 px-4">Orders</th>
-                          <th className="py-3 px-4">STe-MoN Account</th>
                           <th className="py-3 px-4">Joined Date</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
@@ -1591,15 +1590,6 @@ export const AdminDashboard = () => {
                                   {u._count?.orders || 0} Orders
                                 </span>
                               </td>
-                              <td className="py-3 px-4 text-sm">
-                                {u.steamMonUsername ? (
-                                  <span className="text-emerald-400 font-mono text-xs bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                    {u.steamMonUsername}
-                                  </span>
-                                ) : (
-                                  <span className="text-white/30 text-xs">None</span>
-                                )}
-                              </td>
                               <td className="py-3 px-4 text-sm text-text-secondary">
                                 {new Date(u.createdAt).toLocaleDateString()}
                               </td>
@@ -1615,6 +1605,7 @@ export const AdminDashboard = () => {
                             </tr>
                           ))}
                       </tbody>
+
                     </table>
                   </div>
                 )}
