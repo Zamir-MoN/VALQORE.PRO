@@ -1307,7 +1307,14 @@ export const AdminDashboard = () => {
                             <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
                           </div>
                           
-                          <div className="flex items-center gap-6">
+                          <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+                            {game.creatorAccess && (
+                              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(220,248,54,0.15)]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                Creator Access
+                              </span>
+                            )}
+
                             <button 
                               onClick={() => toggleOutOfStock(game.id, game.outOfStock || false)}
                               className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 border ${
@@ -1321,6 +1328,8 @@ export const AdminDashboard = () => {
                             </button>
 
                             <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
+
+
 
                             <div className="flex gap-2">
                               <button 
