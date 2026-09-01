@@ -177,10 +177,11 @@ export const GameDetails = () => {
           {/* Title */}
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 bg-primary rotate-45 flex-shrink-0"></div>
-            <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white">
+            <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-normal text-white">
               {game.title}
             </h1>
           </div>
+
 
           {/* EPIC GAMES LAYOUT: Top Split (70/30) */}
           <div className="flex flex-col lg:flex-row gap-8 mb-12">
