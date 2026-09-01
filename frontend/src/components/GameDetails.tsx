@@ -33,6 +33,15 @@ export const GameDetails = () => {
   const [isReacting, setIsReacting] = useState(false);
 
   useEffect(() => {
+    if (game) {
+      document.title = `${game.title} - Buy & Download | VALQORE`;
+    }
+    return () => {
+      document.title = 'VALQORE | Premium Digital Games, Accounts & Licenses';
+    };
+  }, [game]);
+
+  useEffect(() => {
     if (id) {
       // Fetch public reactions or user reaction if logged in
       const fetchReaction = async () => {
@@ -56,6 +65,7 @@ export const GameDetails = () => {
       fetchReaction();
     }
   }, [id, token]);
+
 
   const handleReaction = async (type: 'LIKE' | 'DISLIKE') => {
     if (!user || !token) {

@@ -38,8 +38,22 @@ export const BrowseGames = () => {
   const sortRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (searchQuery) {
+      document.title = `Search: "${searchQuery}" | VALQORE Store`;
+    } else if (activeGenre && activeGenre !== 'All') {
+      document.title = `${activeGenre} Games | VALQORE Store`;
+    } else {
+      document.title = 'Browse PC Games & Accounts | VALQORE Store';
+    }
+    return () => {
+      document.title = 'VALQORE | Premium Digital Games, Accounts & Licenses';
+    };
+  }, [searchQuery, activeGenre]);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
+
     const handleClickOutside = (event: MouseEvent) => {
       if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
         setIsSortOpen(false);

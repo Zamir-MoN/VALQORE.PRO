@@ -24,11 +24,19 @@ export const Library = () => {
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    document.title = 'My Game Library | VALQORE';
+    return () => {
+      document.title = 'VALQORE | Premium Digital Games, Accounts & Licenses';
+    };
+  }, []);
+
+  useEffect(() => {
     if (!authLoading && !user) {
       openAuthModal();
       navigate('/');
     }
   }, [user, authLoading, navigate, openAuthModal]);
+
 
   useEffect(() => {
     if (user && token) {
