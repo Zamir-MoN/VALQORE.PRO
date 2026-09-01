@@ -81,6 +81,17 @@ export const TrendingGames = () => {
                   <GameCard key={game.id} game={game} />
                 ))}
               </div>
+
+              {/* View All Games Bottom Action */}
+              <div className="mt-10 flex justify-center">
+                <Link 
+                  to="/store" 
+                  className="group inline-flex items-center gap-3 bg-cards/60 hover:bg-primary border border-white/10 hover:border-primary text-white hover:text-black font-heading font-black text-sm sm:text-base px-8 py-3.5 rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(220,248,54,0.4)] uppercase tracking-wider hover:scale-105 active:scale-95"
+                >
+                  <span>View All Games</span>
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             </div>
           </div>
           

@@ -16,9 +16,9 @@ export const GameCard = ({ game }: GameCardProps) => {
 
 
   return (
-    <Link to={`/game/${game.id}`} className="group relative flex flex-col bg-background transition-all duration-500 cursor-pointer hover:-translate-y-2 block">
+    <Link to={`/game/${game.id}`} className="group relative flex flex-col bg-cards/40 hover:bg-cards/70 border border-white/5 hover:border-primary/40 rounded-2xl p-2.5 transition-all duration-300 cursor-pointer hover:-translate-y-1.5 shadow-lg backdrop-blur-sm block">
       {/* Cover Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-4">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-3">
         <img 
           src={game.coverImage ? getImageUrl(game.coverImage) : '/images/hero-artwork.png'} 
           alt={game.title} 
