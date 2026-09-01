@@ -4,10 +4,235 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../prismaClient';
 import { authMiddleware } from '../middleware/auth';
 
+import { OAuth2Client } from 'google-auth-library';
+import { sendOtpEmail } from '../utils/resendEmail';
+
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'valqore_super_secret_key_2026';
+const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID || '421887773463-f2994me4o8934id4nudoo7kg9ng0kdft.apps.googleusercontent.com';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// Register a new user
+// ----------------------------------------------------
+// Google OAuth Sign In / Sign Up
+// ----------------------------------------------------
+router.post('/google', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { credential, accessToken } = req.body;
+
+    let email: string | undefined;
+    let name: string | undefined;
+    let googleId: string | undefined;
+
+    if (credential) {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        res.status(400).json({ error: 'Invalid Google token' });
+        return;
+      }
+      email = payload.email.toLowerCase().trim();
+      name = payload.name || payload.given_name || email.split('@')[0];
+      googleId = payload.sub;
+    } else if (accessToken) {
+      // Fallback if access token is sent instead of ID token
+      const googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`);
+      const userInfo = await googleRes.json();
+      if (!userInfo || !userInfo.email) {
+        res.status(400).json({ error: 'Failed to retrieve Google user info' });
+        return;
+      }
+      email = userInfo.email.toLowerCase().trim();
+      name = userInfo.name || userInfo.given_name || email.split('@')[0];
+      googleId = userInfo.sub;
+    } else {
+      res.status(400).json({ error: 'Google credential or access token is required' });
+      return;
+    }
+
+    if (!email) {
+      res.status(400).json({ error: 'Email could not be verified with Google' });
+      return;
+    }
+
+    // Check if user already exists with this email
+    let user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      // Generate a clean, unique username based on their Google name/email
+      let baseUsername = (name || email.split('@')[0])
+        .replace(/[^a-zA-Z0-9_]/g, '')
+        .toLowerCase()
+        .slice(0, 15) || 'gamer';
+
+      let uniqueUsername = baseUsername;
+      let counter = 1;
+      while (await prisma.user.findUnique({ where: { username: uniqueUsername } })) {
+        uniqueUsername = `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
+        counter++;
+        if (counter > 10) {
+          uniqueUsername = `${baseUsername}_${Date.now().toString().slice(-4)}`;
+          break;
+        }
+      }
+
+      // Generate a secure random password hash for OAuth account
+      const randomPassword = await bcrypt.hash(Math.random().toString(36) + Date.now().toString(), 10);
+
+      user = await prisma.user.create({
+        data: {
+          username: uniqueUsername,
+          email,
+          password: randomPassword
+        }
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+  } catch (error) {
+    console.error('[GOOGLE AUTH ERROR]', error);
+    res.status(500).json({ error: 'Google authentication failed' });
+  }
+});
+
+// ----------------------------------------------------
+// Send Registration OTP
+// ----------------------------------------------------
+router.post('/send-register-otp', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, email } = req.body;
+
+    if (!username || !email) {
+      res.status(400).json({ error: 'Username and email are required' });
+      return;
+    }
+
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: trimmedUsername },
+          { email: trimmedEmail }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      if (existingUser.username.toLowerCase() === trimmedUsername.toLowerCase()) {
+        res.status(400).json({ error: 'Username is already taken' });
+        return;
+      }
+      res.status(400).json({ error: 'Email is already registered' });
+      return;
+    }
+
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Delete any old OTPs for this email to keep table clean
+    await prisma.otpVerification.deleteMany({
+      where: { email: trimmedEmail }
+    });
+
+    // Save new OTP
+    await prisma.otpVerification.create({
+      data: {
+        email: trimmedEmail,
+        otp,
+        expiresAt
+      }
+    });
+
+    // Send email
+    await sendOtpEmail(trimmedEmail, otp, trimmedUsername);
+
+    res.json({ message: 'Verification code sent to your email' });
+  } catch (error) {
+    console.error('[SEND REGISTER OTP ERROR]', error);
+    res.status(500).json({ error: 'Failed to send verification code' });
+  }
+});
+
+// ----------------------------------------------------
+// Verify Registration OTP & Create User
+// ----------------------------------------------------
+router.post('/verify-register-otp', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, email, password, otp } = req.body;
+
+    if (!username || !email || !password || !otp) {
+      res.status(400).json({ error: 'All fields including OTP code are required' });
+      return;
+    }
+
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.toLowerCase().trim();
+    const trimmedOtp = otp.toString().trim();
+
+    // Find the OTP record
+    const otpRecord = await prisma.otpVerification.findFirst({
+      where: {
+        email: trimmedEmail,
+        otp: trimmedOtp,
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!otpRecord) {
+      res.status(400).json({ error: 'Invalid or expired verification code' });
+      return;
+    }
+
+    // Check again if user exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: trimmedUsername },
+          { email: trimmedEmail }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      res.status(400).json({ error: 'Username or email already exists' });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        username: trimmedUsername,
+        email: trimmedEmail,
+        password: hashedPassword,
+      }
+    });
+
+    // Clean up used OTPs
+    await prisma.otpVerification.deleteMany({
+      where: { email: trimmedEmail }
+    });
+
+    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+    
+    res.status(201).json({ token, user: { id: user.id, username: user.username, email: user.email } });
+  } catch (error) {
+    console.error('[VERIFY REGISTER OTP ERROR]', error);
+    res.status(500).json({ error: 'Failed to complete registration' });
+  }
+});
+
+// Register a new user (Direct fallback)
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
@@ -46,6 +271,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: 'Failed to register user' });
   }
 });
+
 
 // Login user
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
