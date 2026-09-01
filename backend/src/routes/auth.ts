@@ -382,11 +382,65 @@ router.put('/password', authMiddleware, async (req: Request, res: Response): Pro
       data: { password: hashedPassword }
     });
 
-    res.json({ message: 'Password updated successfully' });
+// Get all users (Admin only)
+router.get('/admin/users', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+
+    // Check if user is admin
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Access denied. Admins only.' });
+      return;
+    }
+
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+        steamMonUsername: true,
+        _count: {
+          select: {
+            orders: true,
+            creatorApplications: true,
+          }
+        }
+      }
+    });
+
+    res.json(users);
   } catch (error) {
-    console.error('[CHANGE PASSWORD ERROR]', error);
-    res.status(500).json({ error: 'Failed to change password' });
+    console.error('[ADMIN GET USERS ERROR]', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Delete user (Admin only)
+router.delete('/admin/users/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+
+    // Check if user is admin
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Access denied. Admins only.' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    // Delete associated CartItems, WishlistItems, Orders and CreatorApplications
+    await prisma.user.delete({
+      where: { id }
+    });
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('[ADMIN DELETE USER ERROR]', error);
+    res.status(500).json({ error: 'Failed to delete user' });
   }
 });
 
 export default router;
+

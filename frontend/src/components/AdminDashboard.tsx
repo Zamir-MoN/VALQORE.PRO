@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests'>('games');
+  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests' | 'users'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -28,6 +28,11 @@ export const AdminDashboard = () => {
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  // Users state
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   // Coupon state
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -43,6 +48,7 @@ export const AdminDashboard = () => {
   const [creatorRequests, setCreatorRequests] = useState<any[]>([]);
   const [loadingCreatorRequests, setLoadingCreatorRequests] = useState(false);
   const [selectedCreatorRequest, setSelectedCreatorRequest] = useState<any>(null);
+
 
   const [formData, setFormData] = useState({
     title: '',
@@ -106,11 +112,44 @@ export const AdminDashboard = () => {
     if (activeTab === 'creator_requests' && token) {
       fetchCreatorRequests();
     }
+    if (activeTab === 'users' && token) {
+      fetchUsers();
+    }
   }, [activeTab]);
 
   if (!token) {
     return <Navigate to="/admin/login" replace />;
   }
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await axios.get(`${API_URL}/auth/admin/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setUsersList(res.data);
+    } catch (err) {
+      toast.error('Failed to fetch users');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      await axios.delete(`${API_URL}/auth/admin/users/${userToDelete}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success('User deleted successfully');
+      setUsersList(prev => prev.filter(u => u.id !== userToDelete));
+    } catch (err) {
+      toast.error('Failed to delete user');
+    } finally {
+      setUserToDelete(null);
+    }
+  };
+
 
   const fetchGames = async () => {
     try {
@@ -992,7 +1031,14 @@ export const AdminDashboard = () => {
               >
                 <Users size={20} /> Creator Requests
               </button>
+              <button 
+                onClick={() => setActiveTab('users')}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'users' ? 'bg-[#3b82f6] text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <UserCheck size={20} /> Users
+              </button>
             </div>
+
 
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4 flex-shrink-0">
               <div className="relative w-full sm:w-80">
@@ -1484,8 +1530,100 @@ export const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {/* Users Management Section */}
+          {activeTab === 'users' && (
+            <div className="w-full mt-6">
+              <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white font-heading">Registered Users</h3>
+                    <p className="text-text-secondary text-xs mt-1">Manage and view all registered member accounts</p>
+                  </div>
+                  <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3.5 py-1.5 rounded-xl font-bold text-xs">
+                    {usersList.length} Total Users
+                  </span>
+                </div>
+                
+                {loadingUsers ? (
+                  <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-[#3b82f6]" /></div>
+                ) : usersList.length === 0 ? (
+                  <div className="py-12 px-8 flex flex-col items-center justify-center text-center">
+                    <UserCheck className="w-12 h-12 text-white/20 mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">No Users Found</h3>
+                    <p className="text-text-secondary">No registered user accounts found in the database.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/10 text-text-secondary text-sm">
+                          <th className="py-3 px-4">Username</th>
+                          <th className="py-3 px-4">Email</th>
+                          <th className="py-3 px-4">Orders</th>
+                          <th className="py-3 px-4">STe-MoN Account</th>
+                          <th className="py-3 px-4">Joined Date</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {usersList
+                          .filter(u => 
+                            !searchQuery || 
+                            u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            u.email.toLowerCase().includes(searchQuery.toLowerCase())
+                          )
+                          .map(u => (
+                            <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                              <td className="py-3 px-4">
+                                <div className="text-white font-bold flex items-center gap-2">
+                                  <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold uppercase">
+                                    {u.username.charAt(0)}
+                                  </div>
+                                  <span>{u.username}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-sm text-text-secondary">
+                                {u.email}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400">
+                                  {u._count?.orders || 0} Orders
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                {u.steamMonUsername ? (
+                                  <span className="text-emerald-400 font-mono text-xs bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                    {u.steamMonUsername}
+                                  </span>
+                                ) : (
+                                  <span className="text-white/30 text-xs">None</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-text-secondary">
+                                {new Date(u.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <button 
+                                  onClick={() => setUserToDelete(u.id)}
+                                  className="bg-red-500/10 hover:bg-red-500/20 text-red-400 p-2 rounded-lg text-sm transition-colors cursor-pointer border border-red-500/20"
+                                  title="Delete user"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
 
       {/* Order Details Modal */}
       {selectedOrder && (
@@ -1795,6 +1933,31 @@ export const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Delete User Confirmation Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-cards border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+            <h3 className="text-xl font-bold text-white mb-2">Delete User Account</h3>
+            <p className="text-text-secondary mb-6">Are you sure you want to delete this user account? All associated cart items and order records will also be removed.</p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setUserToDelete(null)}
+                className="px-5 py-2.5 bg-cards border border-white/10 hover:bg-white/5 text-white rounded-xl transition-colors font-semibold"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteUser}
+                className="px-5 py-2.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 hover:border-red-500 rounded-xl transition-colors font-semibold"
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
