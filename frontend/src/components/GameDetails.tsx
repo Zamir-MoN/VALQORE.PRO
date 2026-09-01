@@ -450,42 +450,33 @@ export const GameDetails = () => {
               <h2 className="text-2xl font-heading font-bold text-white">Account Details</h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary"><Shield size={20} /></div>
-                  <div>
-                    <h4 className="font-bold text-white mb-1">Instant Delivery</h4>
-                    <p className="text-text-secondary">Your account credentials will be emailed to you immediately after verification.</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary"><Globe size={20} /></div>
-                  <div>
-                    <h4 className="font-bold text-white mb-1">Global Access</h4>
-                    <p className="text-text-secondary">Play from anywhere in the world without region restrictions.</p>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+              <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Shield size={20} /></div>
+                <div>
+                  <h4 className="font-bold text-white mb-1">Instant Delivery</h4>
+                  <p className="text-text-secondary text-xs leading-relaxed">Your account credentials will be emailed to you immediately after verification.</p>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary"><Clock size={20} /></div>
-                  <div>
-                    <h4 className="font-bold text-white mb-1">Lifetime Warranty</h4>
-                    <p className="text-text-secondary">Full support provided as long as you follow the account guidelines.</p>
-                  </div>
+              <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Globe size={20} /></div>
+                <div>
+                  <h4 className="font-bold text-white mb-1">Global Access</h4>
+                  <p className="text-text-secondary text-xs leading-relaxed">Play from anywhere in the world without region restrictions.</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary"><Share2 size={20} /></div>
-                  <div>
-                    <h4 className="font-bold text-white mb-1">Family Sharing</h4>
-                    <p className="text-text-secondary">Available for offline mode and family sharing features.</p>
-                  </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Share2 size={20} /></div>
+                <div>
+                  <h4 className="font-bold text-white mb-1">Family Sharing</h4>
+                  <p className="text-text-secondary text-xs leading-relaxed">Available for offline mode and family sharing features.</p>
                 </div>
               </div>
             </div>
           </div>
+
 
           {/* Related Games */}
           {(() => {
