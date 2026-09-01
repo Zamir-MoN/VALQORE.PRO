@@ -3,10 +3,13 @@ import { useState, useEffect } from 'react';
 import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { useCart } from '../context/CartContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getYouTubeVideoId } from '../utils/youtube';
 import { getImageUrl } from '../utils/image';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
