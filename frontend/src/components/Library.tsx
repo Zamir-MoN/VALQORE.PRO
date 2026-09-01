@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Gamepad2, Search, Play, ArrowRight, ShieldCheck, Download, Loader2, Sparkles } from 'lucide-react';
+import { Gamepad2, Search, Play, ArrowRight, ShieldCheck, Download, Loader2, Sparkles, Star, Key, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getImageUrl } from '../utils/image';
@@ -11,13 +12,15 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Library = () => {
   const { user, token, loading: authLoading, openAuthModal } = useAuth();
+  const { games: allGlobalGames } = useGames();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'ALL' | 'COMPLETED' | 'PENDING'>('ALL');
+  const [filter, setFilter] = useState<'ALL' | 'COMPLETED' | 'CREATOR_ACCESS'>('ALL');
+  const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -29,8 +32,20 @@ export const Library = () => {
   useEffect(() => {
     if (user && token) {
       fetchLibraryGames();
+      checkCreatorStatus();
     }
   }, [user, token]);
+
+  const checkCreatorStatus = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/creators/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCreatorStatus(res.data.status);
+    } catch (err) {
+      console.error('Creator status check error:', err);
+    }
+  };
 
   const fetchLibraryGames = async () => {
     setLoading(true);
@@ -47,6 +62,9 @@ export const Library = () => {
     }
   };
 
+  // Creator Access Games from store marked with creatorAccess: true
+  const creatorAccessGames = allGlobalGames.filter(g => g.creatorAccess);
+
   // Extract all unique purchased games from orders
   const allLibraryGames = orders.flatMap(order => 
     (order.items || []).map((item: any) => ({
@@ -54,20 +72,33 @@ export const Library = () => {
       orderId: order.id,
       orderStatus: order.status,
       orderDate: order.createdAt,
-      pricePaid: item.pricePaid
+      pricePaid: item.pricePaid,
+      isCreatorGame: false
     }))
   );
 
-  const filteredGames = allLibraryGames.filter(g => {
+  const displayedGames = filter === 'CREATOR_ACCESS'
+    ? creatorAccessGames.map(g => ({
+        ...g,
+        orderId: `creator-${g.id}`,
+        orderStatus: 'CREATOR_ACCESS',
+        orderDate: g.releaseDate || new Date().toISOString(),
+        pricePaid: 0,
+        isCreatorGame: true
+      }))
+    : allLibraryGames;
+
+  const filteredGames = displayedGames.filter(g => {
     const matchesSearch = !searchQuery || 
       g.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
       g.developer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       g.genre?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesFilter = filter === 'ALL' || g.orderStatus === filter;
+    const matchesFilter = filter === 'ALL' || filter === 'CREATOR_ACCESS' || g.orderStatus === filter;
 
     return matchesSearch && matchesFilter;
   });
+
 
   if (authLoading || !user) {
     return (
@@ -113,12 +144,12 @@ export const Library = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex bg-cards/60 p-1 rounded-xl border border-white/10 text-xs font-bold">
+            <div className="flex flex-wrap bg-cards/60 p-1 rounded-xl border border-white/10 text-xs font-bold gap-1">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`px-3 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'ALL' ? 'bg-primary text-background font-black' : 'text-text-secondary hover:text-white'}`}
+                className={`px-3 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'ALL' ? 'bg-primary text-background font-black shadow-[0_0_10px_rgba(220,248,54,0.3)]' : 'text-text-secondary hover:text-white'}`}
               >
-                All ({allLibraryGames.length})
+                Purchased ({allLibraryGames.length})
               </button>
               <button
                 onClick={() => setFilter('COMPLETED')}
@@ -126,6 +157,15 @@ export const Library = () => {
               >
                 Active
               </button>
+              {creatorStatus === 'APPROVED' && (
+                <button
+                  onClick={() => setFilter('CREATOR_ACCESS')}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors cursor-pointer ${filter === 'CREATOR_ACCESS' ? 'bg-gradient-to-r from-primary to-lime-400 text-black font-black shadow-[0_0_15px_rgba(220,248,54,0.4)]' : 'text-primary hover:bg-primary/10 border border-primary/20'}`}
+                >
+                  <Star size={13} className="fill-current" />
+                  Creator Access ({creatorAccessGames.length})
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -141,9 +181,13 @@ export const Library = () => {
             <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(220,248,54,0.15)]">
               <Gamepad2 size={40} />
             </div>
-            <h2 className="text-2xl font-heading font-bold text-white mb-2">No Games in Library Yet</h2>
+            <h2 className="text-2xl font-heading font-bold text-white mb-2">
+              {filter === 'CREATOR_ACCESS' ? 'No Creator Access Games Available' : 'No Games in Library Yet'}
+            </h2>
             <p className="text-text-secondary text-sm mb-8 leading-relaxed">
-              You haven't purchased any games yet or your search filter didn't match any items. Explore our store to find your next adventure!
+              {filter === 'CREATOR_ACCESS' 
+                ? 'No games are currently marked for Creator Access. Check back soon as new games are added!'
+                : "You haven't purchased any games yet or your search filter didn't match any items. Explore our store to find your next adventure!"}
             </p>
             <Link
               to="/store"
@@ -173,13 +217,15 @@ export const Library = () => {
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3 z-10">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg ${
-                      item.orderStatus === 'COMPLETED' 
+                      item.isCreatorGame
+                        ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.4)]'
+                        : item.orderStatus === 'COMPLETED' 
                         ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
                         : item.orderStatus === 'CANCELLED'
                         ? 'bg-red-500 text-white'
                         : 'bg-yellow-500 text-black'
                     }`}>
-                      {item.orderStatus === 'COMPLETED' ? 'Ready to Play' : item.orderStatus}
+                      {item.isCreatorGame ? '★ Creator Access' : item.orderStatus === 'COMPLETED' ? 'Ready to Play' : item.orderStatus}
                     </span>
                   </div>
 
@@ -198,9 +244,9 @@ export const Library = () => {
                   <p className="text-text-secondary text-xs truncate mb-4">{item.developer || 'Publisher'}</p>
 
                   <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between text-xs text-text-secondary mb-4">
-                    <span>Purchased</span>
+                    <span>{item.isCreatorGame ? 'Access Type' : 'Purchased'}</span>
                     <span className="text-white font-mono font-bold">
-                      {new Date(item.orderDate).toLocaleDateString()}
+                      {item.isCreatorGame ? 'Creator Free Pass' : new Date(item.orderDate).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -214,11 +260,11 @@ export const Library = () => {
                       <span>Details</span>
                     </Link>
                     <Link
-                      to="/profile"
+                      to={item.isCreatorGame ? `/game/${item.id}` : "/profile"}
                       className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)]"
                     >
-                      <ShieldCheck size={14} />
-                      <span>Account Info</span>
+                      {item.isCreatorGame ? <Key size={14} /> : <ShieldCheck size={14} />}
+                      <span>{item.isCreatorGame ? 'Play Now' : 'Account Info'}</span>
                     </Link>
                   </div>
                 </div>
@@ -230,3 +276,4 @@ export const Library = () => {
     </div>
   );
 };
+
