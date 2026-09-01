@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -20,9 +20,13 @@ export const AdminDashboard = () => {
   const [isAutofilling, setIsAutofilling] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [gameToDelete, setGameToDelete] = useState<string | null>(null);
+  const [draggedGameIndex, setDraggedGameIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
   const backupFileInputRef = useRef<HTMLInputElement>(null);
+
 
   // Order state
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
@@ -205,7 +209,6 @@ export const AdminDashboard = () => {
   };
 
   const fetchGames = async () => {
-
     try {
       const res = await axios.get(`${API_URL}/games`);
       setGames(res.data);
@@ -215,6 +218,66 @@ export const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  const handleDragStart = (index: number) => {
+    setDraggedGameIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedGameIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (dropIndex: number, currentFilteredGames: Game[]) => {
+    if (draggedGameIndex === null || draggedGameIndex === dropIndex) {
+      setDraggedGameIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const reorderedFiltered = [...currentFilteredGames];
+    const [movedGame] = reorderedFiltered.splice(draggedGameIndex, 1);
+    reorderedFiltered.splice(dropIndex, 0, movedGame);
+
+    // If activeTab is 'giveaways', merge with non-giveaway games preserving their relative order
+    let newFullGamesList: Game[] = [];
+    if (activeTab === 'giveaways') {
+      const nonGiveaways = games.filter(g => !g.isGiveaway);
+      newFullGamesList = [...nonGiveaways, ...reorderedFiltered];
+    } else {
+      const giveaways = games.filter(g => g.isGiveaway);
+      newFullGamesList = [...reorderedFiltered, ...giveaways];
+    }
+
+    // Optimistically update local UI state smoothly
+    setGames(newFullGamesList);
+    setDraggedGameIndex(null);
+    setDragOverIndex(null);
+
+    // Save reordered array to database
+    try {
+      setIsReordering(true);
+      const gameIds = newFullGamesList.map(g => g.id);
+      await axios.put(`${API_URL}/games/reorder`, { gameIds }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Game positions updated!', { id: 'reorder-toast', duration: 1500 });
+    } catch (err: any) {
+      console.error('Reorder error:', err);
+      toast.error('Failed to save reordered positions');
+      fetchGames(); // rollback on error
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
 
   const fetchCoupons = async () => {
     try {
@@ -1283,98 +1346,142 @@ export const AdminDashboard = () => {
                 </div>
               ) : activeTab === 'games' || activeTab === 'giveaways' ? (
                 <>
-                  {games
-                    .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .filter(game => (game.isGiveaway || false) === (activeTab === 'giveaways'))
-                    .map(game => (
-                    <div 
-                      key={game.id} 
-                      className="group relative glass p-4 rounded-2xl border border-white/5 flex flex-col sm:flex-row gap-6 items-start sm:items-center bg-gradient-to-r from-white/[0.02] to-transparent hover:from-white/[0.06] hover:border-white/20 transition-all duration-500 shadow-md hover:shadow-2xl overflow-hidden hover:-translate-y-1"
-                    >
-                      <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-24 shadow-lg border border-white/10">
-                        <img 
-                          src={getImageUrl(game.coverImage)} 
-                          alt={game.title} 
-                          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${game.outOfStock ? 'grayscale opacity-60' : ''}`} 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent sm:hidden"></div>
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col w-full z-10 sm:py-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
-                            <h3 className="font-bold text-xl text-white mb-1 leading-tight group-hover:text-primary transition-colors">{game.title}</h3>
-                            <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
-                          </div>
-                          
-                          <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
-                            {game.creatorAccess && (
-                              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(220,248,54,0.15)]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                                Creator Access
-                              </span>
-                            )}
+                  {(() => {
+                    const filtered = games
+                      .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .filter(game => (game.isGiveaway || false) === (activeTab === 'giveaways'));
 
-                            <button 
-                              onClick={() => toggleOutOfStock(game.id, game.outOfStock || false)}
-                              className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 border ${
-                                game.outOfStock 
-                                ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
-                                : 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="col-span-full py-20 px-8 flex flex-col items-center justify-center text-center glass rounded-2xl border border-dashed border-white/20 bg-white/[0.01]">
+                          <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 shadow-inner relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl"></div>
+                            <Package className="w-10 h-10 text-white/40 relative z-10" />
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2 font-heading">No {activeTab} found</h3>
+                          <p className="text-text-secondary max-w-md">Your inventory is looking a little empty. Try adding a new item to get started.</p>
+                          <button
+                            onClick={() => {
+                              resetForm(activeTab === 'giveaways');
+                              setIsModalOpen(true);
+                            }}
+                            className="mt-6 font-bold py-3 px-8 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all flex items-center gap-2"
+                          >
+                            <Plus size={18} /> Add Item
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between text-xs text-text-secondary font-bold px-2 py-1">
+                          <span className="flex items-center gap-1.5">
+                            <ArrowUpDown size={14} className="text-primary" />
+                            Drag any game card to change its position in the store
+                          </span>
+                          <span>{filtered.length} {activeTab}</span>
+                        </div>
+
+                        {filtered.map((game, index) => {
+                          const isDragging = draggedGameIndex === index;
+                          const isOver = dragOverIndex === index;
+
+                          return (
+                            <div 
+                              key={game.id} 
+                              draggable={!searchQuery} // enable drag when not filtering by search
+                              onDragStart={() => handleDragStart(index)}
+                              onDragOver={(e) => handleDragOver(e, index)}
+                              onDragEnd={handleDragEnd}
+                              onDrop={() => handleDrop(index, filtered)}
+                              className={`group relative glass p-4 rounded-2xl border flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center transition-all duration-300 shadow-md hover:shadow-2xl select-none ${
+                                isDragging 
+                                  ? 'opacity-30 scale-95 border-primary/50 bg-primary/10' 
+                                  : isOver 
+                                  ? 'border-primary shadow-[0_0_20px_rgba(220,248,54,0.3)] scale-[1.01] bg-white/[0.08]' 
+                                  : 'border-white/5 bg-gradient-to-r from-white/[0.02] to-transparent hover:from-white/[0.06] hover:border-white/20 hover:-translate-y-0.5'
                               }`}
                             >
-                              <div className={`w-2 h-2 rounded-full ${game.outOfStock ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]'}`}></div>
-                              {game.outOfStock ? 'Out of Stock' : 'In Stock'}
-                            </button>
-
-                            <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
-
-
-
-                            <div className="flex gap-2">
-                              <button 
-                                onClick={() => editGame(game)} 
-                                className="p-2.5 bg-black/40 hover:bg-primary/20 border border-white/5 hover:border-primary/50 rounded-xl text-text-secondary hover:text-primary transition-all duration-300 tooltip-trigger"
-                                title="Edit Game"
+                              {/* Drag Handle */}
+                              <div 
+                                className="hidden sm:flex items-center justify-center p-2 text-white/30 group-hover:text-primary transition-colors cursor-grab active:cursor-grabbing hover:bg-white/5 rounded-lg"
+                                title="Drag to reorder"
                               >
-                                <Edit2 size={18} />
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(game.id)} 
-                                className="p-2.5 bg-black/40 hover:bg-error/20 border border-white/5 hover:border-error/50 rounded-xl text-text-secondary hover:text-error transition-all duration-300 tooltip-trigger"
-                                title="Delete Game"
-                              >
-                                <Trash2 size={18} />
-                              </button>
+                                <GripVertical size={20} />
+                              </div>
+
+                              <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-24 shadow-lg border border-white/10">
+                                <img 
+                                  src={getImageUrl(game.coverImage)} 
+                                  alt={game.title} 
+                                  className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${game.outOfStock ? 'grayscale opacity-60' : ''}`} 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent sm:hidden"></div>
+                              </div>
+                              
+                              <div className="flex-1 flex flex-col w-full z-10 sm:py-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="sm:hidden text-text-secondary cursor-grab"><GripVertical size={16} /></span>
+                                      <h3 className="font-bold text-xl text-white mb-1 leading-tight group-hover:text-primary transition-colors">{game.title}</h3>
+                                    </div>
+                                    <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+                                    {game.creatorAccess && (
+                                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(220,248,54,0.15)]">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                        Creator Access
+                                      </span>
+                                    )}
+
+                                    <button 
+                                      onClick={() => toggleOutOfStock(game.id, game.outOfStock || false)}
+                                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 border ${
+                                        game.outOfStock 
+                                        ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
+                                        : 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+                                      }`}
+                                    >
+                                      <div className={`w-2 h-2 rounded-full ${game.outOfStock ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]'}`}></div>
+                                      {game.outOfStock ? 'Out of Stock' : 'In Stock'}
+                                    </button>
+
+                                    <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
+
+                                    <div className="flex gap-2">
+                                      <button 
+                                        onClick={() => editGame(game)} 
+                                        className="p-2.5 bg-black/40 hover:bg-primary/20 border border-white/5 hover:border-primary/50 rounded-xl text-text-secondary hover:text-primary transition-all duration-300 tooltip-trigger"
+                                        title="Edit Game"
+                                      >
+                                        <Edit2 size={18} />
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDelete(game.id)} 
+                                        className="p-2.5 bg-black/40 hover:bg-error/20 border border-white/5 hover:border-error/50 rounded-xl text-text-secondary hover:text-error transition-all duration-300 tooltip-trigger"
+                                        title="Delete Game"
+                                      >
+                                        <Trash2 size={18} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
+                          );
+                        })}
                       </div>
-                    </div>
-                  ))}
-                  {games.length === 0 && (
-                    <div className="col-span-full py-20 px-8 flex flex-col items-center justify-center text-center glass rounded-2xl border border-dashed border-white/20 bg-white/[0.01]">
-                      <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mb-6 shadow-inner relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl"></div>
-                        <Package className="w-10 h-10 text-white/40 relative z-10" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-white mb-2 font-heading">No {activeTab} found</h3>
-                      <p className="text-text-secondary max-w-md">Your inventory is looking a little empty. Try adding a new item to get started.</p>
-                      <button
-                        onClick={() => {
-                          resetForm(activeTab === 'giveaways');
-                          setIsModalOpen(true);
-                        }}
-                        className="mt-6 font-bold py-3 px-8 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all flex items-center gap-2"
-                      >
-                        <Plus size={18} /> Add Item
-                      </button>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </>
               ) : null}
             </div>
           </div>
+
 
           {/* Coupon Management Section */}
           {activeTab === 'coupons' && (

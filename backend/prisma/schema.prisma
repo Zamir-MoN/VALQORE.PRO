@@ -36,8 +36,10 @@ model Game {
   tagImage         String?
   steamAppId       String?
   creatorAccess    Boolean  @default(false)
+  position         Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
 
   
   cartItems        CartItem[]

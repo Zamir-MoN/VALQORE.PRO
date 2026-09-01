@@ -5,11 +5,14 @@ import { getIO } from '../socket';
 
 const router = Router();
 
-// Get all games
+// Get all games (ordered by custom position first, then createdAt)
 router.get('/', async (req, res) => {
   try {
     const games = await prisma.game.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: [
+        { position: 'asc' },
+        { createdAt: 'desc' }
+      ]
     });
     res.json(games);
   } catch (error) {
@@ -17,6 +20,34 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch games' });
   }
 });
+
+// Reorder games (Admin only)
+router.put('/reorder', authMiddleware, async (req, res) => {
+  try {
+    const { gameIds } = req.body; // Array of IDs in new order: ["id1", "id2", ...]
+    if (!Array.isArray(gameIds)) {
+      res.status(400).json({ error: 'gameIds array is required' });
+      return;
+    }
+
+    // Update position of each game in batch transaction
+    const updatePromises = gameIds.map((id, index) =>
+      prisma.game.update({
+        where: { id },
+        data: { position: index }
+      })
+    );
+
+    await prisma.$transaction(updatePromises);
+    getIO()?.emit('games_updated');
+
+    res.json({ success: true, message: 'Games order updated successfully' });
+  } catch (error: any) {
+    console.error('[REORDER GAMES ERROR]:', error);
+    res.status(500).json({ error: error.message || 'Failed to reorder games' });
+  }
+});
+
 
 // Stable pseudo-random base counts between 10-250 for each game ID
 const getBaseReactions = (gameId: string) => {
