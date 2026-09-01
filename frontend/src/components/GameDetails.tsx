@@ -152,6 +152,10 @@ export const GameDetails = () => {
   }
 
   const screenshots = game.screenshots ? game.screenshots.split(',').map(s => s.trim()) : [];
+  const platformsList = Array.isArray(game.platforms) 
+    ? game.platforms 
+    : (typeof game.platforms === 'string' ? (game.platforms as string).split(',').map(p => p.trim()) : ['PC']);
+
 
   return (
     <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="game-details">
@@ -248,16 +252,19 @@ export const GameDetails = () => {
                 ></div>
                 <div className="absolute inset-0 z-0 bg-gradient-to-t from-cards via-cards/80 to-transparent"></div>
 
-                <div className="relative z-10 flex flex-col gap-4">
+                    <div className="relative z-10 flex flex-col gap-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-1 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{game.genre}</span>
-                    <span className="px-2 py-1 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{game.platforms[0]}</span>
+                    {platformsList.length > 0 && (
+                      <span className="px-2 py-1 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{platformsList[0]}</span>
+                    )}
                     {game.discount > 0 && (
                       <span className="ml-auto bg-red-500 text-white font-black px-2 py-1 rounded shadow-lg text-[10px]">
                         -{game.discount}% OFF
                       </span>
                     )}
                   </div>
+
 
                   {game.isGiveaway ? (
                     <div className="flex flex-col gap-4 pb-4 border-b border-white/10">
@@ -347,11 +354,12 @@ export const GameDetails = () => {
                     <div className="flex justify-between items-start py-1">
                       <span className="text-text-secondary">Platform</span>
                       <div className="flex flex-col items-end gap-1">
-                        {game.platforms.map(p => (
+                        {platformsList.map(p => (
                           <span key={p} className="text-white text-right font-bold">{p}</span>
                         ))}
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
