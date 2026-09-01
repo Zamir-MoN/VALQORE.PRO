@@ -487,61 +487,78 @@ export const GameDetails = () => {
             </div>
           </div>
 
-          {/* Related News - MOVED TO BOTTOM */}
-          <div className="col-span-full mt-12 pt-8 border-t border-white/10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-3 h-3 bg-primary rotate-45"></div>
-              <h2 className="text-xl font-heading font-black tracking-widest uppercase text-white">Related News</h2>
-            </div>
+          {/* Related Games */}
+          {(() => {
+            const relatedGames = games
+              .filter(g => g.id !== game.id && !g.isGiveaway && (g.genre === game.genre || g.developer === game.developer))
+              .slice(0, 4);
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="group bg-cards rounded-2xl overflow-hidden border border-white/5 hover:border-primary/50 transition-colors cursor-pointer">
-                <div className="aspect-video relative overflow-hidden">
-                  <div className="absolute top-3 right-3 bg-primary text-background text-[10px] font-black px-2 py-1 rounded z-10">TRENDING</div>
-                  <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" alt="News" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">NEWS</span>
-                    <span className="text-[10px] text-text-secondary flex items-center gap-1"><Clock size={10} /> 1 days ago</span>
+            // If no genre match, fallback to other available games
+            const displayGames = relatedGames.length > 0 
+              ? relatedGames 
+              : games.filter(g => g.id !== game.id && !g.isGiveaway).slice(0, 4);
+
+            if (displayGames.length === 0) return null;
+
+            return (
+              <div className="col-span-full mt-12 pt-8 border-t border-white/10">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-primary rotate-45"></div>
+                    <h2 className="text-xl font-heading font-black tracking-widest uppercase text-white">Related Games</h2>
                   </div>
-                  <h3 className="font-bold text-sm leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">Velocity X - Full Premium Account Access Available</h3>
+                  <Link to="/store" className="text-xs font-bold text-primary hover:text-white transition-colors">
+                    Explore Store &rarr;
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                  {displayGames.map(relGame => {
+                    const discountedPrice = relGame.discount > 0 
+                      ? relGame.price * (1 - relGame.discount / 100) 
+                      : relGame.price;
+
+                    return (
+                      <Link 
+                        to={`/game/${relGame.id}`} 
+                        key={relGame.id}
+                        className="group bg-cards/40 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-2xl p-3 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col cursor-pointer"
+                      >
+                        <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-3">
+                          <img 
+                            src={relGame.coverImage ? getImageUrl(relGame.coverImage) : '/images/hero-artwork.png'} 
+                            alt={relGame.title} 
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          {relGame.discount > 0 && (
+                            <div className="absolute top-2 right-2 bg-red-500 text-white font-black text-[10px] px-2 py-0.5 rounded shadow">
+                              -{relGame.discount}%
+                            </div>
+                          )}
+                        </div>
+
+                        <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors truncate mb-1">
+                          {relGame.title}
+                        </h3>
+                        <p className="text-text-secondary text-xs truncate mb-2">{relGame.developer}</p>
+                        
+                        <div className="mt-auto flex items-center justify-between pt-2 border-t border-white/5">
+                          <span className="text-primary font-black text-sm">{formatPrice(discountedPrice)}</span>
+                          {relGame.discount > 0 && (
+                            <span className="text-text-secondary line-through text-[11px]">{formatPrice(relGame.price)}</span>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
-
-              <div className="group bg-cards rounded-2xl overflow-hidden border border-white/5 hover:border-primary/50 transition-colors cursor-pointer">
-                <div className="aspect-video relative overflow-hidden">
-                  <div className="absolute top-3 right-3 bg-primary text-background text-[10px] font-black px-2 py-1 rounded z-10">TRENDING</div>
-                  <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" alt="News" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">NEWS</span>
-                    <span className="text-[10px] text-text-secondary flex items-center gap-1"><Clock size={10} /> 2 months ago</span>
-                  </div>
-                  <h3 className="font-bold text-sm leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">Neon Drift - Full Premium Account Access Available</h3>
-                </div>
-              </div>
-
-              <div className="group bg-cards rounded-2xl overflow-hidden border border-white/5 hover:border-primary/50 transition-colors cursor-pointer">
-                <div className="aspect-video relative overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=800" alt="News" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded">NEWS</span>
-                    <span className="text-[10px] text-text-secondary flex items-center gap-1"><Clock size={10} /> 3 months ago</span>
-                  </div>
-                  <h3 className="font-bold text-sm leading-tight text-white group-hover:text-primary transition-colors line-clamp-2">Shadow Tactics - Full Premium Account Access Available</h3>
-                </div>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </div>
     </div>
   );
 };
+
