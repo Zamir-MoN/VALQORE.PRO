@@ -2436,7 +2436,7 @@ export const AdminDashboard = () => {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-white/10 text-text-secondary text-sm">
-                          <th className="py-3 px-4 whitespace-nowrap">Order / Ref</th>
+                          <th className="py-3 px-4 whitespace-nowrap">Order ID</th>
                           <th className="py-3 px-4">Customer</th>
                           <th className="py-3 px-4">Amount</th>
                           <th className="py-3 px-4">Submitted UTR</th>
@@ -2448,10 +2448,8 @@ export const AdminDashboard = () => {
                       <tbody>
                         {adminPayments.map(payment => (
                           <tr key={payment.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-3 px-4">
-                              <span className="font-mono text-xs text-white/80 bg-white/5 px-2 py-1 rounded border border-white/5">
-                                {payment.purpose || payment.id.substring(0, 8)}
-                              </span>
+                            <td className="py-3 px-4 font-mono text-xs text-white/70">
+                              {payment.id.substring(0, 8)}...
                             </td>
                             <td className="py-3 px-4">
                               <div className="text-white font-bold">{payment.user?.username || 'Guest'}</div>
@@ -2471,7 +2469,7 @@ export const AdminDashboard = () => {
                                       navigator.clipboard.writeText(payment.submittedUtr);
                                       toast.success('UTR copied!');
                                     }}
-                                    className="text-text-secondary hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                                    className="text-text-secondary hover:text-white p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
                                     title="Copy UTR"
                                   >
                                     <Copy size={12} />
@@ -2564,8 +2562,8 @@ export const AdminDashboard = () => {
               {/* Transaction & UTR Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Purpose / Reference</p>
-                  <p className="font-mono text-white text-sm font-bold">{selectedPayment.purpose || 'N/A'}</p>
+                  <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Order ID</p>
+                  <p className="font-mono text-white text-xs font-bold">{selectedPayment.id}</p>
                 </div>
                 <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Submitted UTR</p>
