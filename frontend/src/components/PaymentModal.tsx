@@ -45,6 +45,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       return;
     }
 
+    // Lock page scroll and disable background interaction when payment modal is active
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     setStatus('PENDING');
 
     // 1. Socket Listener for instant real-time payment confirmation
@@ -65,9 +69,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       socket.on(eventName, handlePaymentStatus);
 
       return () => {
+        document.body.style.overflow = originalOverflow;
         socket.off(eventName, handlePaymentStatus);
       };
     }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
   }, [isOpen, orderData, socket, onSuccess]);
 
   // 2. Polling Fallback to guarantee verification even if socket drops
@@ -166,8 +175,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md bg-[#121214] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
+    <div 
+      className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto"
+      onClick={(e) => {
+        // Prevent background clicks from closing or navigating
+        e.stopPropagation();
+      }}
+    >
+      <div 
+        className="relative w-full max-w-md bg-[#121214] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden my-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Subtle Neon Backdrop */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-[80px] pointer-events-none"></div>
@@ -175,7 +193,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Cancel Dialog Prompt */}
         {showCancelConfirm && (
-          <div className="absolute inset-0 z-20 bg-[#121214]/95 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-200">
+          <div className="absolute inset-0 z-30 bg-[#121214]/95 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 text-red-400">
               <AlertCircle size={32} />
             </div>
@@ -206,7 +224,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {status === 'PENDING' && (
           <button
             onClick={() => setShowCancelConfirm(true)}
-            className="absolute top-5 right-5 p-2 text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-10"
+            className="absolute top-5 right-5 p-2 text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-20 cursor-pointer"
+            title="Close"
           >
             <X size={20} />
           </button>
