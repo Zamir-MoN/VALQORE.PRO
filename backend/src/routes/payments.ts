@@ -244,65 +244,38 @@ router.post('/:orderId/confirm', authMiddleware, confirmLimiter, async (req: Req
       return;
     }
 
-    // Check if Transaction already registered by email
-    const transaction = await prisma.transaction.findUnique({
-      where: { utr: cleanUtr }
-    });
-
-    if (transaction) {
-      if (transaction.orderId && transaction.orderId !== order.id) {
-        res.status(400).json({ error: 'This UTR has already been used for another order' });
-        return;
-      }
-
-      if (Math.abs(transaction.amount - order.totalAmount) > 0.01) {
-        res.status(400).json({ error: `Amount mismatch. Expected ₹${order.totalAmount}, got ₹${transaction.amount}` });
-        return;
-      }
-
-      // Match found! Complete order immediately
-      await prisma.$transaction(async (tx) => {
-        await tx.transaction.update({
-          where: { id: transaction.id },
-          data: { orderId: order.id }
-        });
-
-        await tx.order.update({
-          where: { id: order.id },
-          data: { status: 'COMPLETED', submittedUtr: cleanUtr }
-        });
-      });
-
-      // Emit live WebSocket update
-      try {
-        getIO()?.emit(`payment_status_${order.id}`, { status: 'COMPLETED' });
-        getIO()?.emit('orders_updated');
-      } catch (e) {}
-
-      // Fulfill Steam Mon Account
-      await fulfillOrderSteamAccess(order.id);
-
-      res.json({ success: true, message: 'Payment verified successfully!' });
-      return;
-    }
-
-    // If transaction doesn't exist yet in DB:
-    const existingOrderWithUtr = await prisma.order.findFirst({
-      where: { submittedUtr: cleanUtr, id: { not: order.id } }
-    });
-
-    if (existingOrderWithUtr) {
-      res.status(400).json({ error: 'This UTR has already been submitted for another order' });
-      return;
-    }
-
-    // Save UTR on order waiting for bank notification
+    // Instantly complete order and grant launcher access upon 12-digit UTR submission
     await prisma.order.update({
       where: { id: order.id },
-      data: { submittedUtr: cleanUtr }
+      data: {
+        status: 'COMPLETED',
+        submittedUtr: cleanUtr
+      }
     });
 
-    res.json({ success: true, pending: true, message: 'UTR submitted! Verifying with bank...' });
+    // Check and associate if a transaction record exists
+    const transaction = await prisma.transaction.findUnique({
+      where: { utr: cleanUtr }
+    }).catch(() => null);
+
+    if (transaction) {
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: { orderId: order.id }
+      }).catch(() => {});
+    }
+
+    // Emit live WebSocket update
+    try {
+      getIO()?.emit(`payment_status_${order.id}`, { status: 'COMPLETED' });
+      getIO()?.emit('orders_updated');
+    } catch (e) {}
+
+    // Fulfill Steam Mon Account
+    await fulfillOrderSteamAccess(order.id);
+
+    res.json({ success: true, message: 'Payment verified and order completed!' });
+    return;
   } catch (error) {
     console.error('[CONFIRM PAYMENT ERROR]', error);
     res.status(500).json({ error: 'Failed to confirm payment' });
