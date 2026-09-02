@@ -9,6 +9,7 @@ interface GameContextType {
   loading: boolean;
   error: string | null;
   refreshGames: () => Promise<void>;
+  socket: any;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -27,6 +28,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [socketInstance, setSocketInstance] = useState<any>(null);
 
   // Use the public IP if in production, or fallback to localhost
   const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
@@ -54,6 +56,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       transports: ['websocket', 'polling']
     });
 
+    setSocketInstance(socket);
+
     socket.on('games_updated', () => {
       // Silently fetch latest games without showing loading state
       axios.get(`${API_URL}/games`)
@@ -67,7 +71,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   }, [API_URL]);
 
   return (
-    <GameContext.Provider value={{ games, loading, error, refreshGames: fetchGames }}>
+    <GameContext.Provider value={{ games, loading, error, refreshGames: fetchGames, socket: socketInstance }}>
       {children}
     </GameContext.Provider>
   );
@@ -79,4 +83,9 @@ export const useGames = () => {
     throw new Error('useGames must be used within a GameProvider');
   }
   return context;
+};
+
+export const useSocket = () => {
+  const context = useContext(GameContext);
+  return context?.socket || null;
 };

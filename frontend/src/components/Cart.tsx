@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight, Loader2, ShoppingCart } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { PaymentModal } from './PaymentModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
@@ -19,6 +20,16 @@ export const Cart = () => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponDiscountAmount, setCouponDiscountAmount] = useState(0);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  
+  // Payment Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentOrderData, setPaymentOrderData] = useState<{
+    orderId: string;
+    amount: number;
+    purpose: string;
+    upiUri: string;
+    qrCode: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -33,16 +44,20 @@ export const Cart = () => {
     
     setIsCheckingOut(true);
     try {
-      // In a real app, you would pass the coupon code to the order creation endpoint too
-      await axios.post(`${API_URL}/orders`, { couponCode: couponApplied ? couponCode : undefined }, {
+      const res = await axios.post(`${API_URL}/payments/create-session`, {
+        couponCode: couponApplied ? couponCode : undefined
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Order placed successfully!');
-      // Hard reload to clear cart context and go to profile
-      window.location.href = '/profile';
+
+      if (res.data && res.data.success) {
+        setPaymentOrderData(res.data);
+        setIsPaymentModalOpen(true);
+      }
     } catch (err: any) {
       console.error(err);
-      toast.error(err.response?.data?.error || 'Failed to place order');
+      toast.error(err.response?.data?.error || 'Failed to initiate payment session');
+    } finally {
       setIsCheckingOut(false);
     }
   };
@@ -311,6 +326,17 @@ export const Cart = () => {
         </div>
         )}
       </div>
+
+      {/* Delta APay Payment Gateway Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        orderData={paymentOrderData}
+        onSuccess={() => {
+          setIsPaymentModalOpen(false);
+          window.location.href = '/profile';
+        }}
+      />
     </div>
   );
 };

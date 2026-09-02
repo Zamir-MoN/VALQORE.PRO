@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2 } from 'lucide-react';
+import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
+import { PaymentModal } from './PaymentModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
@@ -18,6 +19,10 @@ export const Profile = () => {
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
   const [creatorStats, setCreatorStats] = useState<any>(null);
   
+  // Payment Modal State for resuming payment on pending order
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedOrderPayment, setSelectedOrderPayment] = useState<any>(null);
+
   // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -39,6 +44,18 @@ export const Profile = () => {
   // Orders state
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+
+  const handleOpenPayment = async (orderId: string) => {
+    try {
+      const res = await axios.get(`${API_URL}/payments/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedOrderPayment(res.data);
+      setIsPaymentModalOpen(true);
+    } catch (err: any) {
+      toast.error('Failed to load payment details');
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -400,14 +417,22 @@ export const Profile = () => {
                               )}
                             </div>
                             
-                            {order.status === 'PENDING' && (
-                              <button 
-                                onClick={() => handleCancelOrder(order.id)}
-                                className="mt-2 text-xs text-red-400 hover:text-white hover:bg-red-500 border border-red-500/30 hover:border-red-500 px-4 py-2.5 rounded-xl transition-all duration-300 font-bold w-full sm:w-auto text-center hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
-                              >
-                                Cancel Order
-                              </button>
-                            )}
+                              {order.status === 'PENDING' && (
+                                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                                  <button
+                                    onClick={() => handleOpenPayment(order.id)}
+                                    className="flex items-center justify-center gap-2 bg-primary hover:bg-white text-background font-heading font-black text-xs px-4 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)] uppercase tracking-wider"
+                                  >
+                                    <CreditCard size={14} /> Pay with UPI
+                                  </button>
+                                  <button 
+                                    onClick={() => handleCancelOrder(order.id)}
+                                    className="text-xs text-red-400 hover:text-white hover:bg-red-500 border border-red-500/30 hover:border-red-500 px-4 py-2 rounded-xl transition-all duration-300 font-bold w-full text-center"
+                                  >
+                                    Cancel Order
+                                  </button>
+                                </div>
+                              )}
                           </div>
                         </div>
                       </div>
@@ -602,6 +627,17 @@ export const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Delta APay Payment Modal for pending orders */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        orderData={selectedOrderPayment}
+        onSuccess={() => {
+          setIsPaymentModalOpen(false);
+          fetchOrders();
+        }}
+      />
     </div>
   );
 };

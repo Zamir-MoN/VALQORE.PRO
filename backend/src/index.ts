@@ -15,12 +15,17 @@ import ordersRouter from './routes/orders';
 import couponsRouter from './routes/coupons';
 import postersRouter from './routes/posters';
 import creatorsRouter from './routes/creators';
+import paymentsRouter from './routes/payments';
+import { startGmailCron } from './services/gmail.service';
 import http from 'http';
 import { initSocket } from './socket';
 
 const app = express();
 const server = http.createServer(app);
 initSocket(server);
+
+// Start Gmail cron polling if configured
+startGmailCron();
 
 app.use(cors());
 app.use(express.json());
@@ -36,6 +41,7 @@ app.use('/api/orders', ordersRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/posters', postersRouter);
 app.use('/api/creators', creatorsRouter);
+app.use('/api/payments', paymentsRouter);
 
 const PORT = process.env.PORT || 5000;
 

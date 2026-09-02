@@ -106,18 +106,44 @@ model WishlistItem {
 }
 
 model Order {
-  id          String      @id @default(uuid())
-  userId      String
-  status      String      @default("PENDING") // PENDING, COMPLETED, CANCELLED
-  totalAmount Float
+  id               String      @id @default(uuid())
+  userId           String
+  status           String      @default("PENDING") // PENDING, COMPLETED, CANCELLED, EXPIRED
+  totalAmount      Float
   couponCode       String?
   couponDiscount   Float?
   commissionEarned Float?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  purpose          String?     @unique // e.g. DX-K8M2P5R1Q7 for Delta APay UPI
+  submittedUtr     String?
+  paymentMethod    String      @default("DELTA_PAY")
+  expiresAt        DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items       OrderItem[]
+  transaction Transaction?
+}
+
+model Transaction {
+  id            String    @id @default(uuid())
+  utr           String    @unique
+  amount        Float
+  transactionId String
+  sender        String
+  date          String
+  
+  orderId       String?   @unique
+  order         Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  createdAt     DateTime  @default(now())
+}
+
+model ParsedEmail {
+  id        String   @id @default(uuid())
+  messageId String   @unique
+  status    String   @default("PROCESSED")
+  createdAt DateTime @default(now())
 }
 
 model OrderItem {
