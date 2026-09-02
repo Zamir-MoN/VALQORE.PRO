@@ -217,7 +217,7 @@ export const FAQS = [
   },
   {
     question: 'What is your refund policy?',
-    answer: 'We offer a 14-day refund policy, provided you have played the game for less than 2 hours. Refund requests are processed within 24 hours.'
+    answer: 'We offer a 24-hour refund policy and a 2-month replacement warranty. Refund requests are processed within 2 hours, and replacement requests are processed within 7 days.'
   },
   {
     question: 'Do you offer 24/7 support?',
