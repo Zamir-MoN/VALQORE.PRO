@@ -216,7 +216,7 @@ export const FAQS = [
     answer: 'Most game accounts on Valqore are global and can be accessed worldwide without any region restrictions.'
   },
   {
-    question: 'What is your refund policy?',
+    question: 'What is your refund and replacement policy?',
     answer: 'We offer a 24-hour refund policy and a 2-month replacement warranty. Refund requests are processed within 2 hours, and replacement requests are processed within 7 days.'
   },
   {
