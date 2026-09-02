@@ -47,12 +47,24 @@
 @layer utilities {
   
   .glass {
-    background: rgba(23, 23, 23, 0.4);
+    background: rgba(23, 23, 23, 0.6);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--color-border-custom);
-    transform: translateZ(0);
-    will-change: transform;
+  }
+
+  /* GPU Hardware Acceleration for smooth scrolling & transitions */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Optimize heavy rendering for mobile devices */
+  @media (max-width: 768px) {
+    .glass {
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
   }
 
   .animate-slide-down {

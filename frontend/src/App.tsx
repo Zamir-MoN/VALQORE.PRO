@@ -55,11 +55,20 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize Lenis
+    // Check if touch device
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // On mobile / touch devices, native scroll is much smoother (120Hz) without JS scroll interception
+    if (isTouch) return;
+
+    // Initialize optimized Lenis on desktop
     const lenis = new Lenis({
-      autoRaf: true,
-      duration: 1.0,
+      duration: 0.8,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.0,
+      autoRaf: true,
     });
 
     // @ts-expect-error attaching to window for global access
