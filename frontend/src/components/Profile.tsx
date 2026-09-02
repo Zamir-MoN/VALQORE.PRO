@@ -44,6 +44,8 @@ export const Profile = () => {
   // Orders state
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [orderStatusFilter, setOrderStatusFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED' | 'CANCELLED'>('ALL');
+  const [ordersLimit, setOrdersLimit] = useState<number>(10);
 
   const handleOpenPayment = async (orderId: string) => {
     try {
@@ -317,19 +319,43 @@ export const Profile = () => {
             {/* ORDERS / LIBRARY TAB */}
             {activeTab === 'orders' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white flex items-center gap-3">
-                    <span className="w-2 h-8 bg-primary rounded-full"></span> My Library & Purchased Games
+                    <span className="w-2 h-8 bg-primary rounded-full"></span> My Orders & Transactions
                   </h2>
+
+                  {/* Filter & Limit Pills */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/5">
+                      {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((st) => (
+                        <button
+                          key={st}
+                          onClick={() => setOrderStatusFilter(st)}
+                          className={clsx(
+                            'px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer',
+                            orderStatusFilter === st
+                              ? st === 'COMPLETED'
+                                ? 'bg-primary text-background shadow-[0_0_15px_rgba(220,248,54,0.3)]'
+                                : st === 'PENDING'
+                                ? 'bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.3)]'
+                                : st === 'CANCELLED'
+                                ? 'bg-red-500 text-white'
+                                : 'bg-white text-black'
+                              : 'text-text-secondary hover:text-white hover:bg-white/5'
+                          )}
+                        >
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-
-                
                 {loadingOrders ? (
                   <div className="flex justify-center items-center py-32 bg-cards/20 rounded-3xl border border-white/5">
                     <Loader2 size={40} className="text-primary animate-spin" />
                   </div>
-                ) : orders.length === 0 ? (
+                ) : orders.filter(o => orderStatusFilter === 'ALL' || o.status === orderStatusFilter).length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-24 px-4 bg-gradient-to-b from-cards/40 to-transparent border border-white/5 rounded-3xl relative overflow-hidden group">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/5 rounded-full blur-[60px] group-hover:bg-primary/10 transition-colors duration-700"></div>
                     
@@ -337,8 +363,12 @@ export const Profile = () => {
                       <ShoppingBag size={32} className="text-white/40" />
                     </div>
                     
-                    <h3 className="text-xl font-bold text-white mb-2 relative z-10">No orders found</h3>
-                    <p className="text-text-secondary mb-8 max-w-sm relative z-10">Looks like you haven't made any purchases yet. Explore our store for the best deals!</p>
+                    <h3 className="text-xl font-bold text-white mb-2 relative z-10">No {orderStatusFilter !== 'ALL' ? orderStatusFilter.toLowerCase() : ''} orders found</h3>
+                    <p className="text-text-secondary mb-8 max-w-sm relative z-10">
+                      {orderStatusFilter === 'ALL' 
+                        ? "Looks like you haven't made any purchases yet. Explore our store for the best deals!" 
+                        : `You have no ${orderStatusFilter.toLowerCase()} orders.`}
+                    </p>
                     
                     <Link to="/store" className="relative z-10 bg-primary hover:bg-white text-background font-black px-8 py-3.5 rounded-xl transition-all uppercase tracking-wide hover:scale-105 active:scale-95 duration-300 shadow-[0_0_15px_rgba(220,248,54,0.3)]">
                       Explore Store
@@ -346,7 +376,10 @@ export const Profile = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-6">
-                    {orders.map((order) => (
+                    {orders
+                      .filter(o => orderStatusFilter === 'ALL' || o.status === orderStatusFilter)
+                      .slice(0, ordersLimit)
+                      .map((order) => (
                       <div key={order.id} className="border border-white/10 rounded-3xl bg-cards/40 backdrop-blur-md overflow-hidden flex flex-col hover:border-white/20 transition-colors duration-300 shadow-lg">
                         
                         {/* Premium Order Header */}
@@ -437,6 +470,18 @@ export const Profile = () => {
                         </div>
                       </div>
                     ))}
+
+                    {/* Show More Orders if limit reached */}
+                    {orders.filter(o => orderStatusFilter === 'ALL' || o.status === orderStatusFilter).length > ordersLimit && (
+                      <div className="flex justify-center pt-4">
+                        <button
+                          onClick={() => setOrdersLimit(prev => prev + 10)}
+                          className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                        >
+                          Show More Orders ({orders.filter(o => orderStatusFilter === 'ALL' || o.status === orderStatusFilter).length - ordersLimit} remaining)
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

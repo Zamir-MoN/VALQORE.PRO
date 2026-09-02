@@ -45,6 +45,17 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
       return;
     }
 
+    // Auto-cancel previous unpaid pending orders for this user to avoid multiple open pending orders
+    await prisma.order.updateMany({
+      where: {
+        userId: userPayload.userId,
+        status: 'PENDING'
+      },
+      data: {
+        status: 'CANCELLED'
+      }
+    });
+
     // Calculate total amount
     let totalAmount = cartItems.reduce((acc, item) => {
       return acc + (item.game.price * (1 - item.game.discount / 100));
