@@ -2385,174 +2385,149 @@ export const AdminDashboard = () => {
         </div>
       )}
 
-      {/* PAYMENTS TAB */}
-      {activeTab === 'payments' && (
-        <div className="w-full flex flex-col gap-5">
-          {/* Header & Filter Controls */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-cards/50 border border-white/10 p-4 sm:p-6 rounded-2xl backdrop-blur-md shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <CreditCard size={22} />
-              </div>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">
-                  Delta APay Transactions & Payments
-                </h2>
-                <p className="text-text-secondary text-xs sm:text-sm">
-                  Monitor live UPI QR checkout sessions, incoming UTRs, and verify transactions.
-                </p>
-              </div>
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex items-center gap-1.5 bg-black/50 p-1.5 rounded-xl border border-white/10 w-full sm:w-auto overflow-x-auto">
-              {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setPaymentFilter(st)}
-                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer text-center ${
-                    paymentFilter === st
-                      ? st === 'COMPLETED'
-                        ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]'
-                        : st === 'PENDING'
-                        ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]'
-                        : st === 'CANCELLED'
-                        ? 'bg-red-500 text-white'
-                        : 'bg-emerald-400 text-black shadow-[0_0_15px_rgba(52,211,153,0.4)]'
-                      : 'text-text-secondary hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {st}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Payments List */}
-          {loadingPayments ? (
-            <div className="py-24 flex flex-col items-center justify-center gap-3 bg-cards/20 rounded-2xl border border-white/5">
-              <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
-              <p className="text-text-secondary text-sm font-bold">Loading payment records...</p>
-            </div>
-          ) : adminPayments.length === 0 ? (
-            <div className="py-20 text-center bg-cards/20 border border-white/5 rounded-2xl">
-              <CreditCard className="w-12 h-12 text-white/10 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-white mb-1">No Payments Found</h3>
-              <p className="text-text-secondary text-xs max-w-sm mx-auto">
-                No payment transactions match the selected filter or search query.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {adminPayments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="bg-cards/40 hover:bg-cards/80 border border-white/10 hover:border-emerald-400/40 rounded-2xl p-4 sm:p-5 transition-all duration-300 shadow-xl backdrop-blur-sm flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4"
-                >
-                  {/* Customer, Amount & Order Info */}
-                  <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-heading font-black text-base mt-0.5 ${
-                      payment.status === 'COMPLETED'
-                        ? 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.15)]'
-                        : payment.status === 'PENDING'
-                        ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                    }`}>
-                      {payment.status === 'COMPLETED' ? '₹' : payment.status === 'PENDING' ? '⏳' : '✕'}
-                    </div>
-
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="text-white font-heading font-black text-xl tracking-tight">
-                          {formatPrice(payment.totalAmount)}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                          payment.status === 'COMPLETED'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                            : payment.status === 'PENDING'
-                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}>
-                          {payment.status}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-text-secondary truncate">
-                        Customer: <strong className="text-white font-bold">{payment.user?.username || 'Guest'}</strong> <span className="opacity-70">({payment.user?.email || 'N/A'})</span>
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-secondary/80">
-                        <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded font-mono text-white/90">
-                          Ref: {payment.purpose || payment.id.slice(0, 10)}
-                        </span>
-                        <span>•</span>
-                        <span>{new Date(payment.createdAt).toLocaleString()}</span>
-                      </div>
-                    </div>
+          {/* Payments Section */}
+          {activeTab === 'payments' && (
+            <div className="w-full mt-6">
+              <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white font-heading flex items-center gap-2">
+                      <CreditCard className="text-emerald-400" />
+                      Payment Management
+                    </h3>
+                    <p className="text-text-secondary text-xs sm:text-sm mt-1">
+                      Monitor live UPI QR checkout sessions, incoming UTRs, and verify transactions.
+                    </p>
                   </div>
 
-                  {/* Middle: Submitted UTR / Transaction Details */}
-                  <div className="flex flex-col justify-center bg-black/40 p-3 sm:p-3.5 rounded-xl border border-white/5 xl:min-w-[260px] xl:max-w-[340px]">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider">
-                        Submitted UTR / Ref
-                      </span>
-                      {payment.submittedUtr && (
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(payment.submittedUtr);
-                            toast.success('UTR copied!');
-                          }}
-                          className="text-text-secondary hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer transition-colors"
-                          title="Copy UTR"
-                        >
-                          <Copy size={12} />
-                        </button>
-                      )}
-                    </div>
-                    {payment.submittedUtr ? (
-                      <span className="font-mono text-emerald-400 font-bold text-sm tracking-wider break-all">
-                        {payment.submittedUtr}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-text-secondary/50 italic">No UTR submitted yet</span>
-                    )}
-
-                    {payment.transaction && (
-                      <span className="text-[10px] text-green-400 font-bold mt-1">
-                        ✓ Verified Tx: {payment.transaction.sender}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Right: Actions */}
-                  <div className="flex items-center gap-2.5 justify-end flex-shrink-0 pt-2 xl:pt-0 border-t xl:border-t-0 border-white/5">
-                    <button
-                      onClick={() => setSelectedPayment(payment)}
-                      className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Eye size={14} /> Details
-                    </button>
-
-                    {payment.status === 'PENDING' && (
+                  {/* Filter Buttons */}
+                  <div className="flex items-center gap-1.5 bg-black/40 p-1.5 rounded-xl border border-white/5 w-full sm:w-auto overflow-x-auto">
+                    {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((st) => (
                       <button
-                        onClick={() => handleAdminVerifyPayment(payment.id, payment.submittedUtr)}
-                        className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-500 hover:bg-white text-black font-heading font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        key={st}
+                        onClick={() => setPaymentFilter(st)}
+                        className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer text-center ${
+                          paymentFilter === st
+                            ? st === 'COMPLETED'
+                              ? 'bg-green-500 text-black font-black shadow-[0_0_15px_rgba(34,197,94,0.4)]'
+                              : st === 'PENDING'
+                              ? 'bg-yellow-500 text-black font-black shadow-[0_0_15px_rgba(234,179,8,0.4)]'
+                              : st === 'CANCELLED'
+                              ? 'bg-red-500 text-white font-black'
+                              : 'bg-emerald-400 text-black font-black shadow-[0_0_15px_rgba(52,211,153,0.4)]'
+                            : 'text-text-secondary hover:text-white hover:bg-white/5'
+                        }`}
                       >
-                        <Check size={14} /> Approve & Fulfill
+                        {st}
                       </button>
-                    )}
+                    ))}
                   </div>
                 </div>
-              ))}
+
+                {loadingPayments ? (
+                  <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-emerald-400" /></div>
+                ) : adminPayments.length === 0 ? (
+                  <div className="py-12 px-8 flex flex-col items-center justify-center text-center">
+                    <CreditCard className="w-12 h-12 text-white/20 mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">No Payments Found</h3>
+                    {searchQuery && <p className="text-text-secondary">Try searching with a different term.</p>}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/10 text-text-secondary text-sm">
+                          <th className="py-3 px-4 whitespace-nowrap">Order / Ref</th>
+                          <th className="py-3 px-4">Customer</th>
+                          <th className="py-3 px-4">Amount</th>
+                          <th className="py-3 px-4">Submitted UTR</th>
+                          <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4">Date</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminPayments.map(payment => (
+                          <tr key={payment.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="py-3 px-4">
+                              <span className="font-mono text-xs text-white/80 bg-white/5 px-2 py-1 rounded border border-white/5">
+                                {payment.purpose || payment.id.substring(0, 8)}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="text-white font-bold">{payment.user?.username || 'Guest'}</div>
+                              <div className="text-text-secondary text-xs">{payment.user?.email || 'N/A'}</div>
+                            </td>
+                            <td className="py-3 px-4 font-bold text-white">
+                              {formatPrice(payment.totalAmount)}
+                            </td>
+                            <td className="py-3 px-4">
+                              {payment.submittedUtr ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono text-emerald-400 font-bold text-xs">
+                                    {payment.submittedUtr}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(payment.submittedUtr);
+                                      toast.success('UTR copied!');
+                                    }}
+                                    className="text-text-secondary hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                                    title="Copy UTR"
+                                  >
+                                    <Copy size={12} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-text-secondary/50 italic">None</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                payment.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                                payment.status === 'CANCELLED' ? 'bg-red-500/20 text-red-400' :
+                                'bg-yellow-500/20 text-yellow-400'
+                              }`}>
+                                {payment.status}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-text-secondary whitespace-nowrap">
+                              {new Date(payment.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button 
+                                  onClick={() => setSelectedPayment(payment)}
+                                  className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                >
+                                  <Eye size={13} />
+                                  <span>View</span>
+                                </button>
+                                {payment.status === 'PENDING' && (
+                                  <button
+                                    onClick={() => handleAdminVerifyPayment(payment.id, payment.submittedUtr)}
+                                    className="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-emerald-500/30 flex items-center gap-1 cursor-pointer"
+                                    title="Approve and fulfill order"
+                                  >
+                                    <Check size={13} />
+                                    <span>Approve</span>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           )}
-        </div>
-      )}
 
       {/* Payment Details Modal */}
       {selectedPayment && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div data-lenis-prevent="true" className="bg-[#121214] border border-white/10 rounded-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
             <button
               onClick={() => setSelectedPayment(null)}
@@ -2561,7 +2536,7 @@ export const AdminDashboard = () => {
               <X size={18} />
             </button>
 
-            <h3 className="text-2xl font-heading font-black text-white mb-6 flex items-center gap-3">
+            <h3 className="text-2xl font-heading font-black text-white mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
               <span className="w-2.5 h-6 bg-emerald-400 rounded-full"></span>
               Payment Session Details
             </h3>
