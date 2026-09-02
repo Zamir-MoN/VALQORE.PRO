@@ -5,8 +5,8 @@ import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, 
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
-import type { Game } from '../types';
 import { getImageUrl } from '../utils/image';
+import { formatOrderId } from '../utils/order';
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const AdminDashboard = () => {
@@ -1820,8 +1820,8 @@ export const AdminDashboard = () => {
                       <tbody>
                         {adminOrders.map(order => (
                           <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-3 px-4 font-mono text-xs text-white/70">
-                              {order.id.substring(0, 8)}...
+                            <td className="py-3 px-4 font-mono text-xs font-bold text-primary">
+                              {formatOrderId(order.id)}
                             </td>
                             <td className="py-3 px-4">
                               <div className="text-white font-bold">{order.user.username}</div>
@@ -2043,14 +2043,15 @@ export const AdminDashboard = () => {
                   <div>
                     <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">Order ID</p>
                     <div className="flex items-center gap-2">
-                      <code className="text-white font-mono text-sm">{selectedOrder.id}</code>
+                      <code className="text-primary font-mono text-sm font-bold bg-primary/10 px-2.5 py-1 rounded border border-primary/20">{formatOrderId(selectedOrder.id)}</code>
                       <button 
                         onClick={() => {
-                          navigator.clipboard.writeText(selectedOrder.id);
+                          navigator.clipboard.writeText(formatOrderId(selectedOrder.id));
                           setIsCopied(true);
+                          toast.success('Order ID copied!');
                           setTimeout(() => setIsCopied(false), 2000);
                         }}
-                        className="text-orange-500 hover:text-white transition-colors p-1"
+                        className="text-primary hover:text-white transition-colors p-1 cursor-pointer"
                         title="Copy Order ID"
                       >
                         {isCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
@@ -2448,8 +2449,8 @@ export const AdminDashboard = () => {
                       <tbody>
                         {adminPayments.map(payment => (
                           <tr key={payment.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-3 px-4 font-mono text-xs text-white/70">
-                              {payment.id.substring(0, 8)}...
+                            <td className="py-3 px-4 font-mono text-xs font-bold text-primary">
+                              {formatOrderId(payment.id)}
                             </td>
                             <td className="py-3 px-4">
                               <div className="text-white font-bold">{payment.user?.username || 'Guest'}</div>
@@ -2563,7 +2564,7 @@ export const AdminDashboard = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Order ID</p>
-                  <p className="font-mono text-white text-xs font-bold">{selectedPayment.id}</p>
+                  <p className="font-mono text-primary text-sm font-bold">{formatOrderId(selectedPayment.id)}</p>
                 </div>
                 <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Submitted UTR</p>

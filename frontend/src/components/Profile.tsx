@@ -7,6 +7,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { PaymentModal } from './PaymentModal';
+import { formatOrderId } from '../utils/order';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
@@ -385,8 +386,8 @@ export const Profile = () => {
                         {/* Premium Order Header */}
                         <div className="bg-gradient-to-r from-white/5 to-transparent p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10">
                           <div className="flex flex-col gap-1">
-                            <span className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">Order Reference</span>
-                            <span className="font-mono text-sm text-white/90 bg-black/20 px-3 py-1 rounded-md border border-white/5">{order.id}</span>
+                            <span className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">Order ID</span>
+                            <span className="font-mono text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-md border border-primary/20">{formatOrderId(order.id)}</span>
                           </div>
                           
                           <div className="flex gap-8 w-full sm:w-auto justify-between sm:justify-end items-center">
