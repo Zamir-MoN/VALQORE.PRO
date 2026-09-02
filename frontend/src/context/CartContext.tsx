@@ -10,6 +10,7 @@ interface CartContextType {
   addToCart: (gameId: string) => Promise<void>;
   removeFromCart: (gameId: string) => Promise<void>;
   isInCart: (gameId: string) => boolean;
+  refreshCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -20,14 +21,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
-
-  useEffect(() => {
-    if (user && token) {
-      fetchCart();
-    } else {
-      setCartItems([]);
-    }
-  }, [user, token]);
 
   const fetchCart = async () => {
     try {
@@ -40,6 +33,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
+
+  const refreshCart = async () => {
+    if (!token) {
+      setCartItems([]);
+      return;
+    }
+    try {
+      const res = await axios.get(`${API_URL}/cart`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCartItems(res.data);
+    } catch (error) {
+      console.error('Failed to silently refresh cart', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user && token) {
+      fetchCart();
+    } else {
+      setCartItems([]);
+    }
+  }, [user, token]);
 
   const addToCart = async (gameId: string) => {
     if (!user) {
@@ -75,7 +91,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, loading, addToCart, removeFromCart, isInCart }}>
+    <CartContext.Provider value={{ cartItems, loading, addToCart, removeFromCart, isInCart, refreshCart }}>
       {children}
     </CartContext.Provider>
   );

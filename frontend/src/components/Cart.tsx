@@ -11,7 +11,7 @@ import { PaymentModal } from './PaymentModal';
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Cart = () => {
-  const { cartItems, loading, removeFromCart } = useCart();
+  const { cartItems, loading, removeFromCart, refreshCart } = useCart();
   const { user, token, loading: authLoading, openAuthModal } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
@@ -330,10 +330,14 @@ export const Cart = () => {
       {/* Delta APay Payment Gateway Modal */}
       <PaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        orderData={paymentOrderData}
-        onSuccess={() => {
+        onClose={async () => {
           setIsPaymentModalOpen(false);
+          await refreshCart();
+        }}
+        orderData={paymentOrderData}
+        onSuccess={async () => {
+          setIsPaymentModalOpen(false);
+          await refreshCart();
           window.location.href = '/profile';
         }}
       />
