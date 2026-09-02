@@ -1,117 +1,106 @@
 # VALQORE.PRO - Full Project Changelog & System Overview
 
-This document records all recent features, architectural updates, UI/UX improvements, SEO optimizations, bug fixes, and maintenance guidelines implemented across **VALQORE.PRO**.
+This document records all features, architectural updates, payment automation systems, UI/UX optimizations, SEO improvements, bug fixes, and maintenance guidelines implemented across **VALQORE.PRO**.
 
 ---
 
-## 🚀 1. Features Implemented
+## 🚀 1. Payment Gateway & Automation (Delta APay)
 
-### 🎮 Drag-and-Drop Game Reordering
-- **Database Schema**: Added `position Int @default(0)` to the `Game` model in `schema.prisma`.
-- **Backend API**:
-  - `PUT /api/games/reorder`: Updates ordered arrays of game positions atomically in the database.
-  - `GET /api/games`: Modified to sort games by `position ASC`, then `createdAt DESC`.
-- **Admin Panel UI**:
-  - Drag handle (`GripVertical`) on each game card in the Admin Panel.
-  - Interactive glowing neon placement line indicator (`#DCF836`) showing exact insertion points above or below target cards.
-  - Seamless optimistic UI updates with error rollback.
-
-### 🖼️ Screenshot / Gallery Arranging
-- Added position arranging for screenshot gallery items within the Add / Edit Game modal.
-
-### ⭐ Creator Program & Exclusive Creator Access
-- **Backend Models**: Added `CreatorApplication` and `creatorAccess Boolean @default(false)` to `Game`.
-- **Creator Dashboard**:
-  - Admin approval/rejection pipeline for creator applications.
-  - Ability for admins to mark specific games as "Creator Access".
-- **Game Library Filter**:
-  - Dynamically detects approved creator status.
-  - Added exclusive `★ Creator Access (N)` filter tab inside the user's Library (`/library`).
-  - Approved creators can immediately play/access assigned titles.
-
-### 🧭 Navigation & Active Link Indication
-- **Persistent Glowing Underlines**:
-  - Navigation links (`Home`, `Store`, `Library`) stay permanently underlined with neon yellow glow (`shadow-[0_0_10px_rgba(220,248,54,0.8)]`) and highlighted white text when viewing that route.
-- **Brand Logo & Emblem**:
-  - Integrated custom transparent PNG emblem into desktop Navbar, mobile StaggeredMenu, and Footer forming `[Logo]ALQORE.PRO`.
-
-### 🌐 Official Social Media Integration
-- Updated footer & mobile drawer with official brand channels:
-  - 🎮 **Discord**: [discord.gg/WKWqt7DGAd](https://discord.gg/WKWqt7DGAd) (`#5865F2` hover glow)
-  - ✈️ **Telegram**: [t.me/+T-Bi0njiKPo2M2U1](https://t.me/+T-Bi0njiKPo2M2U1) (`#24A1DE` hover glow)
-  - 📸 **Instagram**: [instagram.com/valqore.pro](https://www.instagram.com/valqore.pro/) (Sunset gradient hover glow)
-  - ▶️ **YouTube**: [youtube.com/@Valqore.pro-insta](https://www.youtube.com/@Valqore.pro-insta) (`#FF0000` hover glow)
-- Removed obsolete GitHub and Twitter links.
+### 💳 Instant QR & 12-Digit UTR Verification
+- **Clean UPI Payment Flow**:
+  - Customer checks out from Cart and receives dynamic high-resolution UPI QR code.
+  - Removed third-party app redirect links (`Open UPI App`) in favor of direct QR scanning with any UPI app (GPay, PhonePe, Paytm, BHIM).
+  - Customer enters their 12-digit bank UTR / Reference number to verify and complete the order.
+- **Removed Single UTR Reuse Limit (Testing Mode)**:
+  - Relaxed duplicate UTR restrictions so any valid 12-digit number can complete test transactions smoothly.
+- **Silent Background Cart Update**:
+  - Closing, cancelling, or completing a payment modal now silently triggers background cart synchronization (`refreshCart()`), immediately clearing badges and updating order totals without full page refreshes.
+- **Automated Gmail Verification Service**:
+  - Implemented background cron polling (`gmail.service.ts`) checking unread bank payment emails every 5 seconds.
+  - Automatically matches `Email UTR === Submitted Order UTR` and `Amount === Order Amount` to instantly confirm orders, unlock Steam accounts, and notify the frontend via WebSockets.
+  - Complete configuration guide available in `AUTOMATIC_PAYMENT_SETUP_GUIDE.md`.
 
 ---
 
-## ⚡ 2. Performance & UI/UX Optimizations
+## 🏷️ 2. Order ID Standardization & Clipboard Integration
 
-### 🏎️ Smooth Shimmer Skeleton Loading
-- Replaced standard CSS pulses with GPU-accelerated **200% gradient shimmer animation** (`.skeleton-shimmer`).
-- Implemented skeleton placeholders in:
-  - `TrendingGames.tsx` (trending grid and side rankings)
-  - `BrowseGames.tsx` (store discovery grid)
-  - `GameCard.tsx` (individual image load placeholders with smooth fade-in)
-
-### 🚀 Hardware Acceleration & Lag Elimination
-- **GPU Offloading**: Added `transform-gpu` and `will-change-transform` to cards to eliminate stutter on lower-end devices.
-- **Async Decoding**: Added `decoding="async"` and `loading="lazy"` on heavy game cover images to keep the main JavaScript thread responsive during fast scroll.
-- **Live Wallpaper Streamlined**: Background live wallpaper moved to `/videos/bg-live.mp4` with preloading in `index.html`.
-
-### 📱 Mobile UI Enhancements
-- Clean responsive layout for Game Library on small screens (`text-2xl sm:text-4xl` titles, horizontal-scrolling filter tabs, touch-friendly tap targets).
-- Integrated `← Back` button for quick navigation.
+### 🔢 Clean `VP-XXXXXXXX` Format
+- **Short 8-Character Order ID**:
+  - Replaced long 36-character UUIDs and `DX-` purpose reference codes with clean, branded **`VP-XXXXXXXX`** identifiers (e.g. `VP-F274B4A1`).
+  - Created reusable formatting utility `formatOrderId()` in `frontend/src/utils/order.ts`.
+- **One-Click Copy Buttons Across All Sections**:
+  - **Customer Profile (`Profile.tsx`)**: Copy button next to each order badge with green checkmark feedback and toast notification.
+  - **Admin Orders Table (`AdminDashboard.tsx`)**: Inline copy button for every order row.
+  - **Admin Payments Table (`AdminDashboard.tsx`)**: Inline copy button for every payment row.
+  - **Admin Order Details Modal**: Interactive copy button with animated confirmation.
+  - **Admin Payment Details Modal**: Interactive copy button with toast notification.
 
 ---
 
-## 🔍 3. SEO & Metadata Optimization
+## ⚡ 3. Performance & Lag Elimination (120fps Smoothness)
 
-- **Meta Tags** (`frontend/index.html`):
-  - Primary title: `VALQORE`
-  - Meta description, keywords, author, and robot indexing instructions.
-  - OpenGraph tags (`og:title`, `og:description`, `og:image`, `og:url`, `og:site_name`).
-  - Twitter Cards (`summary_large_image`).
-  - Brand theme color: `#DCF836`.
-- **Favicon & Search Icons**:
-  - Generated multi-resolution `favicon.ico` (16x16, 32x32, 48x48, 64x64).
-  - High-res PNG apple touch icons and standard browser tab links.
-  - Clean page titles (`VALQORE`) across all site sections.
+### 📱 120Hz Native Mobile Momentum Scrolling
+- **Touch Device Optimization**:
+  - Disabled JavaScript scroll interception (`Lenis`) on touch devices (`isTouch`) to enable pure, hardware-accelerated **120Hz native momentum scrolling** on all mobile browsers (iOS Safari, Android Chrome).
+  - Tuned desktop Lenis easing curve (`duration: 0.8`, `easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))`) for snappy, responsive wheel scrolling.
+- **GPU Layer & Backdrop Filter Acceleration**:
+  - Added `-webkit-font-smoothing` and optimized `.glass` backdrop filters to prevent GPU repaints and stutter during rapid scroll.
+  - Optimized Skeleton Shimmer animations for seamless loading states.
 
 ---
 
-## 🐛 4. Resolved Bugs & Fixes
+## 📱 4. Mobile Native Sharing (Web Share API)
 
-1. **Active Filter Button Glitch in Library**:
-   - *Issue*: An unnecessary green filter button was displaying in Library.
-   - *Fix*: Removed redundant order filter state and streamlined tabs to `Purchased` and `Creator Access`.
-2. **Video Wallpaper Cache Inconsistency**:
-   - *Issue*: Live wallpaper background was not refreshing across different browsers due to disk caching of video URLs.
-   - *Fix*: Renamed and cache-busted path to `/videos/bg-live.mp4` and updated preload links.
-3. **Favicon Browser Fallback**:
-   - *Issue*: Browsers and search engines fell back to generic globe icon because root `favicon.ico` was missing.
-   - *Fix*: Generated multi-size ICO binary and updated all HTML icon link references with cache query parameters.
-4. **Duplicate Ternary in Admin Panel**:
-   - *Issue*: Duplicate closing ternary statement caused a JSX build error.
-   - *Fix*: Cleaned duplicate tags in `AdminDashboard.tsx`.
+### 🔗 System Share Tray Integration
+- **Direct App Sharing**:
+  - Clicking the **Share** button on any game page opens the native operating system share tray on mobile devices.
+  - Direct 1-tap sharing to **WhatsApp**, **Instagram**, **Discord**, **Telegram**, **Twitter/X**, Messages, etc.
+  - Includes game title, formatted price, and live link.
+- **Desktop Fallback**:
+  - Automatically falls back to clipboard copy with toast feedback on desktop browsers.
 
 ---
 
-## 🛠️ 5. Deployment Guide (VPS)
+## 🧭 5. Branding & Google Search Console Verification
 
-Whenever updates are pushed to GitHub, run the following commands on your VPS terminal:
+### 🎨 Typography & Logo Refinements
+- **Clean Brand Typography**:
+  - Updated Navbar, Mobile Header Drawer, and Footer to use clean typography (`VALQORE.PRO`).
+  - Synced high-resolution transparent emblem asset `public/logo.png` and `public/favicon.png`.
+- **Google Search Console Ownership Verification**:
+  - Generated and deployed exact Google verification file `google15db84e84d915cbf.html` and meta verification tags in `index.html`.
+  - Added high-res `192x192` icon tags and cache-busted favicon references for Google Search crawler priority indexing.
+  - Successfully verified domain ownership on Google Search Console.
+
+---
+
+## 🎮 6. Admin Panel & Creator System
+
+### 🕹️ Complete Store & Game Management
+- **Drag-and-Drop Game Reordering**:
+  - Position arranging in `AdminDashboard.tsx` with neon placement indicators.
+- **Creator Program Pipeline**:
+  - Admin approval workflow for content creator applications.
+  - Dedicated `★ Creator Access` library filter and automated game delivery.
+- **Synchronized Admin Navbar Layout**:
+  - Symmetrical unified container width, padding, and layout matching across all admin tabs (Games, Orders, Payments, Users, Coupons, Posters, Creator Requests).
+
+---
+
+## 🛠️ 7. VPS Deployment Instructions
+
+To apply all updates on your live production server:
 
 ```bash
+# 1. Navigate to project root
 cd ~/VALQORE_PRO
+
+# 2. Pull latest codebase from main
 git pull origin main
 
-# If database schema changes:
-cd backend
-npx prisma db push
-npx prisma generate
+# 3. Restart backend with PM2
 pm2 restart valqore-backend
 
-# Rebuild frontend:
-cd ../frontend
-npm run build
+# 4. Build optimized frontend production bundle
+cd frontend && npm run build
 ```
