@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle2, AlertCircle, Loader2, Copy, Shield, ArrowRight, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -174,9 +175,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   };
 
-  return (
+  if (!isOpen || !orderData) {
+    return null;
+  }
+
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl animate-in fade-in duration-300 overflow-y-auto"
       onClick={(e) => {
         // Prevent background clicks from closing or navigating
         e.stopPropagation();
@@ -363,6 +368,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         )}
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
