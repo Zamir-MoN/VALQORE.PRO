@@ -276,28 +276,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               />
             </div>
 
-            {/* Quick UPI Intent Link on Mobile */}
-            <div className="w-full flex gap-2 mb-5">
-              <a
-                href={orderData.upiUri}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 text-xs font-bold transition-all hover:border-primary/50"
-              >
-                <ExternalLink size={14} className="text-primary" /> Open UPI App
-              </a>
-              <button
-                type="button"
-                onClick={handleCopyUPI}
-                className="flex items-center justify-center gap-1.5 py-2.5 px-4 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 text-xs font-bold transition-all"
-              >
-                <Copy size={14} /> {copied ? 'Copied' : 'Copy'}
-              </button>
-            </div>
-
             {/* UTR Input Form */}
             <form onSubmit={handleConfirmUtr} className="w-full space-y-3">
               <div>
                 <label className="block text-xs font-bold text-text-secondary mb-1.5 uppercase tracking-wider text-left">
-                  Step 2: Enter 12-Digit UTR / Ref No.
+                  Enter 12-Digit UTR / Ref No.
                 </label>
                 <input
                   type="text"
