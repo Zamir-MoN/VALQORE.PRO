@@ -213,7 +213,7 @@ export const FAQS = [
   },
   {
     question: 'Are there any region locks?',
-    answer: 'Most games on Valqore are global.'
+    answer: 'Most game accounts on Valqore are global and can be accessed worldwide without any region restrictions.'
   },
   {
     question: 'What is your refund policy?',
