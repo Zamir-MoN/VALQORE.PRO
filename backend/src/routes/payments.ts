@@ -330,10 +330,86 @@ router.post('/:orderId/cancel', authMiddleware, async (req: Request, res: Respon
       getIO()?.emit('orders_updated');
     } catch (e) {}
 
-    res.json({ success: true, message: 'Payment cancelled' });
+// 5. Admin: Get all payments/transactions
+router.get('/admin/all', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Admins only' });
+      return;
+    }
+
+    const { status, search } = req.query;
+
+    let whereClause: any = {};
+    if (status && status !== 'ALL') {
+      whereClause.status = status;
+    }
+
+    if (search && typeof search === 'string') {
+      const searchStr = search.trim();
+      whereClause.OR = [
+        { purpose: { contains: searchStr, mode: 'insensitive' } },
+        { submittedUtr: { contains: searchStr, mode: 'insensitive' } },
+        { user: { username: { contains: searchStr, mode: 'insensitive' } } },
+        { user: { email: { contains: searchStr, mode: 'insensitive' } } }
+      ];
+    }
+
+    const payments = await prisma.order.findMany({
+      where: whereClause,
+      include: {
+        user: { select: { id: true, username: true, email: true } },
+        items: { include: { game: { select: { id: true, title: true, coverImage: true } } } },
+        transaction: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(payments);
   } catch (error) {
-    console.error('[CANCEL PAYMENT ERROR]', error);
-    res.status(500).json({ error: 'Failed to cancel payment' });
+    console.error('[ADMIN GET PAYMENTS ERROR]', error);
+    res.status(500).json({ error: 'Failed to fetch payments' });
+  }
+});
+
+// 6. Admin: Manually verify/approve payment
+router.put('/admin/:orderId/verify', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+    if (userPayload.userId) {
+      res.status(403).json({ error: 'Admins only' });
+      return;
+    }
+
+    const orderId = String(req.params.orderId);
+    const { utr } = req.body;
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'COMPLETED',
+        submittedUtr: utr || order.submittedUtr || 'MANUAL-APPROVAL'
+      }
+    });
+
+    try {
+      getIO()?.emit(`payment_status_${orderId}`, { status: 'COMPLETED' });
+      getIO()?.emit('orders_updated');
+    } catch (e) {}
+
+    await fulfillOrderSteamAccess(orderId);
+
+    res.json({ success: true, message: 'Payment manually approved and completed' });
+  } catch (error) {
+    console.error('[ADMIN VERIFY ERROR]', error);
+    res.status(500).json({ error: 'Failed to verify payment' });
   }
 });
 

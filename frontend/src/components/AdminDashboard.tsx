@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown, CreditCard, CheckCircle2, Clock } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests' | 'users'>('games');
+  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests' | 'users' | 'payments'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -30,7 +30,11 @@ export const AdminDashboard = () => {
   const token = localStorage.getItem('adminToken');
   const backupFileInputRef = useRef<HTMLInputElement>(null);
 
-
+  // Payments State
+  const [adminPayments, setAdminPayments] = useState<any[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [paymentFilter, setPaymentFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED' | 'CANCELLED'>('ALL');
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
 
   // Order state
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
@@ -123,17 +127,48 @@ export const AdminDashboard = () => {
     if (activeTab === 'orders' && token) {
       fetchAdminOrders(searchQuery);
     }
+    if (activeTab === 'payments' && token) {
+      fetchAdminPayments(searchQuery, paymentFilter);
+    }
     if (activeTab === 'creator_requests' && token) {
       fetchCreatorRequests();
     }
     if (activeTab === 'users' && token) {
       fetchUsers();
     }
-  }, [activeTab]);
+  }, [activeTab, paymentFilter]);
 
   if (!token) {
     return <Navigate to="/admin/login" replace />;
   }
+
+  const fetchAdminPayments = async (query = '', status = paymentFilter) => {
+    setLoadingPayments(true);
+    try {
+      const res = await axios.get(`${API_URL}/payments/admin/all`, {
+        params: { search: query || undefined, status: status !== 'ALL' ? status : undefined },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdminPayments(res.data);
+    } catch (err) {
+      console.error('Failed to fetch payments', err);
+      toast.error('Failed to load payments list');
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
+  const handleAdminVerifyPayment = async (orderId: string, utr?: string) => {
+    try {
+      await axios.put(`${API_URL}/payments/admin/${orderId}/verify`, { utr }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Payment approved and order completed!');
+      fetchAdminPayments(searchQuery, paymentFilter);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to verify payment');
+    }
+  };
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
@@ -1265,6 +1300,12 @@ export const AdminDashboard = () => {
                 <ShoppingCart size={20} /> Orders
               </button>
               <button 
+                onClick={() => setActiveTab('payments')}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'payments' ? 'bg-emerald-500 text-black font-black shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+              >
+                <CreditCard size={20} /> Payments
+              </button>
+              <button 
                 onClick={() => setActiveTab('creator_requests')}
                 className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'creator_requests' ? 'bg-[#DCF836] text-black shadow-[0_0_20px_rgba(220,248,54,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
               >
@@ -1288,8 +1329,9 @@ export const AdminDashboard = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && activeTab === 'orders') {
-                      fetchAdminOrders(searchQuery);
+                    if (e.key === 'Enter') {
+                      if (activeTab === 'orders') fetchAdminOrders(searchQuery);
+                      if (activeTab === 'payments') fetchAdminPayments(searchQuery, paymentFilter);
                     }
                   }}
                   className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
@@ -1299,6 +1341,14 @@ export const AdminDashboard = () => {
                 <button
                   onClick={() => fetchAdminOrders(searchQuery)}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
+                >
+                  <Search className="w-5 h-5" />
+                  <span>Search</span>
+                </button>
+              ) : activeTab === 'payments' ? (
+                <button
+                  onClick={() => fetchAdminPayments(searchQuery, paymentFilter)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black border border-emerald-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search</span>
@@ -2330,6 +2380,259 @@ export const AdminDashboard = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAYMENTS TAB */}
+      {activeTab === 'payments' && (
+        <div className="w-full flex flex-col gap-6">
+          {/* Header & Filter Controls */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-cards/40 border border-white/5 p-4 sm:p-6 rounded-2xl backdrop-blur-md">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <CreditCard className="text-emerald-400" />
+                Delta APay Transactions & Payments
+              </h2>
+              <p className="text-text-secondary text-xs sm:text-sm mt-1">
+                Monitor live UPI QR checkout sessions, incoming UTRs, and verify transactions.
+              </p>
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-xl border border-white/5 w-full sm:w-auto overflow-x-auto">
+              {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setPaymentFilter(st)}
+                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                    paymentFilter === st
+                      ? st === 'COMPLETED'
+                        ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]'
+                        : st === 'PENDING'
+                        ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]'
+                        : st === 'CANCELLED'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-emerald-400 text-black shadow-[0_0_15px_rgba(52,211,153,0.4)]'
+                      : 'text-text-secondary hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Payments Table */}
+          {loadingPayments ? (
+            <div className="py-24 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+              <p className="text-text-secondary text-sm font-bold">Loading payment records...</p>
+            </div>
+          ) : adminPayments.length === 0 ? (
+            <div className="py-20 text-center bg-cards/20 border border-white/5 rounded-2xl">
+              <CreditCard className="w-12 h-12 text-white/10 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-white mb-1">No Payments Found</h3>
+              <p className="text-text-secondary text-xs max-w-sm mx-auto">
+                No payment transactions match the selected filter or search query.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {adminPayments.map((payment) => (
+                <div
+                  key={payment.id}
+                  className="bg-cards/40 hover:bg-cards/70 border border-white/5 hover:border-emerald-400/30 rounded-2xl p-5 sm:p-6 transition-all duration-300 shadow-xl backdrop-blur-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6"
+                >
+                  {/* Left: Customer & Amount Info */}
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 font-heading font-black text-lg ${
+                      payment.status === 'COMPLETED'
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.15)]'
+                        : payment.status === 'PENDING'
+                        ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    }`}>
+                      {payment.status === 'COMPLETED' ? '₹' : payment.status === 'PENDING' ? '⏳' : '✕'}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-white font-heading font-black text-xl">
+                          {formatPrice(payment.totalAmount)}
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          payment.status === 'COMPLETED'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : payment.status === 'PENDING'
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}>
+                          {payment.status}
+                        </span>
+                      </div>
+
+                      <p className="text-text-secondary text-xs">
+                        Customer: <strong className="text-white">{payment.user?.username || 'Guest'}</strong> ({payment.user?.email || 'N/A'})
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-text-secondary">
+                        <span className="bg-white/5 px-2 py-0.5 rounded font-mono text-white/80">
+                          Ref: {payment.purpose || payment.id.slice(0, 10)}
+                        </span>
+                        <span>•</span>
+                        <span>{new Date(payment.createdAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle: Submitted UTR / Transaction Details */}
+                  <div className="flex flex-col gap-1.5 w-full lg:w-auto bg-black/40 p-3.5 rounded-xl border border-white/5 min-w-[240px]">
+                    <span className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">
+                      Submitted UTR / Ref
+                    </span>
+                    {payment.submittedUtr ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-emerald-400 font-bold text-sm tracking-wider">
+                          {payment.submittedUtr}
+                        </span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(payment.submittedUtr);
+                            toast.success('UTR copied!');
+                          }}
+                          className="text-text-secondary hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer"
+                          title="Copy UTR"
+                        >
+                          <Copy size={13} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-text-secondary/60 italic">No UTR submitted yet</span>
+                    )}
+
+                    {payment.transaction && (
+                      <span className="text-[10px] text-green-400 font-bold">
+                        ✓ Matched Bank Tx: {payment.transaction.sender} ({payment.transaction.transactionId})
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
+                    <button
+                      onClick={() => setSelectedPayment(payment)}
+                      className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Eye size={14} /> Details
+                    </button>
+
+                    {payment.status === 'PENDING' && (
+                      <button
+                        onClick={() => handleAdminVerifyPayment(payment.id, payment.submittedUtr)}
+                        className="px-4 py-2.5 bg-emerald-500 hover:bg-white text-black font-heading font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Check size={14} /> Approve & Fulfill
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Payment Details Modal */}
+      {selectedPayment && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div data-lenis-prevent="true" className="bg-[#121214] border border-white/10 rounded-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button
+              onClick={() => setSelectedPayment(null)}
+              className="absolute top-5 right-5 p-2 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white rounded-xl transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <h3 className="text-2xl font-heading font-black text-white mb-6 flex items-center gap-3">
+              <span className="w-2.5 h-6 bg-emerald-400 rounded-full"></span>
+              Payment Session Details
+            </h3>
+
+            <div className="space-y-6">
+              {/* Top Banner */}
+              <div className="bg-cards/60 border border-white/5 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <p className="text-xs text-text-secondary uppercase tracking-wider font-bold mb-1">Total Payable</p>
+                  <p className="text-3xl font-heading font-black text-white">{formatPrice(selectedPayment.totalAmount)}</p>
+                </div>
+                <div className="flex flex-col items-start sm:items-end">
+                  <span className="text-xs text-text-secondary uppercase tracking-wider font-bold mb-1">Status</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                    selectedPayment.status === 'COMPLETED'
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : selectedPayment.status === 'PENDING'
+                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}>
+                    {selectedPayment.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Transaction & UTR Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Purpose / Reference</p>
+                  <p className="font-mono text-white text-sm font-bold">{selectedPayment.purpose || 'N/A'}</p>
+                </div>
+                <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Submitted UTR</p>
+                  <p className="font-mono text-emerald-400 text-sm font-bold">{selectedPayment.submittedUtr || 'None'}</p>
+                </div>
+                <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Customer Email</p>
+                  <p className="text-white text-sm font-bold">{selectedPayment.user?.email || 'N/A'}</p>
+                </div>
+                <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Created At</p>
+                  <p className="text-white text-sm font-bold">{new Date(selectedPayment.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Ordered Items */}
+              <div className="bg-cards/40 p-5 rounded-2xl border border-white/5">
+                <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-3">Games Included in Order</h4>
+                <div className="space-y-2">
+                  {selectedPayment.items?.map((it: any) => (
+                    <div key={it.id} className="flex items-center gap-3 bg-black/40 p-2.5 rounded-xl border border-white/5">
+                      {it.game?.coverImage && (
+                        <img src={getImageUrl(it.game.coverImage)} alt={it.game?.title} className="w-10 h-14 object-cover rounded-lg" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-white font-bold text-sm">{it.game?.title || 'Game'}</p>
+                        <p className="text-primary text-xs font-bold">{formatPrice(it.pricePaid)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action */}
+              {selectedPayment.status === 'PENDING' && (
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                  <button
+                    onClick={() => {
+                      handleAdminVerifyPayment(selectedPayment.id, selectedPayment.submittedUtr);
+                      setSelectedPayment(null);
+                    }}
+                    className="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-white text-black font-heading font-black rounded-xl text-sm uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer"
+                  >
+                    Manually Approve & Grant Steam Launcher Access
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
