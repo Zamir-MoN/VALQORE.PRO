@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard } from 'lucide-react';
+import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard, Copy, Check } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -19,6 +19,7 @@ export const Profile = () => {
   const [activeTab, setActiveTab] = useState<'orders' | 'settings' | 'creator'>('orders');
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
   const [creatorStats, setCreatorStats] = useState<any>(null);
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
   
   // Payment Modal State for resuming payment on pending order
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -385,9 +386,27 @@ export const Profile = () => {
                         
                         {/* Premium Order Header */}
                         <div className="bg-gradient-to-r from-white/5 to-transparent p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10">
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <span className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">Order ID</span>
-                            <span className="font-mono text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-md border border-primary/20">{formatOrderId(order.id)}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg border border-primary/20">{formatOrderId(order.id)}</span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(formatOrderId(order.id));
+                                  setCopiedOrderId(order.id);
+                                  toast.success(`Order ID ${formatOrderId(order.id)} copied!`);
+                                  setTimeout(() => setCopiedOrderId(null), 2000);
+                                }}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-text-secondary hover:text-white transition-all border border-white/10 active:scale-95 cursor-pointer"
+                                title="Copy Order ID"
+                              >
+                                {copiedOrderId === order.id ? (
+                                  <Check size={14} className="text-emerald-400" />
+                                ) : (
+                                  <Copy size={14} />
+                                )}
+                              </button>
+                            </div>
                           </div>
                           
                           <div className="flex gap-8 w-full sm:w-auto justify-between sm:justify-end items-center">

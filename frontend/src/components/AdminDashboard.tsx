@@ -1820,8 +1820,22 @@ export const AdminDashboard = () => {
                       <tbody>
                         {adminOrders.map(order => (
                           <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-3 px-4 font-mono text-xs font-bold text-primary">
-                              {formatOrderId(order.id)}
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs font-bold text-primary">
+                                  {formatOrderId(order.id)}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(formatOrderId(order.id));
+                                    toast.success(`Order ID ${formatOrderId(order.id)} copied!`);
+                                  }}
+                                  className="text-text-secondary hover:text-white p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
+                                  title="Copy Order ID"
+                                >
+                                  <Copy size={12} />
+                                </button>
+                              </div>
                             </td>
                             <td className="py-3 px-4">
                               <div className="text-white font-bold">{order.user.username}</div>
@@ -2449,8 +2463,22 @@ export const AdminDashboard = () => {
                       <tbody>
                         {adminPayments.map(payment => (
                           <tr key={payment.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                            <td className="py-3 px-4 font-mono text-xs font-bold text-primary">
-                              {formatOrderId(payment.id)}
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs font-bold text-primary">
+                                  {formatOrderId(payment.id)}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(formatOrderId(payment.id));
+                                    toast.success(`Order ID ${formatOrderId(payment.id)} copied!`);
+                                  }}
+                                  className="text-text-secondary hover:text-white p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
+                                  title="Copy Order ID"
+                                >
+                                  <Copy size={12} />
+                                </button>
+                              </div>
                             </td>
                             <td className="py-3 px-4">
                               <div className="text-white font-bold">{payment.user?.username || 'Guest'}</div>
@@ -2564,7 +2592,19 @@ export const AdminDashboard = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Order ID</p>
-                  <p className="font-mono text-primary text-sm font-bold">{formatOrderId(selectedPayment.id)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-primary text-sm font-bold">{formatOrderId(selectedPayment.id)}</p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(formatOrderId(selectedPayment.id));
+                        toast.success(`Order ID ${formatOrderId(selectedPayment.id)} copied!`);
+                      }}
+                      className="text-text-secondary hover:text-white p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
+                      title="Copy Order ID"
+                    >
+                      <Copy size={13} />
+                    </button>
+                  </div>
                 </div>
                 <div className="bg-cards/40 p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-text-secondary uppercase font-bold tracking-wider mb-1">Submitted UTR</p>
