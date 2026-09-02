@@ -435,9 +435,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           aria-label="Main navigation header"
         >
           <div className="sm-logo flex items-center select-none pointer-events-auto shrink-0" aria-label="Logo">
-            <Link to="/" onClick={closeMenu} className="flex items-center gap-0.5 text-lg sm:text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300">
-              <img src="/logo.png" alt="VALQORE" className="w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_8px_rgba(220,248,54,0.5)] -mr-0.5" />
-              <span>ALQORE.PRO</span>
+            <Link to="/" onClick={closeMenu} className="text-lg sm:text-2xl font-heading font-black tracking-tighter text-primary drop-shadow-[0_0_12px_rgba(220,248,54,0.4)] hover:drop-shadow-[0_0_20px_rgba(220,248,54,0.8)] transition-all duration-300">
+              <span>VALQORE.PRO</span>
             </Link>
           </div>
 

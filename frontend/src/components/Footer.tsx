@@ -15,9 +15,8 @@ export const Footer = () => {
           
           {/* Brand */}
           <div className="col-span-1 md:col-span-2 lg:col-span-1 flex flex-col items-start">
-            <Link to="/" className="flex items-center gap-0.5 text-2xl font-heading font-black tracking-tight text-primary mb-6">
-              <img src="/logo.png" alt="VALQORE" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(220,248,54,0.5)] -mr-0.5" />
-              <span>ALQORE.PRO</span>
+            <Link to="/" className="text-2xl font-heading font-black tracking-tight text-primary mb-6">
+              <span>VALQORE.PRO</span>
             </Link>
 
             <p className="text-text-secondary text-sm leading-relaxed mb-6">
