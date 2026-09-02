@@ -1267,61 +1267,62 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Premium Tab Navigation & Actions */}
-          <div className="flex flex-wrap justify-between items-center gap-4 mb-10 bg-white/[0.02] border border-white/5 p-2 rounded-2xl backdrop-blur-md shadow-xl">
-            <div className="flex gap-2 p-1 bg-black/40 rounded-xl overflow-x-auto w-full lg:w-max [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex flex-col gap-4 mb-8 bg-white/[0.02] border border-white/5 p-3 sm:p-4 rounded-2xl backdrop-blur-md shadow-xl">
+            {/* Top Row: Tab Selector Buttons */}
+            <div className="flex gap-2 p-1.5 bg-black/40 rounded-xl overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <button 
                 onClick={() => setActiveTab('games')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <Gamepad2 size={20} /> Games
+                <Gamepad2 size={18} /> Games
               </button>
               <button 
                 onClick={() => setActiveTab('giveaways')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'giveaways' ? 'bg-[#00F0FF] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <Gift size={20} /> Giveaways
+                <Gift size={18} /> Giveaways
               </button>
               <button 
                 onClick={() => setActiveTab('coupons')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'coupons' ? 'bg-[#FF00F0] text-white shadow-[0_0_20px_rgba(255,0,240,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'coupons' ? 'bg-[#FF00F0] text-white shadow-[0_0_20px_rgba(255,0,240,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <Ticket size={20} /> Coupons
+                <Ticket size={18} /> Coupons
               </button>
               <button 
                 onClick={() => setActiveTab('posters')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'posters' ? 'bg-[#00FFAA] text-black shadow-[0_0_20px_rgba(0,255,170,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'posters' ? 'bg-[#00FFAA] text-black shadow-[0_0_20px_rgba(0,255,170,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <ImageIcon size={20} /> Posters
+                <ImageIcon size={18} /> Posters
               </button>
               <button 
                 onClick={() => setActiveTab('orders')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'orders' ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'orders' ? 'bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <ShoppingCart size={20} /> Orders
+                <ShoppingCart size={18} /> Orders
               </button>
               <button 
                 onClick={() => setActiveTab('payments')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'payments' ? 'bg-emerald-500 text-black font-black shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'payments' ? 'bg-emerald-500 text-black font-black shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <CreditCard size={20} /> Payments
+                <CreditCard size={18} /> Payments
               </button>
               <button 
                 onClick={() => setActiveTab('creator_requests')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'creator_requests' ? 'bg-[#DCF836] text-black shadow-[0_0_20px_rgba(220,248,54,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'creator_requests' ? 'bg-[#DCF836] text-black shadow-[0_0_20px_rgba(220,248,54,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <Users size={20} /> Creator Requests
+                <Users size={18} /> Creator Requests
               </button>
               <button 
                 onClick={() => setActiveTab('users')}
-                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${activeTab === 'users' ? 'bg-[#3b82f6] text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] scale-100' : 'text-text-secondary hover:text-white hover:bg-white/5 scale-95'}`}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'users' ? 'bg-[#3b82f6] text-white shadow-[0_0_20px_rgba(59,130,246,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
-                <UserCheck size={20} /> Users
+                <UserCheck size={18} /> Users
               </button>
             </div>
 
-
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto px-2 lg:px-4 flex-shrink-0">
-              <div className="relative w-full sm:w-80">
+            {/* Bottom Row: Search & Actions */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+              <div className="relative flex-1 w-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 w-5 h-5" />
                 <input
                   type="text"
@@ -1334,13 +1335,14 @@ export const AdminDashboard = () => {
                       if (activeTab === 'payments') fetchAdminPayments(searchQuery, paymentFilter);
                     }
                   }}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-black/60 outline-none transition-all duration-300"
                 />
               </div>
+
               {activeTab === 'orders' ? (
                 <button
                   onClick={() => fetchAdminOrders(searchQuery)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition-all duration-300 bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search</span>
@@ -1348,7 +1350,7 @@ export const AdminDashboard = () => {
               ) : activeTab === 'payments' ? (
                 <button
                   onClick={() => fetchAdminPayments(searchQuery, paymentFilter)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black border border-emerald-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition-all duration-300 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black border border-emerald-500/30 whitespace-nowrap flex-shrink-0 cursor-pointer"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search</span>
@@ -1369,7 +1371,7 @@ export const AdminDashboard = () => {
                     onClick={exportGamesBackup}
                     type="button"
                     title="Download complete JSON backup of all games"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-4 rounded-xl transition-all duration-300 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 whitespace-nowrap cursor-pointer text-sm"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3 px-4 rounded-xl transition-all duration-300 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 whitespace-nowrap cursor-pointer text-sm"
                   >
                     <Download className="w-4 h-4 text-primary" />
                     <span>Export</span>
@@ -1380,7 +1382,7 @@ export const AdminDashboard = () => {
                     onClick={() => backupFileInputRef.current?.click()}
                     type="button"
                     title="Upload JSON file to restore games"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-4 rounded-xl transition-all duration-300 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 whitespace-nowrap cursor-pointer text-sm"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3 px-4 rounded-xl transition-all duration-300 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 whitespace-nowrap cursor-pointer text-sm"
                   >
                     <Upload className="w-4 h-4 text-[#00F0FF]" />
                     <span>Import</span>
@@ -1392,14 +1394,13 @@ export const AdminDashboard = () => {
                       resetForm(activeTab === 'giveaways');
                       setIsModalOpen(true);
                     }}
-                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
                   >
                     <Plus className="w-5 h-5" />
                     <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
                   </button>
                 </div>
               )}
-
             </div>
           </div>
 
