@@ -208,8 +208,8 @@ export const TESTIMONIALS = [
 
 export const FAQS = [
   {
-    question: 'How do I activate a game code?',
-    answer: 'Once purchased, go to your Library and click the "Activate Code" button. Enter the 15-digit code provided in your email receipt.'
+    question: 'How do I activate the game?',
+    answer: 'Once purchased, you get ID and password of that game account. Login using OTP, install the game and play.'
   },
   {
     question: 'Are there any region locks?',
