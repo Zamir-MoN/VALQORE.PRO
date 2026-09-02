@@ -330,6 +330,13 @@ router.post('/:orderId/cancel', authMiddleware, async (req: Request, res: Respon
       getIO()?.emit('orders_updated');
     } catch (e) {}
 
+    res.json({ success: true, message: 'Payment cancelled' });
+  } catch (error) {
+    console.error('[CANCEL PAYMENT ERROR]', error);
+    res.status(500).json({ error: 'Failed to cancel payment' });
+  }
+});
+
 // 5. Admin: Get all payments/transactions
 router.get('/admin/all', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
