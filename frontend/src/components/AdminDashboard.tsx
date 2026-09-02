@@ -2387,26 +2387,30 @@ export const AdminDashboard = () => {
 
       {/* PAYMENTS TAB */}
       {activeTab === 'payments' && (
-        <div className="w-full flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-5">
           {/* Header & Filter Controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-cards/40 border border-white/5 p-4 sm:p-6 rounded-2xl backdrop-blur-md">
-            <div>
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <CreditCard className="text-emerald-400" />
-                Delta APay Transactions & Payments
-              </h2>
-              <p className="text-text-secondary text-xs sm:text-sm mt-1">
-                Monitor live UPI QR checkout sessions, incoming UTRs, and verify transactions.
-              </p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-cards/50 border border-white/10 p-4 sm:p-6 rounded-2xl backdrop-blur-md shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <CreditCard size={22} />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">
+                  Delta APay Transactions & Payments
+                </h2>
+                <p className="text-text-secondary text-xs sm:text-sm">
+                  Monitor live UPI QR checkout sessions, incoming UTRs, and verify transactions.
+                </p>
+              </div>
             </div>
 
             {/* Filter Buttons */}
-            <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-xl border border-white/5 w-full sm:w-auto overflow-x-auto">
+            <div className="flex items-center gap-1.5 bg-black/50 p-1.5 rounded-xl border border-white/10 w-full sm:w-auto overflow-x-auto">
               {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((st) => (
                 <button
                   key={st}
                   onClick={() => setPaymentFilter(st)}
-                  className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer text-center ${
                     paymentFilter === st
                       ? st === 'COMPLETED'
                         ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]'
@@ -2424,9 +2428,9 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Payments Table */}
+          {/* Payments List */}
           {loadingPayments ? (
-            <div className="py-24 flex flex-col items-center justify-center gap-3">
+            <div className="py-24 flex flex-col items-center justify-center gap-3 bg-cards/20 rounded-2xl border border-white/5">
               <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
               <p className="text-text-secondary text-sm font-bold">Loading payment records...</p>
             </div>
@@ -2443,11 +2447,11 @@ export const AdminDashboard = () => {
               {adminPayments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="bg-cards/40 hover:bg-cards/70 border border-white/5 hover:border-emerald-400/30 rounded-2xl p-5 sm:p-6 transition-all duration-300 shadow-xl backdrop-blur-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6"
+                  className="bg-cards/40 hover:bg-cards/80 border border-white/10 hover:border-emerald-400/40 rounded-2xl p-4 sm:p-5 transition-all duration-300 shadow-xl backdrop-blur-sm flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4"
                 >
-                  {/* Left: Customer & Amount Info */}
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 font-heading font-black text-lg ${
+                  {/* Customer, Amount & Order Info */}
+                  <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-heading font-black text-base mt-0.5 ${
                       payment.status === 'COMPLETED'
                         ? 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.15)]'
                         : payment.status === 'PENDING'
@@ -2457,12 +2461,12 @@ export const AdminDashboard = () => {
                       {payment.status === 'COMPLETED' ? '₹' : payment.status === 'PENDING' ? '⏳' : '✕'}
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-3">
-                        <span className="text-white font-heading font-black text-xl">
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="text-white font-heading font-black text-xl tracking-tight">
                           {formatPrice(payment.totalAmount)}
                         </span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
                           payment.status === 'COMPLETED'
                             ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                             : payment.status === 'PENDING'
@@ -2473,12 +2477,12 @@ export const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <p className="text-text-secondary text-xs">
-                        Customer: <strong className="text-white">{payment.user?.username || 'Guest'}</strong> ({payment.user?.email || 'N/A'})
+                      <p className="text-xs text-text-secondary truncate">
+                        Customer: <strong className="text-white font-bold">{payment.user?.username || 'Guest'}</strong> <span className="opacity-70">({payment.user?.email || 'N/A'})</span>
                       </p>
 
-                      <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-text-secondary">
-                        <span className="bg-white/5 px-2 py-0.5 rounded font-mono text-white/80">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-text-secondary/80">
+                        <span className="bg-white/5 border border-white/10 px-2 py-0.5 rounded font-mono text-white/90">
                           Ref: {payment.purpose || payment.id.slice(0, 10)}
                         </span>
                         <span>•</span>
@@ -2488,42 +2492,44 @@ export const AdminDashboard = () => {
                   </div>
 
                   {/* Middle: Submitted UTR / Transaction Details */}
-                  <div className="flex flex-col gap-1.5 w-full lg:w-auto bg-black/40 p-3.5 rounded-xl border border-white/5 min-w-[240px]">
-                    <span className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">
-                      Submitted UTR / Ref
-                    </span>
-                    {payment.submittedUtr ? (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-emerald-400 font-bold text-sm tracking-wider">
-                          {payment.submittedUtr}
-                        </span>
+                  <div className="flex flex-col justify-center bg-black/40 p-3 sm:p-3.5 rounded-xl border border-white/5 xl:min-w-[260px] xl:max-w-[340px]">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider">
+                        Submitted UTR / Ref
+                      </span>
+                      {payment.submittedUtr && (
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(payment.submittedUtr);
                             toast.success('UTR copied!');
                           }}
-                          className="text-text-secondary hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer"
+                          className="text-text-secondary hover:text-white p-1 hover:bg-white/10 rounded cursor-pointer transition-colors"
                           title="Copy UTR"
                         >
-                          <Copy size={13} />
+                          <Copy size={12} />
                         </button>
-                      </div>
+                      )}
+                    </div>
+                    {payment.submittedUtr ? (
+                      <span className="font-mono text-emerald-400 font-bold text-sm tracking-wider break-all">
+                        {payment.submittedUtr}
+                      </span>
                     ) : (
-                      <span className="text-xs text-text-secondary/60 italic">No UTR submitted yet</span>
+                      <span className="text-xs text-text-secondary/50 italic">No UTR submitted yet</span>
                     )}
 
                     {payment.transaction && (
-                      <span className="text-[10px] text-green-400 font-bold">
-                        ✓ Matched Bank Tx: {payment.transaction.sender} ({payment.transaction.transactionId})
+                      <span className="text-[10px] text-green-400 font-bold mt-1">
+                        ✓ Verified Tx: {payment.transaction.sender}
                       </span>
                     )}
                   </div>
 
                   {/* Right: Actions */}
-                  <div className="flex items-center gap-2 w-full lg:w-auto justify-end">
+                  <div className="flex items-center gap-2.5 justify-end flex-shrink-0 pt-2 xl:pt-0 border-t xl:border-t-0 border-white/5">
                     <button
                       onClick={() => setSelectedPayment(payment)}
-                      className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Eye size={14} /> Details
                     </button>
@@ -2531,7 +2537,7 @@ export const AdminDashboard = () => {
                     {payment.status === 'PENDING' && (
                       <button
                         onClick={() => handleAdminVerifyPayment(payment.id, payment.submittedUtr)}
-                        className="px-4 py-2.5 bg-emerald-500 hover:bg-white text-black font-heading font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center gap-1.5 cursor-pointer"
+                        className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-500 hover:bg-white text-black font-heading font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                       >
                         <Check size={14} /> Approve & Fulfill
                       </button>
