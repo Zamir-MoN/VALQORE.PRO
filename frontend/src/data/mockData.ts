@@ -213,7 +213,7 @@ export const FAQS = [
   },
   {
     question: 'Are there any region locks?',
-    answer: 'Most games on Valqore are global keys, but some publishers enforce region restrictions. Always check the "Region" tag on the game page before purchasing.'
+    answer: 'Most games on Valqore are global.'
   },
   {
     question: 'What is your refund policy?',
