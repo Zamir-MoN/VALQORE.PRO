@@ -106,6 +106,28 @@ export const GameDetails = () => {
 
 
 
+  const handleShareGame = async () => {
+    const shareData = {
+      title: game?.title || 'VALQORE',
+      text: game ? `Check out ${game.title} on VALQORE for ${formatPrice(game.price * (1 - game.discount / 100))}!` : 'Check out this game on VALQORE!',
+      url: window.location.href,
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          navigator.clipboard.writeText(window.location.href);
+          toast.success('Game link copied to clipboard!');
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Game link copied to clipboard!');
+    }
+  };
+
   useEffect(() => {
     setActiveMedia(hasTrailer ? -1 : 0);
   }, [game?.id, hasTrailer]);
@@ -405,10 +427,7 @@ export const GameDetails = () => {
                   </button>
                 </div>
                 <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    toast.success('Game link copied to clipboard!');
-                  }}
+                  onClick={handleShareGame}
                   className="p-2 rounded-lg bg-cards border border-white/10 hover:bg-white/10 text-white transition-colors cursor-pointer"
                   title="Share game"
                 >
