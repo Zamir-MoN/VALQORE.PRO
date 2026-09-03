@@ -387,13 +387,13 @@ export const CreatorApplication = () => {
               <span className="w-1.5 h-6 bg-primary rounded-full"></span> Creator Intent
             </h2>
             <div className="space-y-4 group">
-              <label className="block text-sm font-bold text-text-secondary uppercase tracking-widest group-focus-within:text-white transition-colors">
-                Why do you want to become a Valqore Creator, and what would you like to do for Valqore? What can we build together? *
+              <label className="block text-sm font-bold text-text-secondary group-focus-within:text-white transition-colors leading-relaxed">
+                Are you interested in receiving games through the VALQORE Creator Program? Tell us how you plan to use the games you claim and create content around them. *
               </label>
               <textarea 
                 value={intent}
                 onChange={e => setIntent(e.target.value)}
-                placeholder="Share your vision for our partnership..."
+                placeholder="Tell us about your content plans, platforms, and how you will feature the games..."
                 className="w-full bg-background/50 border border-white/10 rounded-xl p-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all min-h-[150px] resize-y"
                 required
               />
