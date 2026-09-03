@@ -136,10 +136,16 @@ export const GameDetails = () => {
 
 
   const handleShareGame = async () => {
+    if (!game) return;
+
+    // Use the backend share-meta endpoint which guarantees Instagram, WhatsApp, Discord, iMessage crawlers get the exact poster image
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
+    const shareUrl = `${apiUrl}/games/share-meta/${game.id}`;
+
     const shareData = {
-      title: game?.title || 'VALQORE',
-      text: game ? `Check out ${game.title} on VALQORE for ${formatPrice(game.price * (1 - game.discount / 100))}!` : 'Check out this game on VALQORE!',
-      url: window.location.href,
+      title: game.title,
+      text: `Check out ${game.title} on VALQORE for ${formatPrice(game.price * (1 - game.discount / 100))}!`,
+      url: shareUrl,
     };
 
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
@@ -147,12 +153,12 @@ export const GameDetails = () => {
         await navigator.share(shareData);
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          navigator.clipboard.writeText(window.location.href);
+          navigator.clipboard.writeText(shareUrl);
           toast.success('Game link copied to clipboard!');
         }
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      navigator.clipboard.writeText(shareUrl);
       toast.success('Game link copied to clipboard!');
     }
   };
