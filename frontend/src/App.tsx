@@ -92,18 +92,19 @@ function App() {
                   {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
                   <ScrollToTop />
                   <AuthModal />
-                  <div className="fixed inset-0 -z-50 pointer-events-none">
+                  <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden">
                     <video
                       autoPlay
                       loop
                       muted
                       playsInline
-                      className="w-full h-full object-cover transform-gpu will-change-transform"
+                      preload="none"
+                      className="hidden sm:block w-full h-full object-cover transform-gpu"
                     >
                       <source src="/videos/bg-nexus.mp4" type="video/mp4" />
                     </video>
-                    {/* Optional overlay to darken video */}
-                    <div className="absolute inset-0 bg-background/60"></div>
+                    {/* Dark gradient overlay that provides deep premium look on mobile and desktop without lag */}
+                    <div className="absolute inset-0 bg-[#0A0A0B]/85 backdrop-blur-[2px] sm:backdrop-blur-none"></div>
                   </div>
 
                   {!loading && (
