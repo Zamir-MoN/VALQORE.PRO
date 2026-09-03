@@ -17,9 +17,14 @@
 }
 
 @layer base {
+  html, body, #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
   body {
     @apply bg-background text-text-primary font-sans antialiased;
-    overflow-x: hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {

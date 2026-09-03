@@ -44,10 +44,10 @@ export const Navbar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[100] h-8 bg-primary text-background font-bold text-center text-xs sm:text-sm shadow-[0_0_15px_rgba(220,248,54,0.3)] flex justify-center items-center gap-2">
-        <span className="animate-pulse">🚧</span>
-        Valqore.pro is still in Development phase (coming soon)
-        <span className="animate-pulse">🚧</span>
+      <div className="fixed top-0 left-0 right-0 z-[100] h-8 bg-primary text-background font-bold text-center text-[11px] sm:text-sm shadow-[0_0_15px_rgba(220,248,54,0.3)] flex justify-center items-center gap-1.5 sm:gap-2 px-3 overflow-hidden whitespace-nowrap">
+        <span className="animate-pulse shrink-0">🚧</span>
+        <span className="truncate">Valqore.pro is still in Development phase (coming soon)</span>
+        <span className="animate-pulse shrink-0">🚧</span>
       </div>
       <nav
         className={clsx(
