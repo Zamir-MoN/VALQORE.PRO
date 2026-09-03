@@ -33,7 +33,36 @@ export const GameDetails = () => {
   const [isReacting, setIsReacting] = useState(false);
 
   useEffect(() => {
-    document.title = 'VALQORE';
+    if (game) {
+      document.title = `${game.title} | VALQORE`;
+
+      const gameImage = game.coverImage ? getImageUrl(game.coverImage) : 'https://valqore.pro/images/hero-artwork.png';
+      const gameDesc = game.description || `Check out ${game.title} on VALQORE!`;
+      const currentUrl = window.location.href;
+
+      const setMetaTag = (selector: string, attribute: string, value: string) => {
+        let el = document.querySelector(selector);
+        if (!el) {
+          el = document.createElement('meta');
+          const [key, val] = selector.replace(/[\[\]"]/g, '').split('=');
+          el.setAttribute(key, val);
+          document.head.appendChild(el);
+        }
+        el.setAttribute(attribute, value);
+      };
+
+      setMetaTag('meta[property="og:title"]', 'content', `${game.title} - VALQORE`);
+      setMetaTag('meta[property="og:description"]', 'content', gameDesc);
+      setMetaTag('meta[property="og:image"]', 'content', gameImage);
+      setMetaTag('meta[property="og:url"]', 'content', currentUrl);
+
+      setMetaTag('meta[property="twitter:title"]', 'content', `${game.title} - VALQORE`);
+      setMetaTag('meta[property="twitter:description"]', 'content', gameDesc);
+      setMetaTag('meta[property="twitter:image"]', 'content', gameImage);
+      setMetaTag('meta[property="twitter:url"]', 'content', currentUrl);
+    } else {
+      document.title = 'VALQORE';
+    }
   }, [game]);
 
 

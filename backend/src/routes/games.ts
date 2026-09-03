@@ -413,5 +413,63 @@ router.post('/backup/import', authMiddleware, async (req, res) => {
   }
 });
 
+// Server-side meta tag endpoint for social preview crawlers (WhatsApp, Instagram, Twitter, Discord, Facebook)
+router.get('/share-meta/:id', async (req, res) => {
+  try {
+    const game = await prisma.game.findUnique({
+      where: { id: req.params.id }
+    });
+
+    const fallbackImage = 'https://valqore.pro/images/hero-artwork.png';
+    let posterImage = fallbackImage;
+
+    if (game?.coverImage) {
+      if (game.coverImage.startsWith('http://') || game.coverImage.startsWith('https://')) {
+        posterImage = game.coverImage;
+      } else {
+        posterImage = `https://valqore.pro${game.coverImage.startsWith('/') ? '' : '/'}${game.coverImage}`;
+      }
+    }
+
+    const title = game ? `${game.title} | VALQORE` : 'VALQORE';
+    const description = game?.description 
+      ? game.description.slice(0, 180).replace(/"/g, '&quot;')
+      : 'Discover top digital PC & console games, exclusive giveaways, verified game accounts, and instant delivery on VALQORE.';
+    const gameUrl = `https://valqore.pro/game/${req.params.id}`;
+
+    const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${title}</title>
+  <meta name="description" content="${description}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="VALQORE" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${posterImage}" />
+  <meta property="og:image:secure_url" content="${posterImage}" />
+  <meta property="og:image:alt" content="${game ? game.title : 'VALQORE'}" />
+  <meta property="og:url" content="${gameUrl}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${posterImage}" />
+  <meta http-equiv="refresh" content="0;url=${gameUrl}" />
+  <script>window.location.replace("${gameUrl}");</script>
+</head>
+<body style="background:#050505;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+  <p>Redirecting to <a href="${gameUrl}" style="color:#DCF836;">${title}</a>...</p>
+</body>
+</html>`;
+
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (error) {
+    console.error('[SHARE META ERROR]:', error);
+    res.redirect(`https://valqore.pro/game/${req.params.id}`);
+  }
+});
+
 export default router;
 
