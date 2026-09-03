@@ -93,6 +93,15 @@ function App() {
                   <ScrollToTop />
                   <AuthModal />
                   <div className="fixed inset-0 -z-50 pointer-events-none overflow-hidden">
+                    {/* Mobile Background: Stunning cinematic artwork, zero decoding lag */}
+                    <img
+                      src="/images/bg-mobile.png"
+                      alt="Background"
+                      className="block sm:hidden w-full h-full object-cover object-center transform-gpu"
+                      loading="eager"
+                      decoding="async"
+                    />
+                    {/* Desktop Background: Looping video */}
                     <video
                       autoPlay
                       loop
@@ -103,8 +112,8 @@ function App() {
                     >
                       <source src="/videos/bg-nexus.mp4" type="video/mp4" />
                     </video>
-                    {/* Dark gradient overlay that provides deep premium look on mobile and desktop without lag */}
-                    <div className="absolute inset-0 bg-[#0A0A0B]/85 backdrop-blur-[2px] sm:backdrop-blur-none"></div>
+                    {/* Dark gradient overlay for perfect readability & rich aesthetic */}
+                    <div className="absolute inset-0 bg-[#0A0A0B]/75"></div>
                   </div>
 
                   {!loading && (
