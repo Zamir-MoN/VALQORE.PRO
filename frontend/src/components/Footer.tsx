@@ -126,8 +126,8 @@ export const Footer = () => {
           <p className="text-text-secondary text-sm">
             &copy; {new Date().getFullYear()} Valqore Inc. All rights reserved.
           </p>
-          <p className="text-text-secondary text-sm flex items-center gap-1">
-            Made with <span className="text-error animate-pulse">❤️</span> by Valqore
+          <p className="text-text-secondary text-sm flex items-center gap-1.5">
+            Made by <strong className="text-white font-black tracking-wider">DELTA X</strong>
           </p>
         </div>
       </div>
