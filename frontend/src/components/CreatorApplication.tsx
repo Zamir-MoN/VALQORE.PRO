@@ -263,27 +263,27 @@ export const CreatorApplication = () => {
   }
 
   return (
-    <div className="pt-32 pb-24 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen">
+    <div className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
       <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
       
       <div className="container mx-auto max-w-3xl">
-        <div className="mb-12">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-secondary hover:text-white font-bold text-sm tracking-wider uppercase mb-6 group">
+        <div className="mb-8 sm:mb-12">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-text-secondary hover:text-white font-bold text-xs sm:text-sm tracking-wider uppercase mb-4 sm:mb-6 group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back
           </button>
-          <h1 className="text-4xl sm:text-5xl font-heading font-black tracking-wider uppercase text-white mb-4">
+          <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-wider uppercase text-white mb-2 sm:mb-4">
             Creator Application
           </h1>
-          <p className="text-text-secondary text-lg">
+          <p className="text-text-secondary text-sm sm:text-lg">
             Complete the form below to apply for the Valqore Creator Program.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           
           {/* Section 1: Basic Info */}
-          <div className="bg-cards/60 backdrop-blur-md rounded-3xl border border-white/10 p-8 shadow-xl">
-            <h2 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2">
+          <div className="bg-cards/60 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 shadow-xl">
+            <h2 className="text-lg sm:text-xl font-heading font-bold text-white mb-4 sm:mb-6 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-primary rounded-full"></span> Basic Information
             </h2>
             <div className="space-y-4 group">
@@ -305,16 +305,16 @@ export const CreatorApplication = () => {
           </div>
 
           {/* Section 2: Social Links */}
-          <div className="bg-cards/60 backdrop-blur-md rounded-3xl border border-white/10 p-8 shadow-xl">
-            <h2 className="text-xl font-heading font-bold text-white mb-2 flex items-center gap-2">
+          <div className="bg-cards/60 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 shadow-xl">
+            <h2 className="text-lg sm:text-xl font-heading font-bold text-white mb-2 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-primary rounded-full"></span> Social Media / Promotion Platforms
             </h2>
-            <p className="text-sm text-text-secondary mb-6 bg-white/5 p-4 rounded-xl border border-white/5 flex gap-3 items-start">
+            <p className="text-xs sm:text-sm text-text-secondary mb-4 sm:mb-6 bg-white/5 p-3 sm:p-4 rounded-xl border border-white/5 flex gap-2.5 sm:gap-3 items-start">
               <AlertCircle size={18} className="text-primary flex-shrink-0 mt-0.5" />
               You must provide at least one social media or creator platform where you can promote Valqore.
             </p>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
                 <div className="relative">
                   <Youtube size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" />
@@ -324,7 +324,7 @@ export const CreatorApplication = () => {
                     onChange={e => setYoutubeLink(e.target.value)}
                     placeholder="YouTube Channel Link"
                     className={clsx(
-                      "w-full bg-background/50 rounded-xl py-4 pl-12 pr-4 text-white focus:bg-background/80 outline-none transition-all",
+                      "w-full bg-background/50 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white focus:bg-background/80 outline-none transition-all text-sm sm:text-base",
                       isYoutubeInvalid ? "border-2 border-red-500" : "border border-white/10 focus:border-red-500"
                     )}
                   />
@@ -341,7 +341,7 @@ export const CreatorApplication = () => {
                     onChange={e => setInstagramLink(e.target.value)}
                     placeholder="Instagram Account Link"
                     className={clsx(
-                      "w-full bg-background/50 rounded-xl py-4 pl-12 pr-4 text-white focus:bg-background/80 outline-none transition-all",
+                      "w-full bg-background/50 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white focus:bg-background/80 outline-none transition-all text-sm sm:text-base",
                       isInstagramInvalid ? "border-2 border-red-500" : "border border-white/10 focus:border-pink-500"
                     )}
                   />
@@ -358,7 +358,7 @@ export const CreatorApplication = () => {
                     onChange={e => setFacebookLink(e.target.value)}
                     placeholder="Facebook Page Link"
                     className={clsx(
-                      "w-full bg-background/50 rounded-xl py-4 pl-12 pr-4 text-white focus:bg-background/80 outline-none transition-all",
+                      "w-full bg-background/50 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white focus:bg-background/80 outline-none transition-all text-sm sm:text-base",
                       isFacebookInvalid ? "border-2 border-red-500" : "border border-white/10 focus:border-blue-500"
                     )}
                   />
@@ -374,7 +374,7 @@ export const CreatorApplication = () => {
                     value={otherLink}
                     onChange={e => setOtherLink(e.target.value)}
                     placeholder="Other Platform Link (e.g. Twitch, TikTok)"
-                    className="w-full bg-background/50 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all"
+                    className="w-full bg-background/50 border border-white/10 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -382,30 +382,30 @@ export const CreatorApplication = () => {
           </div>
 
           {/* Section 3: Intent */}
-          <div className="bg-cards/60 backdrop-blur-md rounded-3xl border border-white/10 p-8 shadow-xl">
-            <h2 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2">
+          <div className="bg-cards/60 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 shadow-xl">
+            <h2 className="text-lg sm:text-xl font-heading font-bold text-white mb-4 sm:mb-6 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-primary rounded-full"></span> Creator Intent
             </h2>
-            <div className="space-y-4 group">
-              <label className="block text-sm font-bold text-text-secondary group-focus-within:text-white transition-colors leading-relaxed">
+            <div className="space-y-3 sm:space-y-4 group">
+              <label className="block text-xs sm:text-sm font-bold text-text-secondary group-focus-within:text-white transition-colors leading-relaxed">
                 Are you interested in receiving games through the VALQORE Creator Program? Tell us how you plan to use the games you claim and create content around them. *
               </label>
               <textarea 
                 value={intent}
                 onChange={e => setIntent(e.target.value)}
                 placeholder="Tell us about your content plans, platforms, and how you will feature the games..."
-                className="w-full bg-background/50 border border-white/10 rounded-xl p-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all min-h-[150px] resize-y"
+                className="w-full bg-background/50 border border-white/10 rounded-xl p-3.5 sm:p-4 text-white focus:border-primary focus:bg-background/80 outline-none transition-all min-h-[130px] sm:min-h-[150px] resize-y text-sm sm:text-base"
                 required
               />
             </div>
           </div>
 
           {/* Section 4: Contact */}
-          <div className="bg-cards/60 backdrop-blur-md rounded-3xl border border-white/10 p-8 shadow-xl">
-            <h2 className="text-xl font-heading font-bold text-white mb-2 flex items-center gap-2">
+          <div className="bg-cards/60 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 shadow-xl">
+            <h2 className="text-lg sm:text-xl font-heading font-bold text-white mb-2 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-primary rounded-full"></span> Contact Platforms
             </h2>
-            <p className="text-sm text-text-secondary mb-6">Select all the ways our team can reach out to you.</p>
+            <p className="text-xs sm:text-sm text-text-secondary mb-4 sm:mb-6">Select all the ways our team can reach out to you.</p>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
               {Object.keys(contactPlatforms).map((platform) => (
