@@ -43,7 +43,7 @@ export const CreatorGuidelines = () => {
   };
 
   return (
-    <div className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
+    <div className="pt-28 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
       <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
       
       <div className="container mx-auto max-w-5xl">
@@ -51,12 +51,12 @@ export const CreatorGuidelines = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center mb-8 sm:mb-14"
+          className="text-center mb-6 sm:mb-14"
         >
-          <h1 className="text-3xl sm:text-5xl font-heading font-black tracking-wider uppercase text-white mb-3 sm:mb-4 drop-shadow-md">
+          <h1 className="text-2xl sm:text-5xl font-heading font-black tracking-wider uppercase text-white mb-2.5 sm:mb-4 drop-shadow-md">
             Creator Guidelines
           </h1>
-          <p className="text-text-secondary text-sm sm:text-lg max-w-2xl mx-auto font-medium px-2">
+          <p className="text-text-secondary text-xs sm:text-lg max-w-2xl mx-auto font-medium px-2 leading-relaxed">
             Join the Valqore creator program. Review our community standards and expectations before applying.
           </p>
         </motion.div>

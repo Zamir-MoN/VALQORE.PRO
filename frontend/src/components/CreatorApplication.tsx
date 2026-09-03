@@ -263,7 +263,7 @@ export const CreatorApplication = () => {
   }
 
   return (
-    <div className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
+    <div className="pt-28 sm:pt-36 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
       <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-[100%] blur-[120px] -z-10 pointer-events-none"></div>
       
       <div className="container mx-auto max-w-3xl">
