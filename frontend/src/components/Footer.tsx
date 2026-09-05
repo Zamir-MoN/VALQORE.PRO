@@ -106,7 +106,7 @@ export const Footer = () => {
             <ul className="space-y-4">
               {[
                 { name: 'Terms of Service', url: '/terms' },
-                { name: 'Privacy Policy', url: '#' },
+                { name: 'Privacy Policy', url: '/privacy' },
                 { name: 'Creator Guidelines', url: '/creator/guidelines' }
               ].map((link) => (
                 <li key={link.name}>

@@ -27,6 +27,7 @@ const CreatorGuidelines = lazy(() => import('./components/CreatorGuidelines').th
 const CreatorApplication = lazy(() => import('./components/CreatorApplication').then(m => ({ default: m.CreatorApplication })));
 const Support = lazy(() => import('./components/Support').then(m => ({ default: m.Support })));
 const TermsOfService = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfService })));
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 
 
 import { AuthProvider } from './context/AuthContext';
@@ -157,6 +158,8 @@ function App() {
                             <Route path="/support" element={<Support />} />
                             <Route path="/terms" element={<TermsOfService />} />
                             <Route path="/terms-of-service" element={<TermsOfService />} />
+                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
                             <Route path="/creator/apply" element={<CreatorApplication />} />
                           </Routes>
