@@ -260,29 +260,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary block mb-2.5">
                   Accepted UPI Apps
                 </span>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-center p-2 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 transition-all h-12">
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className="flex items-center justify-center p-2 bg-white/[0.06] hover:bg-white/10 rounded-2xl border border-white/10 transition-all h-13">
                     <img
                       src="/google_pay.png"
                       alt="Google Pay"
-                      className="w-7 h-7 object-contain drop-shadow-sm"
+                      className="w-8 h-8 object-contain drop-shadow-md"
                     />
                   </div>
-                  <div className="flex items-center justify-center p-2 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 transition-all h-12">
+                  <div className="flex items-center justify-center p-2 bg-white/[0.06] hover:bg-white/10 rounded-2xl border border-white/10 transition-all h-13">
                     <img
                       src="/phone_pay.png"
                       alt="PhonePe"
-                      className="w-7 h-7 object-contain rounded-full shadow-sm"
+                      className="w-8.5 h-8.5 object-contain rounded-full shadow-md"
                     />
                   </div>
-                  <div className="flex items-center justify-center p-2 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 transition-all h-12">
-                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center p-0.5 shadow-sm">
-                      <img
-                        src="/paytm.png"
-                        alt="Paytm"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
+                  <div className="flex items-center justify-center p-2 bg-white/[0.06] hover:bg-white/10 rounded-2xl border border-white/10 transition-all h-13">
+                    <img
+                      src="/paytm.png"
+                      alt="Paytm"
+                      className="w-8.5 h-8.5 object-contain rounded-full shadow-md bg-white p-0.5"
+                    />
                   </div>
                 </div>
               </div>
