@@ -7,39 +7,35 @@ export const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
   const fullText = "VALQORE";
 
   useEffect(() => {
+    // Check if user already saw the intro animation this session
+    const hasSeenIntro = sessionStorage.getItem('valqore_intro_seen');
+    if (hasSeenIntro) {
+      onComplete();
+      return;
+    }
+
     const tl = gsap.timeline({
       onComplete: () => {
+        sessionStorage.setItem('valqore_intro_seen', 'true');
         onComplete();
       }
     });
 
-    // 1. Type In
+    // Snappy Type In (0.35s)
     tl.to({ val: 0 }, {
       val: fullText.length,
-      duration: 1.2,
-      ease: 'power1.inOut',
+      duration: 0.35,
+      ease: 'power2.out',
       onUpdate: function() {
         setDisplayText(fullText.slice(0, Math.round(this.targets()[0].val)));
       }
     })
-    
-    // 2. Pause
-    .to({}, { duration: 0.6 })
-    
-    // 3. Type Out
-    .to({ val: fullText.length }, {
-      val: 0,
-      duration: 0.8,
-      ease: 'power1.inOut',
-      onUpdate: function() {
-        setDisplayText(fullText.slice(0, Math.round(this.targets()[0].val)));
-      }
-    })
-    
-    // 4. Fade Screen Out
+    // Brief Pause (0.2s)
+    .to({}, { duration: 0.2 })
+    // Fast Fade Screen Out (0.3s)
     .to(containerRef.current, {
       opacity: 0,
-      duration: 0.6,
+      duration: 0.3,
       ease: 'power2.inOut',
     });
 
