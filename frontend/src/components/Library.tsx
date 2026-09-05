@@ -117,6 +117,13 @@ export const Library = () => {
     );
   }
 
+  const handleClaimCreatorGame = (gameTitle: string) => {
+    const creatorName = user?.username || 'Valqore Creator';
+    const message = encodeURIComponent(`Hi Valqore! I want to claim Creator Access for "${gameTitle}". My creator account name is "${creatorName}".`);
+    toast.success(`Redirecting to Instagram to claim ${gameTitle}!`, { icon: '🚀' });
+    window.open(`https://ig.me/m/valqore.pro?text=${message}`, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="pt-24 sm:pt-32 pb-20 sm:pb-24 px-3 sm:px-6 lg:px-12 relative z-10 min-h-screen" id="library-page">
       {/* Background ambient glow */}
@@ -160,19 +167,37 @@ export const Library = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center bg-cards/70 p-1 rounded-xl border border-white/10 text-xs font-bold gap-1 self-start sm:self-auto w-full sm:w-auto overflow-x-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-cards/60 border border-white/10 rounded-xl overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setFilter('ALL')}
-                className={`flex-1 sm:flex-none text-center px-3.5 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${filter === 'ALL' ? 'bg-primary text-background font-black shadow-[0_0_12px_rgba(220,248,54,0.3)]' : 'text-text-secondary hover:text-white'}`}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  filter === 'ALL'
+                    ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.3)]'
+                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                }`}
+              >
+                All Games ({allLibraryGames.length})
+              </button>
+              <button
+                onClick={() => setFilter('COMPLETED')}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  filter === 'COMPLETED'
+                    ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.3)]'
+                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                }`}
               >
                 Purchased ({allLibraryGames.length})
               </button>
-              {creatorStatus === 'APPROVED' && (
+              {creatorAccessGames.length > 0 && (
                 <button
                   onClick={() => setFilter('CREATOR_ACCESS')}
-                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap ${filter === 'CREATOR_ACCESS' ? 'bg-gradient-to-r from-primary to-lime-400 text-black font-black shadow-[0_0_15px_rgba(220,248,54,0.4)]' : 'text-primary hover:bg-primary/10 border border-primary/20'}`}
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                    filter === 'CREATOR_ACCESS'
+                      ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.3)]'
+                      : 'text-text-secondary hover:text-white hover:bg-white/5'
+                  }`}
                 >
-                  <Star size={12} className="fill-current flex-shrink-0" />
+                  <Star size={13} className={filter === 'CREATOR_ACCESS' ? 'fill-black' : 'text-primary fill-primary/30'} />
                   <span>Creator Access ({creatorAccessGames.length})</span>
                 </button>
               )}
@@ -180,23 +205,45 @@ export const Library = () => {
           </div>
         </div>
 
+        {/* Creator Access Promotion Banner */}
+        {creatorStatus !== 'APPROVED' && (
+          <div className="mb-8 p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-cards/60 to-primary/5 border border-primary/20 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary flex-shrink-0">
+                <Sparkles size={22} />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-heading font-black text-white">Join the VALQORE Creator Program</h3>
+                <p className="text-xs sm:text-sm text-text-secondary">Streamers & YouTubers get complimentary access to claim top games for content creation.</p>
+              </div>
+            </div>
+            <Link
+              to="/creator/guidelines"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-white text-background font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:scale-105 active:scale-95 whitespace-nowrap"
+            >
+              <span>Learn More & Apply</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        )}
+
         {/* Content */}
         {loading ? (
-          <div className="py-24 sm:py-32 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary animate-spin" />
-            <p className="text-text-secondary font-bold text-xs sm:text-sm">Loading your library...</p>
+          <div className="py-24 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-xs sm:text-sm text-text-secondary font-medium">Loading your library...</p>
           </div>
         ) : filteredGames.length === 0 ? (
-          <div className="py-16 sm:py-24 px-4 sm:px-6 bg-cards/40 border border-white/5 rounded-3xl text-center max-w-xl mx-auto backdrop-blur-md shadow-2xl">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 shadow-[0_0_30px_rgba(220,248,54,0.15)]">
-              <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10" />
+          <div className="py-16 sm:py-24 flex flex-col items-center justify-center text-center max-w-md mx-auto px-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-cards/60 border border-white/10 flex items-center justify-center text-text-secondary mb-4 sm:mb-5 shadow-lg">
+              <Gamepad2 size={36} className="text-white/30" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-heading font-bold text-white mb-2">
-              {filter === 'CREATOR_ACCESS' ? 'No Creator Access Games Available' : 'No Games in Library Yet'}
+            <h2 className="text-xl sm:text-2xl font-heading font-black text-white mb-2">
+              {filter === 'CREATOR_ACCESS' ? 'No Creator Games Available' : 'Your Library is Empty'}
             </h2>
-            <p className="text-text-secondary text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-text-secondary mb-6 leading-relaxed">
               {filter === 'CREATOR_ACCESS' 
-                ? 'No games are currently marked for Creator Access. Check back soon as new creator games are added!'
+                ? "There are currently no games marked for creator distribution. Check back soon!" 
                 : "You haven't purchased any games yet or your search filter didn't match any items. Explore our store to find your next adventure!"}
             </p>
             <Link
@@ -269,14 +316,23 @@ export const Library = () => {
                       <Play size={13} className="text-primary flex-shrink-0" />
                       <span>Details</span>
                     </Link>
-                    <Link
-                      to={item.isCreatorGame ? `/game/${item.id}` : "/profile"}
-                      className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)] active:scale-95"
-                    >
-                      {item.isCreatorGame ? <Key size={13} className="flex-shrink-0" /> : <ShieldCheck size={13} className="flex-shrink-0" />}
-                      <span>{item.isCreatorGame ? 'Claim' : 'Account Info'}</span>
-                    </Link>
-
+                    {item.isCreatorGame ? (
+                      <button
+                        onClick={() => handleClaimCreatorGame(item.title)}
+                        className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-primary to-[#c4e320] hover:from-white hover:to-white text-black font-black border border-primary/40 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_20px_rgba(220,248,54,0.6)] active:scale-95 cursor-pointer"
+                      >
+                        <Key size={13} className="flex-shrink-0" />
+                        <span>Claim</span>
+                      </button>
+                    ) : (
+                      <Link
+                        to="/profile"
+                        className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)] active:scale-95"
+                      >
+                        <ShieldCheck size={13} className="flex-shrink-0" />
+                        <span>Account Info</span>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
@@ -287,5 +343,3 @@ export const Library = () => {
     </div>
   );
 };
-
-

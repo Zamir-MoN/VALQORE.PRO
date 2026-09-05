@@ -364,6 +364,31 @@ export const GameDetails = () => {
                         )}
                       </div>
 
+                      {/* Creator Access Promotion & Claim */}
+                      {game.creatorAccess && (
+                        <div className="p-3.5 rounded-xl bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/40 flex flex-col gap-2 shadow-[0_0_15px_rgba(220,248,54,0.15)]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5">
+                              ★ Creator Free Pass Available
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-text-secondary leading-tight">
+                            Approved content creators can claim this title for streams & videos.
+                          </p>
+                          <button
+                            onClick={() => {
+                              const creatorName = user?.username || 'Valqore Creator';
+                              const message = encodeURIComponent(`Hi Valqore! I want to claim Creator Access for "${game.title}". My creator account name is "${creatorName}".`);
+                              toast.success(`Redirecting to Instagram to claim ${game.title}!`, { icon: '🚀' });
+                              window.open(`https://ig.me/m/valqore.pro?text=${message}`, '_blank', 'noopener,noreferrer');
+                            }}
+                            className="w-full mt-1 bg-gradient-to-r from-primary to-[#c4e320] hover:from-white hover:to-white text-black font-black text-xs py-2.5 px-4 rounded-lg uppercase tracking-wider transition-all shadow-[0_0_12px_rgba(220,248,54,0.3)] hover:scale-[1.02] active:scale-95 cursor-pointer"
+                          >
+                            Claim Creator Access (Instagram DM)
+                          </button>
+                        </div>
+                      )}
+
                       {game.outOfStock ? (
                         <button 
                           disabled
