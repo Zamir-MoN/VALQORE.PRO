@@ -261,26 +261,28 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   Accepted UPI Apps
                 </span>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/80 rounded-xl border border-white/10 transition-colors h-11">
+                  <div className="flex items-center justify-center p-2 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 transition-all h-12">
                     <img
                       src="/google_pay.png"
                       alt="Google Pay"
-                      className="h-6 w-auto object-contain"
+                      className="w-7 h-7 object-contain drop-shadow-sm"
                     />
                   </div>
-                  <div className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/80 rounded-xl border border-white/10 transition-colors h-11">
+                  <div className="flex items-center justify-center p-2 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 transition-all h-12">
                     <img
                       src="/phone_pay.png"
                       alt="PhonePe"
-                      className="h-6 w-auto object-contain"
+                      className="w-7 h-7 object-contain rounded-full shadow-sm"
                     />
                   </div>
-                  <div className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/80 rounded-xl border border-white/10 transition-colors h-11">
-                    <img
-                      src="/paytm.png"
-                      alt="Paytm"
-                      className="h-6 w-auto object-contain"
-                    />
+                  <div className="flex items-center justify-center p-2 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 transition-all h-12">
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center p-0.5 shadow-sm">
+                      <img
+                        src="/paytm.png"
+                        alt="Paytm"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
