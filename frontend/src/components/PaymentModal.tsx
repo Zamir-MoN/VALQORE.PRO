@@ -285,25 +285,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </div>
               </div>
 
-              {/* UPI ID & Verified Banking Name Action Pill */}
+              {/* Verified Banking Name Action Pill */}
               <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] uppercase font-bold text-text-secondary">Banking Name</span>
-                    <span className="text-[11px] font-bold text-white">Sagar Paul</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] uppercase font-bold text-primary">UPI VPA</span>
-                    <span className="text-xs font-mono font-bold text-text-secondary truncate">valqore.pro.paul@fam</span>
-                  </div>
+                  <span className="text-[10px] uppercase font-bold text-text-secondary block mb-0.5">Banking Name</span>
+                  <span className="text-sm font-bold text-white block">Sagar Paul</span>
                 </div>
-                <button
-                  onClick={handleCopyUpi}
-                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-primary/20 text-text-secondary hover:text-primary border border-white/10 hover:border-primary/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer flex-shrink-0"
-                  title="Copy UPI ID"
-                >
-                  {copiedUpi ? <><Check size={13} className="text-emerald-400" /> Copied</> : <><Copy size={13} /> Copy</>}
-                </button>
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                  Verified Merchant
+                </span>
               </div>
 
               {/* Live WebSocket Verification Radar */}
