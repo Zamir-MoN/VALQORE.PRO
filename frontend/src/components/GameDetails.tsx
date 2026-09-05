@@ -274,11 +274,11 @@ export const GameDetails = () => {
               </div>
 
               {/* Thumbnails Row */}
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+              <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
                 {hasTrailer && (
                   <div 
                     onClick={() => setActiveMedia(-1)}
-                    className={`relative w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-colors ${activeMedia === -1 ? 'border-primary' : 'border-transparent hover:border-white/30'} bg-black`}
+                    className={`relative w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] ${activeMedia === -1 ? 'border-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' : 'border-transparent hover:border-white/30'} bg-black`}
                   >
                     <img 
                       src={`https://i.ytimg.com/vi/${getYouTubeVideoId(game.trailerUrl!)}/hqdefault.jpg`} 
@@ -286,8 +286,8 @@ export const GameDetails = () => {
                       className="w-full h-full object-cover opacity-70" 
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-black/50 p-2 rounded-full backdrop-blur-sm">
-                        <Play size={20} className="text-white ml-1" />
+                      <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm border border-white/20">
+                        <Play size={18} className="text-white ml-0.5" />
                       </div>
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export const GameDetails = () => {
                   <div 
                     key={i} 
                     onClick={() => setActiveMedia(i)}
-                    className={`w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-colors ${activeMedia === i ? 'border-primary' : 'border-transparent hover:border-white/30'} bg-white/5`}
+                    className={`w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] ${activeMedia === i ? 'border-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' : 'border-transparent hover:border-white/30'} bg-white/5`}
                   >
                     <img src={getImageUrl(url)} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover" />
                   </div>

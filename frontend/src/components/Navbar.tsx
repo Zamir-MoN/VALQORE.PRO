@@ -105,13 +105,20 @@ export const Navbar = () => {
               )}></span>
             </Link>
           )}
-          <a 
-            href="/#support" 
-            className="relative text-sm font-bold text-text-secondary hover:text-white transition-colors duration-300 group py-2"
+          <Link 
+            to="/support" 
+            onClick={handleNavClick('/support')} 
+            className={clsx(
+              "relative text-sm font-bold transition-colors duration-300 group py-2",
+              location.pathname === '/support' ? "text-white" : "text-text-secondary hover:text-white"
+            )}
           >
             Support
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full rounded-full"></span>
-          </a>
+            <span className={clsx(
+              "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 rounded-full",
+              location.pathname === '/support' ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
+            )}></span>
+          </Link>
         </div>
 
       </div>
@@ -197,7 +204,7 @@ export const Navbar = () => {
             { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
             { label: 'Store', ariaLabel: 'Browse the store', link: '/store' },
             ...(user ? [{ label: 'Library', ariaLabel: 'View your purchased games', link: '/library' }] : []),
-            { label: 'Support', ariaLabel: 'Get help', link: '/#support' },
+            { label: 'Support', ariaLabel: 'Get help', link: '/support' },
             ...(user 
               ? [{ label: 'Profile', ariaLabel: 'Go to your profile', link: '/profile' }]
               : [{ label: 'Login', ariaLabel: 'Sign in to account', link: '#', onClick: openAuthModal }])

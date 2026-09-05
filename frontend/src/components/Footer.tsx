@@ -86,11 +86,15 @@ export const Footer = () => {
           <div>
             <h4 className="font-heading font-bold text-white mb-6 uppercase tracking-wider text-sm">Support</h4>
             <ul className="space-y-4">
-              {['Help Center', 'Refund Policy', 'Contact Us'].map((link) => (
-                <li key={link}>
-                  <a href="#" onClick={(e) => e.preventDefault()} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium cursor-default">
-                    {link}
-                  </a>
+              {[
+                { name: 'Help Center', url: '/support' },
+                { name: 'Contact Us', url: '/support' },
+                { name: 'FAQ', url: '/#support' }
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link to={link.url} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium">
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>
