@@ -193,8 +193,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* Top Header Bar */}
         <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/30">
-              <div className="w-3.5 h-3.5 bg-primary rotate-45 shadow-[0_0_10px_rgba(220,248,54,0.9)]"></div>
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-black/60 border border-primary/40 shadow-[0_0_15px_rgba(220,248,54,0.25)] p-1.5 overflow-hidden">
+              <img src="/logo.png" alt="Valqore" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(220,248,54,0.7)]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -312,13 +312,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   <QrCode size={12} /> Scan with Any UPI App
                 </div>
 
-                {/* QR Container with Crisp Glass Edge */}
+                {/* QR Container with Crisp Glass Edge & Central Valqore Badge */}
                 <div className="p-2.5 bg-white rounded-2xl shadow-2xl relative overflow-hidden mb-3 mx-auto w-fit">
                   <img
                     src={orderData.qrCode}
                     alt="UPI QR Code"
-                    className="w-44 h-44 sm:w-48 sm:h-48 rounded-xl object-contain"
+                    className="w-44 h-44 sm:w-48 sm:h-48 rounded-xl object-contain block"
                   />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-black rounded-xl border border-primary/50 flex items-center justify-center p-1 shadow-lg pointer-events-none">
+                    <img src="/logo.png" alt="Valqore" className="w-full h-full object-contain" />
+                  </div>
                 </div>
 
                 <p className="text-[11px] text-text-secondary font-medium px-2">
