@@ -3,6 +3,8 @@ import { prisma } from '../prismaClient';
 import { authMiddleware } from '../middleware/auth';
 import { createSteamMonUser, generateSecurePassword, grantGameAccess } from '../utils/steamMonService';
 
+import { generateOrderId } from '../utils/order.util';
+
 const router = Router();
 
 // Create a new order (Checkout)
@@ -59,40 +61,61 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
     }
 
     // 3. Create the order and order items in a transaction, and clear cart
-    const order = await prisma.$transaction(async (tx) => {
-      const newOrder = await tx.order.create({
-        data: {
-          userId: userPayload.userId,
-          totalAmount,
-          status: 'PENDING',
-          couponCode: validCoupon ? validCoupon.code : null,
-          couponDiscount: validCoupon ? validCoupon.discount : null,
-          commissionEarned: commissionEarned,
-          items: {
-            create: cartItems.map(item => ({
-              gameId: item.gameId,
-              pricePaid: item.game.price * (1 - item.game.discount / 100)
-            }))
+    let order: any = null;
+    let attempts = 0;
+    
+    while (attempts < 10 && !order) {
+      attempts++;
+      try {
+        const generatedId = generateOrderId();
+        order = await prisma.$transaction(async (tx) => {
+          const newOrder = await tx.order.create({
+            data: {
+              id: generatedId,
+              userId: userPayload.userId,
+              totalAmount,
+              status: 'PENDING',
+              couponCode: validCoupon ? validCoupon.code : null,
+              couponDiscount: validCoupon ? validCoupon.discount : null,
+              commissionEarned: commissionEarned,
+              items: {
+                create: cartItems.map(item => ({
+                  gameId: item.gameId,
+                  pricePaid: item.game.price * (1 - item.game.discount / 100)
+                }))
+              }
+            },
+            include: { items: true }
+          });
+
+          // Clear the cart
+          await tx.cartItem.deleteMany({
+            where: { userId: userPayload.userId }
+          });
+          
+          // Increment coupon usage count
+          if (validCoupon) {
+            await tx.coupon.update({
+              where: { id: validCoupon.id },
+              data: { usageCount: { increment: 1 } }
+            });
           }
-        },
-        include: { items: true }
-      });
 
-      // Clear the cart
-      await tx.cartItem.deleteMany({
-        where: { userId: userPayload.userId }
-      });
-      
-      // Increment coupon usage count
-      if (validCoupon) {
-        await tx.coupon.update({
-          where: { id: validCoupon.id },
-          data: { usageCount: { increment: 1 } }
+          return newOrder;
         });
+      } catch (err: any) {
+        if (err.code === 'P2002' && attempts < 10) {
+          console.warn(`[ORDER CREATE] Collision detected for Order ID. Retrying... (${attempts}/10)`);
+          continue;
+        }
+        throw err;
       }
+    }
 
-      return newOrder;
-    });
+    if (!order) {
+      res.status(500).json({ error: 'Failed to generate unique Order ID after 10 attempts' });
+      return;
+    }
 
     // 4. Steam Mon Integration
     try {
@@ -235,10 +258,10 @@ router.get('/admin', authMiddleware, async (req: Request, res: Response): Promis
 
     if (search && typeof search === 'string') {
       const searchStr = search.trim();
-      // Check if it's a valid UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      // Check if it's a valid Order ID (VPXXXXXXXX)
+      const orderIdRegex = /^VP[A-F0-9]{8}$/i;
       
-      if (uuidRegex.test(searchStr)) {
+      if (orderIdRegex.test(searchStr)) {
         whereClause = { id: searchStr };
       } else {
         whereClause = {

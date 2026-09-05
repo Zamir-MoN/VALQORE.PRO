@@ -22,7 +22,7 @@ export async function fetchUnreadEmails() {
   try {
     const res = await gmailClient.users.messages.list({
       userId: 'me',
-      q: 'is:unread from:no-reply@famapp.in newer_than:1d',
+      q: 'from:no-reply@famapp.in newer_than:1d',
     });
 
     const messages = res.data.messages || [];

@@ -106,7 +106,7 @@ model WishlistItem {
 }
 
 model Order {
-  id               String      @id @default(uuid())
+  id               String      @id
   userId           String
   status           String      @default("PENDING") // PENDING, COMPLETED, CANCELLED, EXPIRED
   totalAmount      Float

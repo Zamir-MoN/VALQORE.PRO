@@ -86,7 +86,7 @@ export async function processPaymentEmail(data: ParsedEmailData) {
     if (!pendingOrder && data.purpose) {
       pendingOrder = await prisma.order.findFirst({
         where: {
-          purpose: data.purpose,
+          id: data.purpose,
           status: 'PENDING',
         }
       });

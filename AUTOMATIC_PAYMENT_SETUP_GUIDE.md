@@ -35,7 +35,7 @@ This document explains **how the automatic payment verification system works** i
                     ▼                                   ▼
              [ MATCH SUCCESS ]                   [ NO MATCH / PENDING ]
           • Order = COMPLETED                 • Order stays PENDING
-          • Steam Mon auto-unlocked           • Admin can review in dashboard
+                                              • Admin can review in dashboard
           • Live WebSocket pushes to UI
           • User Library unlocks instantly!
 ```

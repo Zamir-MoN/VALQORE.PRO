@@ -2,26 +2,13 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../prismaClient';
 import { authMiddleware } from '../middleware/auth';
 import QRCode from 'qrcode';
-import rateLimit from 'express-rate-limit';
+
 import { getIO } from '../socket';
 import { fulfillOrderSteamAccess } from '../services/verification.service';
 
-const confirmLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Too many verification attempts, please try again later.' }
-});
+import { generateOrderId } from '../utils/order.util';
 
 const router = Router();
-
-function generatePurpose() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = 'DX-';
-  for (let i = 0; i < 10; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
 
 // 1. Create Delta APay Checkout Session & Order
 router.post('/create-session', authMiddleware, async (req: Request, res: Response): Promise<void> => {
@@ -87,48 +74,67 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
       commissionEarned = (totalAmount * validCoupon.commissionRate) / 100;
     }
 
-    const purpose = generatePurpose();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Create Order with PENDING status in transaction
-    const order = await prisma.$transaction(async (tx) => {
-      const newOrder = await tx.order.create({
-        data: {
-          userId: userPayload.userId,
-          totalAmount,
-          status: 'PENDING',
-          purpose,
-          paymentMethod: 'DELTA_PAY',
-          expiresAt,
-          couponCode: validCoupon ? validCoupon.code : null,
-          couponDiscount: validCoupon ? validCoupon.discount : null,
-          commissionEarned,
-          items: {
-            create: cartItems.map(item => ({
-              gameId: item.gameId,
-              pricePaid: item.game.price * (1 - item.game.discount / 100)
-            }))
+    let order: any = null;
+    let attempts = 0;
+
+    while (attempts < 10 && !order) {
+      attempts++;
+      try {
+        const generatedId = generateOrderId();
+        order = await prisma.$transaction(async (tx) => {
+          const newOrder = await tx.order.create({
+            data: {
+              id: generatedId,
+              userId: userPayload.userId,
+              totalAmount,
+              status: 'PENDING',
+              paymentMethod: 'DELTA_PAY',
+              expiresAt,
+              couponCode: validCoupon ? validCoupon.code : null,
+              couponDiscount: validCoupon ? validCoupon.discount : null,
+              commissionEarned,
+              items: {
+                create: cartItems.map(item => ({
+                  gameId: item.gameId,
+                  pricePaid: item.game.price * (1 - item.game.discount / 100)
+                }))
+              }
+            },
+            include: { items: { include: { game: true } } }
+          });
+
+          // Clear the cart
+          await tx.cartItem.deleteMany({
+            where: { userId: userPayload.userId }
+          });
+
+          if (validCoupon) {
+            await tx.coupon.update({
+              where: { id: validCoupon.id },
+              data: { usageCount: { increment: 1 } }
+            });
           }
-        },
-        include: { items: { include: { game: true } } }
-      });
 
-      // Clear the cart
-      await tx.cartItem.deleteMany({
-        where: { userId: userPayload.userId }
-      });
-
-      if (validCoupon) {
-        await tx.coupon.update({
-          where: { id: validCoupon.id },
-          data: { usageCount: { increment: 1 } }
+          return newOrder;
         });
+      } catch (err: any) {
+        if (err.code === 'P2002' && attempts < 10) {
+          console.warn(`[ORDER CREATE] Collision detected for Order ID. Retrying... (${attempts}/10)`);
+          continue;
+        }
+        throw err;
       }
+    }
 
-      return newOrder;
-    });
+    if (!order) {
+      res.status(500).json({ error: 'Failed to generate unique Order ID after 10 attempts' });
+      return;
+    }
 
-    const upiUri = `upi://pay?pa=20-delta-mondal@fam&pn=Delta%20X&mc=0000&am=${order.totalAmount}&tn=${purpose}&tr=${purpose}&cu=INR`;
+    const upiUri = `upi://pay?pa=valqore.pro.paul@fam&pn=Valqore&am=${order.totalAmount}&tn=${order.id}`;
     
     // Generate high resolution dark theme QR Code for sleek UI
     const qrCode = await QRCode.toDataURL(upiUri, {
@@ -144,7 +150,6 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
       success: true,
       orderId: order.id,
       amount: order.totalAmount,
-      purpose,
       upiUri,
       qrCode,
       expiresAt: order.expiresAt
@@ -178,8 +183,7 @@ router.get('/:orderId', authMiddleware, async (req: Request, res: Response): Pro
       return;
     }
 
-    const purpose = order.purpose || generatePurpose();
-    const upiUri = `upi://pay?pa=20-delta-mondal@fam&pn=Delta%20X&mc=0000&am=${order.totalAmount}&tn=${purpose}&tr=${purpose}&cu=INR`;
+    const upiUri = `upi://pay?pa=valqore.pro.paul@fam&pn=Valqore&am=${order.totalAmount}&tn=${order.id}`;
     
     const qrCode = await QRCode.toDataURL(upiUri, {
       width: 400,
@@ -194,7 +198,6 @@ router.get('/:orderId', authMiddleware, async (req: Request, res: Response): Pro
       orderId: order.id,
       status: order.status,
       amount: order.totalAmount,
-      purpose,
       upiUri,
       qrCode,
       submittedUtr: order.submittedUtr,
@@ -203,82 +206,6 @@ router.get('/:orderId', authMiddleware, async (req: Request, res: Response): Pro
   } catch (error) {
     console.error('[GET PAYMENT DETAILS ERROR]', error);
     res.status(500).json({ error: 'Failed to fetch payment details' });
-  }
-});
-
-// 3. Confirm Payment via 12-digit UTR
-router.post('/:orderId/confirm', authMiddleware, confirmLimiter, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userPayload = (req as any).user;
-    const orderId = String(req.params.orderId);
-    const { utr } = req.body;
-
-    if (!utr || typeof utr !== 'string' || !/^\d{12}$/.test(utr.trim())) {
-      res.status(400).json({ error: 'Valid 12-digit UTR is required' });
-      return;
-    }
-
-    const cleanUtr = utr.trim();
-
-    const order = await prisma.order.findUnique({
-      where: { id: orderId }
-    });
-
-    if (!order) {
-      res.status(404).json({ error: 'Order not found' });
-      return;
-    }
-
-    if (userPayload.userId && order.userId !== userPayload.userId) {
-      res.status(403).json({ error: 'Unauthorized' });
-      return;
-    }
-
-    if (order.status === 'COMPLETED') {
-      res.json({ success: true, message: 'Order is already paid and completed!' });
-      return;
-    }
-
-    if (order.status !== 'PENDING') {
-      res.status(400).json({ error: 'Order is no longer pending' });
-      return;
-    }
-
-    // Instantly complete order and grant launcher access upon 12-digit UTR submission
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: 'COMPLETED',
-        submittedUtr: cleanUtr
-      }
-    });
-
-    // Check and associate if a transaction record exists
-    const transaction = await prisma.transaction.findUnique({
-      where: { utr: cleanUtr }
-    }).catch(() => null);
-
-    if (transaction) {
-      await prisma.transaction.update({
-        where: { id: transaction.id },
-        data: { orderId: order.id }
-      }).catch(() => {});
-    }
-
-    // Emit live WebSocket update
-    try {
-      getIO()?.emit(`payment_status_${order.id}`, { status: 'COMPLETED' });
-      getIO()?.emit('orders_updated');
-    } catch (e) {}
-
-    // Fulfill Steam Mon Account
-    await fulfillOrderSteamAccess(order.id);
-
-    res.json({ success: true, message: 'Payment verified and order completed!' });
-    return;
-  } catch (error) {
-    console.error('[CONFIRM PAYMENT ERROR]', error);
-    res.status(500).json({ error: 'Failed to confirm payment' });
   }
 });
 

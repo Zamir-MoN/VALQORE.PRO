@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle2, AlertCircle, Loader2, Copy, Shield, ArrowRight, ExternalLink } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Loader2, Shield } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -29,19 +29,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const { token } = useAuth();
   const socket = useSocket();
-  const [utr, setUtr] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<'PENDING' | 'COMPLETED' | 'CANCELLED'>('PENDING');
-  const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
-  const [copied, setCopied] = useState(false);
+
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const pollingRef = useRef<any>(null);
 
   useEffect(() => {
     if (!isOpen || !orderData) {
       setStatus('PENDING');
-      setUtr('');
-      setFeedback(null);
       setShowCancelConfirm(false);
       return;
     }
@@ -109,56 +104,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   if (!isOpen || !orderData) return null;
 
-  const handleCopyUPI = () => {
-    navigator.clipboard.writeText(orderData.upiUri);
-    setCopied(true);
-    toast.success('UPI link copied!');
-    setTimeout(() => setCopied(false), 2000);
-  };
 
-  const handleConfirmUtr = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!utr.trim()) {
-      setFeedback({ type: 'error', message: 'Please enter the 12-digit UTR from your UPI payment.' });
-      return;
-    }
-
-    if (!/^\d{12}$/.test(utr.trim())) {
-      setFeedback({ type: 'error', message: 'UTR must be exactly 12 numeric digits.' });
-      return;
-    }
-
-    setSubmitting(true);
-    setFeedback(null);
-
-    try {
-      const res = await axios.post(
-        `${API_URL}/payments/${orderData.orderId}/confirm`,
-        { utr: utr.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.data.success && !res.data.pending) {
-        setStatus('COMPLETED');
-        toast.success('Payment verified successfully!');
-        setTimeout(() => {
-          onSuccess();
-        }, 2000);
-      } else if (res.data.pending) {
-        setFeedback({
-          type: 'success',
-          message: 'UTR submitted! Waiting for instant bank confirmation...'
-        });
-      }
-    } catch (err: any) {
-      setFeedback({
-        type: 'error',
-        message: err.response?.data?.error || 'Verification failed. Please double check your 12-digit UTR.'
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleCancelPayment = async () => {
     setShowCancelConfirm(false);
@@ -276,56 +222,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               />
             </div>
 
-            {/* UTR Input Form */}
-            <form onSubmit={handleConfirmUtr} className="w-full space-y-3">
-              <div>
-                <label className="block text-xs font-bold text-text-secondary mb-1.5 uppercase tracking-wider text-left">
-                  Enter 12-Digit UTR / Ref No.
-                </label>
-                <input
-                  type="text"
-                  maxLength={12}
-                  placeholder="e.g. 423589123456"
-                  value={utr}
-                  onChange={(e) => setUtr(e.target.value.replace(/\D/g, ''))}
-                  disabled={submitting}
-                  className="w-full bg-white/5 border border-white/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl px-4 py-3 text-center text-white tracking-[0.25em] font-heading font-black text-lg focus:outline-none transition-all placeholder:tracking-normal placeholder:font-normal placeholder:text-sm placeholder:text-white/30"
-                />
-              </div>
-
-              {feedback && (
-                <div
-                  className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${
-                    feedback.type === 'error'
-                      ? 'bg-red-500/10 border border-red-500/30 text-red-400'
-                      : 'bg-primary/10 border border-primary/30 text-primary'
-                  }`}
-                >
-                  <AlertCircle size={16} className="flex-shrink-0" />
-                  <span>{feedback.message}</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting || utr.length !== 12}
-                className="w-full py-4 bg-primary hover:bg-white text-background font-heading font-black text-base rounded-xl transition-all shadow-[0_0_20px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.6)] uppercase tracking-wider disabled:opacity-40 disabled:hover:bg-primary disabled:hover:text-background flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" /> Verifying Payment...
-                  </>
-                ) : (
-                  <>
-                    Confirm & Complete Order <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <p className="text-[11px] text-text-secondary/70 mt-4 text-center leading-relaxed">
-              Scan with any UPI App (GPay, PhonePe, Paytm, BHIM). Once completed, enter the 12-digit UTR to immediately unlock your games.
-            </p>
+            {/* Automatic Verification Notice */}
+            <div className="w-full mt-4 flex flex-col items-center justify-center p-4 bg-primary/10 border border-primary/20 rounded-xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-primary/5 animate-pulse rounded-xl"></div>
+              <Loader2 size={24} className="text-primary animate-spin mb-2" />
+              <p className="text-sm font-bold text-primary mb-1 uppercase tracking-wider text-center z-10">
+                Waiting for payment confirmation...
+              </p>
+              <p className="text-xs text-text-secondary text-center max-w-[250px] z-10">
+                Scan the QR with any UPI app. Your payment will be verified automatically. Please do not close this window.
+              </p>
+            </div>
           </div>
         )}
 
