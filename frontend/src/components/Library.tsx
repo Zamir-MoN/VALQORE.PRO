@@ -20,7 +20,7 @@ export const Library = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'ALL' | 'COMPLETED' | 'CREATOR_ACCESS'>('ALL');
+  const [filter, setFilter] = useState<'COMPLETED' | 'CREATOR_ACCESS'>('COMPLETED');
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -169,18 +169,8 @@ export const Library = () => {
             {/* Filter Tabs */}
             <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-cards/60 border border-white/10 rounded-xl overflow-x-auto no-scrollbar">
               <button
-                onClick={() => setFilter('ALL')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  filter === 'ALL'
-                    ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.3)]'
-                    : 'text-text-secondary hover:text-white hover:bg-white/5'
-                }`}
-              >
-                All Games ({allLibraryGames.length})
-              </button>
-              <button
                 onClick={() => setFilter('COMPLETED')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                   filter === 'COMPLETED'
                     ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.3)]'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -191,7 +181,7 @@ export const Library = () => {
               {creatorStatus === 'APPROVED' && creatorAccessGames.length > 0 && (
                 <button
                   onClick={() => setFilter('CREATOR_ACCESS')}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                     filter === 'CREATOR_ACCESS'
                       ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.3)]'
                       : 'text-text-secondary hover:text-white hover:bg-white/5'
