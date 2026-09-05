@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
+import { useCart } from '../context/CartContext';
 import { getImageUrl } from '../utils/image';
 import type { Game } from '../types';
 
@@ -11,7 +12,9 @@ interface GameCardProps {
 
 export const GameCard = ({ game }: GameCardProps) => {
   const { formatPrice } = useCurrency();
+  const { isOwned } = useCart();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const owned = isOwned(game.id);
 
   return (
     <Link 
@@ -38,8 +41,12 @@ export const GameCard = ({ game }: GameCardProps) => {
         {/* Gradient Overlay for bottom text legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
         
-        {/* Top-right tags (discount, out of stock) */}
-        {game.outOfStock ? (
+        {/* Top-right tags (in library, discount, out of stock) */}
+        {owned ? (
+          <div className="absolute top-2.5 right-2.5 bg-emerald-500/90 backdrop-blur-sm border border-emerald-400/50 text-black font-black text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-md shadow-[0_0_10px_rgba(16,185,129,0.5)] z-20">
+            IN LIBRARY
+          </div>
+        ) : game.outOfStock ? (
           <div className="absolute top-2.5 right-2.5 bg-red-600/90 backdrop-blur-sm border border-red-500/50 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-md shadow-lg z-20">
             OUT OF STOCK
           </div>

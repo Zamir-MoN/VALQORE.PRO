@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2 } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -16,7 +16,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 export const GameDetails = () => {
   const { games, loading } = useGames();
   const { formatPrice } = useCurrency();
-  const { addToCart, isInCart } = useCart();
+  const { addToCart, isInCart, isOwned } = useCart();
   const { user, token, openAuthModal } = useAuth();
   
   const { id } = useParams();
@@ -389,7 +389,20 @@ export const GameDetails = () => {
                         </div>
                       )}
 
-                      {game.outOfStock ? (
+                      {isOwned(game.id) ? (
+                        <div className="flex flex-col gap-2 mt-2">
+                          <Link 
+                            to="/library"
+                            className="w-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/40 font-heading font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                          >
+                            <CheckCircle2 size={18} className="text-emerald-400" />
+                            Already In Your Library
+                          </Link>
+                          <p className="text-[11px] text-text-secondary text-center">
+                            You already own this game. Access your launcher account in Library.
+                          </p>
+                        </div>
+                      ) : game.outOfStock ? (
                         <button 
                           disabled
                           className="w-full mt-2 bg-red-600/50 text-white/50 cursor-not-allowed font-black text-sm px-4 py-3.5 rounded-xl uppercase tracking-wider flex justify-center items-center gap-2"

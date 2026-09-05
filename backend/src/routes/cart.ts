@@ -40,6 +40,22 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    // Check if user has already purchased this game in a COMPLETED order
+    const alreadyOwned = await prisma.orderItem.findFirst({
+      where: {
+        gameId,
+        order: {
+          userId,
+          status: 'COMPLETED'
+        }
+      }
+    });
+
+    if (alreadyOwned) {
+      res.status(400).json({ error: 'This game is already in your library' });
+      return;
+    }
+
     const cartItem = await prisma.cartItem.create({
       data: {
         userId,

@@ -72,19 +72,29 @@ export const Library = () => {
   // Creator Access Games from store marked with creatorAccess: true
   const creatorAccessGames = allGlobalGames.filter(g => g.creatorAccess);
 
-  // Extract all unique COMPLETED purchased games from orders
-  const allLibraryGames = orders
-    .filter(order => order.status === 'COMPLETED')
-    .flatMap(order => 
-      (order.items || []).map((item: any) => ({
-        ...item.game,
-        orderId: order.id,
-        orderStatus: order.status,
-        orderDate: order.createdAt,
-        pricePaid: item.pricePaid,
-        isCreatorGame: false
-      }))
-    );
+  // Extract unique COMPLETED purchased games from orders (deduplicated by game id)
+  const completedOrders = orders.filter(order => order.status === 'COMPLETED');
+  const gamesMap = new Map<string, any>();
+
+  completedOrders.forEach(order => {
+    (order.items || []).forEach((item: any) => {
+      if (item.game && item.game.id) {
+        // If not added or if this order is more recent, store it
+        if (!gamesMap.has(item.game.id)) {
+          gamesMap.set(item.game.id, {
+            ...item.game,
+            orderId: order.id,
+            orderStatus: order.status,
+            orderDate: order.createdAt,
+            pricePaid: item.pricePaid,
+            isCreatorGame: false
+          });
+        }
+      }
+    });
+  });
+
+  const allLibraryGames = Array.from(gamesMap.values());
 
   const displayedGames = filter === 'CREATOR_ACCESS'
     ? creatorAccessGames.map(g => ({

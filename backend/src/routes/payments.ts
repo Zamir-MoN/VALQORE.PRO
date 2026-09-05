@@ -32,6 +32,25 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
       return;
     }
 
+    // Check if user has already purchased any of these cart games
+    const gameIds = cartItems.map(item => item.gameId);
+    const existingPurchases = await prisma.orderItem.findMany({
+      where: {
+        gameId: { in: gameIds },
+        order: {
+          userId: userPayload.userId,
+          status: 'COMPLETED'
+        }
+      },
+      include: { game: true }
+    });
+
+    if (existingPurchases.length > 0) {
+      const ownedTitles = existingPurchases.map(p => p.game.title).join(', ');
+      res.status(400).json({ error: `Already in your library: ${ownedTitles}` });
+      return;
+    }
+
     // Auto-cancel previous unpaid pending orders for this user to avoid multiple open pending orders
     await prisma.order.updateMany({
       where: {
