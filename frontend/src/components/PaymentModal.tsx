@@ -255,17 +255,33 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </div>
               </div>
 
-              {/* Supported Payment Channels */}
+              {/* Supported Payment Channels - Individual Apps */}
               <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary block mb-2.5">
                   Accepted UPI Apps
                 </span>
-                <div className="flex items-center justify-center p-2 bg-black/40 rounded-xl border border-white/5">
-                  <img
-                    src="/UPI-apps2.jpg"
-                    alt="GPay, PhonePe, Paytm, BHIM"
-                    className="h-6 sm:h-7 w-auto object-contain brightness-110"
-                  />
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/80 rounded-xl border border-white/10 transition-colors h-11">
+                    <img
+                      src="/google_pay.png"
+                      alt="Google Pay"
+                      className="h-6 w-auto object-contain"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/80 rounded-xl border border-white/10 transition-colors h-11">
+                    <img
+                      src="/phone_pay.png"
+                      alt="PhonePe"
+                      className="h-6 w-auto object-contain"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/80 rounded-xl border border-white/10 transition-colors h-11">
+                    <img
+                      src="/paytm.png"
+                      alt="Paytm"
+                      className="h-6 w-auto object-contain"
+                    />
+                  </div>
                 </div>
               </div>
 
