@@ -87,20 +87,53 @@ This document records all features, architectural updates, payment automation sy
 
 ---
 
-## 🛠️ 7. VPS Deployment Instructions
+## 💳 7. Valqore Pay Redesign & Premium Checkout Experience
+
+### 💎 Branded Modal & Visual Refresh
+- **Valqore Pay Header & Branding**:
+  - Rebranded payment modal header to **Valqore Pay** with the custom glowing Valqore emblem (`/logo.png`).
+  - Styled UPI provider badges with clean, balanced individual icons for **Google Pay**, **PhonePe**, and **Paytm**.
+  - Banking beneficiary verified name set cleanly to **Sagar Paul** with a verified blue badge indicator.
+  - Streamlined UI by removing redundant raw UPI IDs and noisy redirect elements to keep checkout focused and fast.
+- **Cinematic Payment Success Animation**:
+  - Replaced instant page redirect with a multi-stage celebratory success modal:
+    - Glowing emerald checkmark badge with radiant pulsing rings and particle beam effects.
+    - Displays dynamic short Order ID (`VP-XXXXXXXX`), game title, verified payment amount, and countdown redirect timer.
+    - Smoothly transitions user straight into their **Game Library** (`/library`) with celebratory sound/confetti aesthetics.
+
+---
+
+## 🛡️ 8. Duplicate Purchase Prevention & Library Deduplication
+
+### 🚫 Prevent Re-purchasing Owned Games
+- **Backend Cart & Checkout Guardrails (`cart.ts` & `payments.ts`)**:
+  - Added strict database queries checking for existing `COMPLETED` orders for the user when adding games to cart or creating checkout sessions.
+  - Immediately rejects duplicate purchase attempts with: `"This game is already in your library"`.
+- **Global Storefront Ownership State (`CartContext.tsx`)**:
+  - Global `ownedGameIds` tracking and `isOwned(gameId)` utility active across all store components.
+  - Pre-validates cart actions to give instant user feedback without unnecessary network round-trips.
+- **Store & Game Details Visual Badging**:
+  - **Game Cards (`GameCard.tsx`)**: Displays a glowing green **"IN LIBRARY"** badge on cards across the store/home feed for any games owned by the logged-in user.
+  - **Game Details (`GameDetails.tsx`)**: Replaces the Buy/Rent action buttons with a prominent emerald glass button: **"Already In Your Library"** linking directly to `/library`.
+- **Library View Deduplication (`Library.tsx`)**:
+  - Deduplicates all completed orders by `game.id` in `Library.tsx` so users who previously owned or tested duplicate orders will only see a clean, single card per unique title.
+
+---
+
+## 🛠️ 9. VPS Deployment Instructions
 
 To apply all updates on your live production server:
 
 ```bash
 # 1. Navigate to project root
-cd ~/VALQORE_PRO
+cd /root/VALQORE_PRO/VALQORE_PRO
 
 # 2. Pull latest codebase from main
 git pull origin main
 
-# 3. Restart backend with PM2
-pm2 restart valqore-backend
-
-# 4. Build optimized frontend production bundle
+# 3. Build optimized frontend production bundle
 cd frontend && npm run build
+
+# 4. Restart services with PM2
+pm2 restart all
 ```
