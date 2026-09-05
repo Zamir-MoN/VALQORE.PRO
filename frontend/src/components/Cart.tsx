@@ -327,7 +327,7 @@ export const Cart = () => {
         )}
       </div>
 
-      {/* Delta APay Payment Gateway Modal */}
+      {/* Valqore Pay Payment Gateway Modal */}
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={async () => {
@@ -338,7 +338,7 @@ export const Cart = () => {
         onSuccess={async () => {
           setIsPaymentModalOpen(false);
           await refreshCart();
-          window.location.href = '/profile';
+          navigate('/library');
         }}
       />
     </div>

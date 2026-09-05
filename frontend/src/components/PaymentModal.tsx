@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle2, AlertCircle, Loader2, Shield } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Loader2, Shield, Sparkles, ArrowRight, Gamepad2 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -30,6 +30,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const { token } = useAuth();
   const socket = useSocket();
   const [status, setStatus] = useState<'PENDING' | 'COMPLETED' | 'CANCELLED'>('PENDING');
+  const [redirectCountdown, setRedirectCountdown] = useState(3);
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const pollingRef = useRef<any>(null);
@@ -38,6 +39,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     if (!isOpen || !orderData) {
       setStatus('PENDING');
       setShowCancelConfirm(false);
+      setRedirectCountdown(3);
       return;
     }
 
@@ -46,6 +48,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     document.body.style.overflow = 'hidden';
 
     setStatus('PENDING');
+    setRedirectCountdown(3);
 
     // 1. Socket Listener for instant real-time payment confirmation
     if (socket) {
@@ -54,9 +57,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         if (data.status === 'COMPLETED') {
           setStatus('COMPLETED');
           toast.success('Payment verified successfully!');
-          setTimeout(() => {
-            onSuccess();
-          }, 2000);
         } else if (data.status === 'CANCELLED') {
           setStatus('CANCELLED');
         }
@@ -73,7 +73,25 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     return () => {
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen, orderData, socket, onSuccess]);
+  }, [isOpen, orderData, socket]);
+
+  // Handle countdown and auto-redirect when payment completes
+  useEffect(() => {
+    if (status !== 'COMPLETED') return;
+
+    const timer = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onSuccess();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [status, onSuccess]);
 
   // 2. Polling Fallback to guarantee verification even if socket drops
   useEffect(() => {
@@ -88,9 +106,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           setStatus('COMPLETED');
           clearInterval(pollingRef.current);
           toast.success('Payment confirmed!');
-          setTimeout(() => {
-            onSuccess();
-          }, 2000);
         }
       } catch (err) {
         // silent polling catch
@@ -100,11 +115,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [isOpen, orderData, status, token, onSuccess]);
+  }, [isOpen, orderData, status, token]);
 
   if (!isOpen || !orderData) return null;
-
-
 
   const handleCancelPayment = async () => {
     setShowCancelConfirm(false);
@@ -121,10 +134,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   };
 
-  if (!isOpen || !orderData) {
-    return null;
-  }
-
   return createPortal(
     <div 
       className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl animate-in fade-in duration-300 overflow-y-auto"
@@ -139,8 +148,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       >
         
         {/* Subtle Neon Backdrop */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-[80px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#00F0FF]/10 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-52 h-52 bg-primary/15 rounded-full blur-[90px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-52 h-52 bg-[#00F0FF]/15 rounded-full blur-[90px] pointer-events-none"></div>
 
         {/* Cancel Dialog Prompt */}
         {showCancelConfirm && (
@@ -156,14 +165,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-colors text-sm"
+                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-colors text-sm cursor-pointer"
               >
                 Keep Paying
               </button>
               <button
                 type="button"
                 onClick={handleCancelPayment}
-                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors text-sm shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors text-sm shadow-[0_0_15px_rgba(239,68,68,0.4)] cursor-pointer"
               >
                 Yes, Cancel
               </button>
@@ -174,9 +183,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between gap-3 mb-6 pr-10">
           <div className="flex items-center gap-2.5">
-            <div className="w-3 h-3 bg-primary rotate-45 shadow-[0_0_10px_rgba(220,248,54,0.8)]"></div>
-            <span className="font-heading font-black tracking-wider text-xl uppercase text-white">
-              Delta <span className="text-primary">APay</span>
+            <div className="w-3.5 h-3.5 bg-primary rotate-45 shadow-[0_0_12px_rgba(220,248,54,0.9)] flex-shrink-0"></div>
+            <span className="font-heading font-black tracking-wider text-xl sm:text-2xl uppercase text-white">
+              VALQORE <span className="text-primary">PAY</span>
             </span>
           </div>
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black">
@@ -208,7 +217,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
 
             {/* QR Code */}
-            <div className="p-3 bg-white rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.15)] mb-4 relative group">
+            <div className="p-3 bg-white rounded-2xl shadow-[0_0_35px_rgba(255,255,255,0.18)] mb-4 relative group">
               <img
                 src={orderData.qrCode}
                 alt="UPI QR Code"
@@ -239,23 +248,60 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         )}
 
-        {/* Success Screen */}
+        {/* Ultra-Premium Success Screen */}
         {status === 'COMPLETED' && (
-          <div className="py-10 flex flex-col items-center text-center animate-in zoom-in-95 duration-500">
-            <div className="w-20 h-20 bg-primary/20 border-2 border-primary rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(220,248,54,0.5)]">
-              <CheckCircle2 size={44} className="text-primary animate-bounce" />
+          <div className="py-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-500 relative">
+            
+            {/* Ambient Radial Blast */}
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
+
+            {/* Premium Animated Icon with Layered Glow Rings */}
+            <div className="relative mb-6">
+              {/* Outer Pulsing Waves */}
+              <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-ping opacity-60"></div>
+              <div className="absolute -inset-2 bg-primary/30 rounded-full blur-md animate-pulse"></div>
+              
+              {/* Main Badge */}
+              <div className="relative w-24 h-24 bg-gradient-to-tr from-[#121214] via-[#1c2211] to-[#121214] border-2 border-primary rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(220,248,54,0.6)]">
+                <CheckCircle2 size={52} className="text-primary animate-in zoom-in-75 duration-700 drop-shadow-[0_0_15px_rgba(220,248,54,0.8)]" />
+                
+                {/* Micro Sparkle Accents */}
+                <div className="absolute -top-1 -right-1 text-primary animate-bounce">
+                  <Sparkles size={18} />
+                </div>
+              </div>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-heading font-black text-white mb-2">
-              Payment Successful!
+
+            {/* Status Headings */}
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-[11px] font-black uppercase tracking-widest mb-3">
+              <Sparkles size={12} /> Transaction Verified
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-heading font-black text-white mb-2 tracking-tight">
+              Payment <span className="text-primary">Successful!</span>
             </h3>
-            <p className="text-text-secondary text-sm max-w-xs mb-8">
-              Your payment has been verified. Your games & launcher account are now unlocked.
+            
+            <p className="text-text-secondary text-xs sm:text-sm max-w-xs mb-6 leading-relaxed">
+              Your order has been verified. Your game licenses and launcher access are now ready in your library.
             </p>
+
+            {/* Auto Redirect Banner */}
+            <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-5 flex items-center justify-between text-xs">
+              <span className="text-text-secondary font-medium flex items-center gap-2">
+                <Gamepad2 size={16} className="text-primary" /> Redirecting to Library in
+              </span>
+              <span className="font-heading font-black text-primary text-sm px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
+                {redirectCountdown}s
+              </span>
+            </div>
+
+            {/* CTA Button */}
             <button
               onClick={onSuccess}
-              className="w-full py-4 bg-primary hover:bg-white text-background font-heading font-black text-base rounded-xl transition-all shadow-[0_0_20px_rgba(220,248,54,0.4)] uppercase tracking-wider"
+              className="w-full py-4 bg-primary hover:bg-white text-background font-heading font-black text-sm sm:text-base rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(220,248,54,0.4)] hover:shadow-[0_0_35px_rgba(255,255,255,0.6)] uppercase tracking-wider flex items-center justify-center gap-2 group cursor-pointer hover:scale-[1.02] active:scale-95"
             >
-              Go to My Library
+              <span>Go to My Library Now</span>
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         )}
@@ -265,3 +311,4 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     document.body
   );
 };
+

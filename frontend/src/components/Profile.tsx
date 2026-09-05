@@ -693,7 +693,7 @@ export const Profile = () => {
         </div>
       </div>
 
-      {/* Delta APay Payment Modal for pending orders */}
+      {/* Valqore Pay Payment Modal for pending orders */}
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
@@ -701,6 +701,7 @@ export const Profile = () => {
         onSuccess={() => {
           setIsPaymentModalOpen(false);
           fetchOrders();
+          navigate('/library');
         }}
       />
     </div>
