@@ -188,7 +188,7 @@ export const Library = () => {
               >
                 Purchased ({allLibraryGames.length})
               </button>
-              {creatorAccessGames.length > 0 && (
+              {creatorStatus === 'APPROVED' && creatorAccessGames.length > 0 && (
                 <button
                   onClick={() => setFilter('CREATOR_ACCESS')}
                   className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
