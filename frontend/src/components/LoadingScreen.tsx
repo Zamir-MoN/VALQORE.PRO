@@ -21,21 +21,21 @@ export const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
       }
     });
 
-    // Snappy Type In (0.35s)
+    // Smooth, cinematic Type In (0.75s)
     tl.to({ val: 0 }, {
       val: fullText.length,
-      duration: 0.35,
-      ease: 'power2.out',
+      duration: 0.75,
+      ease: 'power1.inOut',
       onUpdate: function() {
         setDisplayText(fullText.slice(0, Math.round(this.targets()[0].val)));
       }
     })
-    // Brief Pause (0.2s)
-    .to({}, { duration: 0.2 })
-    // Fast Fade Screen Out (0.3s)
+    // Gentle Pause to read brand name (0.4s)
+    .to({}, { duration: 0.4 })
+    // Smooth cinematic Screen Fade Out (0.45s)
     .to(containerRef.current, {
       opacity: 0,
-      duration: 0.3,
+      duration: 0.45,
       ease: 'power2.inOut',
     });
 
