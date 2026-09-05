@@ -69,6 +69,10 @@ export const BrowseGames = () => {
       matchesGenre = true;
     } else if (activeGenre === 'Rentals') {
       matchesGenre = !!game.isRentable;
+    } else if (activeGenre === 'Exclusives') {
+      matchesGenre = (game.rating && game.rating >= 90) || (game.discount && game.discount >= 20) || (game.genre && game.genre.toLowerCase().includes('action'));
+    } else if (activeGenre === 'Deals' || activeGenre === 'Discounted') {
+      matchesGenre = (game.discount && game.discount > 0);
     } else {
       matchesGenre = game.genre.toLowerCase().includes(activeGenre.toLowerCase());
     }

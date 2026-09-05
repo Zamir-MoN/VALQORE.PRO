@@ -70,8 +70,8 @@ export const Footer = () => {
             <ul className="space-y-4">
               {[
                 { name: 'Browse Games', url: '/store' },
-                { name: 'Rental games', url: '/store?sort=Newest' },
-                { name: 'Valqore Exclusives', url: '/store?genre=Action' }
+                { name: 'Rental Games', url: '/store?genre=Rentals' },
+                { name: 'Valqore Exclusives', url: '/store?genre=Exclusives' }
               ].map((link) => (
                 <li key={link.name}>
                   <Link to={link.url} className="text-text-secondary hover:text-primary transition-colors text-sm font-medium">
