@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle2, AlertCircle, Loader2, Shield, Sparkles, ArrowRight, Gamepad2 } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Loader2, Shield, Sparkles, ArrowRight, Gamepad2, QrCode, Copy, Check, Zap } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/GameContext';
+import { formatOrderId } from '../utils/order';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
@@ -14,7 +15,7 @@ interface PaymentModalProps {
   orderData: {
     orderId: string;
     amount: number;
-    purpose: string;
+    purpose?: string;
     upiUri: string;
     qrCode: string;
   } | null;
@@ -31,6 +32,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const socket = useSocket();
   const [status, setStatus] = useState<'PENDING' | 'COMPLETED' | 'CANCELLED'>('PENDING');
   const [redirectCountdown, setRedirectCountdown] = useState(3);
+  const [copiedUpi, setCopiedUpi] = useState(false);
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const pollingRef = useRef<any>(null);
@@ -40,6 +42,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       setStatus('PENDING');
       setShowCancelConfirm(false);
       setRedirectCountdown(3);
+      setCopiedUpi(false);
       return;
     }
 
@@ -134,45 +137,52 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   };
 
+  const handleCopyUpi = () => {
+    const upiId = 'valqore.pro.paul@fam';
+    navigator.clipboard.writeText(upiId);
+    setCopiedUpi(true);
+    toast.success('UPI ID copied to clipboard!');
+    setTimeout(() => setCopiedUpi(false), 2500);
+  };
+
   return createPortal(
     <div 
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl animate-in fade-in duration-300 overflow-y-auto"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-2xl animate-in fade-in duration-300 overflow-y-auto"
       onClick={(e) => {
-        // Prevent background clicks from closing or navigating
         e.stopPropagation();
       }}
     >
       <div 
-        className="relative w-full max-w-md bg-[#121214] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden my-auto"
+        className="relative w-full max-w-2xl bg-[#0E0E10] border border-white/10 rounded-3xl p-5 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Subtle Neon Backdrop */}
-        <div className="absolute top-0 right-0 w-52 h-52 bg-primary/15 rounded-full blur-[90px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-52 h-52 bg-[#00F0FF]/15 rounded-full blur-[90px] pointer-events-none"></div>
+        {/* Dynamic Neon Ambient Glows */}
+        <div className="absolute top-0 right-1/4 w-72 h-72 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-[#00F0FF]/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-        {/* Cancel Dialog Prompt */}
+        {/* Cancel Confirmation Prompt */}
         {showCancelConfirm && (
-          <div className="absolute inset-0 z-30 bg-[#121214]/95 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-200">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 text-red-400">
+          <div className="absolute inset-0 z-40 bg-[#0E0E10]/95 backdrop-blur-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 text-red-400">
               <AlertCircle size={32} />
             </div>
-            <h3 className="text-xl font-heading font-black text-white mb-2">Cancel Payment?</h3>
-            <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-              Are you sure you want to cancel this payment session? The generated QR code will be invalidated.
+            <h3 className="text-xl sm:text-2xl font-heading font-black text-white mb-2">Cancel Payment Session?</h3>
+            <p className="text-xs sm:text-sm text-text-secondary mb-6 leading-relaxed max-w-sm">
+              Are you sure you want to cancel? The generated QR code and instant verification session will be invalidated.
             </p>
-            <div className="flex gap-3 w-full">
+            <div className="flex gap-3 w-full max-w-xs">
               <button
                 type="button"
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-colors text-sm cursor-pointer"
+                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 transition-colors text-xs sm:text-sm cursor-pointer"
               >
                 Keep Paying
               </button>
               <button
                 type="button"
                 onClick={handleCancelPayment}
-                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors text-sm shadow-[0_0_15px_rgba(239,68,68,0.4)] cursor-pointer"
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors text-xs sm:text-sm shadow-[0_0_15px_rgba(239,68,68,0.4)] cursor-pointer"
               >
                 Yes, Cancel
               </button>
@@ -180,71 +190,143 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         )}
 
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-6 pr-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-3.5 h-3.5 bg-primary rotate-45 shadow-[0_0_12px_rgba(220,248,54,0.9)] flex-shrink-0"></div>
-            <span className="font-heading font-black tracking-wider text-xl sm:text-2xl uppercase text-white">
-              VALQORE <span className="text-primary">PAY</span>
-            </span>
+        {/* Top Header Bar */}
+        <div className="flex items-center justify-between gap-3 pb-5 mb-5 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/30">
+              <div className="w-3.5 h-3.5 bg-primary rotate-45 shadow-[0_0_10px_rgba(220,248,54,0.9)]"></div>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-heading font-black tracking-wider text-lg sm:text-xl uppercase text-white leading-none">
+                  VALQORE <span className="text-primary">PAY</span>
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-wider">
+                  <Zap size={10} className="fill-primary" /> Verified Gateway
+                </span>
+              </div>
+              <p className="text-[11px] text-text-secondary font-mono mt-0.5">
+                Ref: {formatOrderId(orderData.orderId)}
+              </p>
+            </div>
           </div>
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black">
-            <Shield size={12} /> Instant UPI
-          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-primary text-xs font-bold">
+              <Shield size={13} /> 256-Bit SSL
+            </span>
+
+            {status === 'PENDING' && (
+              <button
+                onClick={() => setShowCancelConfirm(true)}
+                className="p-2 text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors cursor-pointer"
+                title="Close payment window"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Close Button cleanly aligned in upper-right corner */}
+        {/* PENDING: 2-Column Responsive Layout */}
         {status === 'PENDING' && (
-          <button
-            onClick={() => setShowCancelConfirm(true)}
-            className="absolute top-4 right-4 p-2 text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-20 cursor-pointer"
-            title="Close payment window"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        )}
-
-        {status === 'PENDING' && (
-          <div className="flex flex-col items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             
-            {/* Amount Banner */}
-            <div className="text-center mb-4">
-              <p className="text-xs uppercase tracking-widest text-text-secondary font-bold mb-1">Total Payable</p>
-              <p className="text-3xl sm:text-4xl font-heading font-black text-white tracking-tight">
-                ₹{orderData.amount}
-              </p>
+            {/* Left Column: Payable Info & Automated Radar */}
+            <div className="md:col-span-6 flex flex-col justify-between h-full space-y-4">
+              
+              {/* Amount Showcase Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl pointer-events-none"></div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] uppercase tracking-widest text-text-secondary font-bold">
+                    Amount Payable
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                    No Extra Fees
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl sm:text-4xl font-heading font-black text-white tracking-tight">
+                    ₹{orderData.amount}
+                  </span>
+                  <span className="text-xs text-text-secondary font-bold uppercase tracking-wider">INR</span>
+                </div>
+              </div>
+
+              {/* Supported Payment Channels */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary block mb-2.5">
+                  Accepted UPI Apps
+                </span>
+                <div className="flex items-center justify-center p-2 bg-black/40 rounded-xl border border-white/5">
+                  <img
+                    src="/UPI-apps2.jpg"
+                    alt="GPay, PhonePe, Paytm, BHIM"
+                    className="h-6 sm:h-7 w-auto object-contain brightness-110"
+                  />
+                </div>
+              </div>
+
+              {/* UPI ID Copy Action Pill */}
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <span className="text-[10px] uppercase font-bold text-text-secondary block">UPI VPA Handle</span>
+                  <span className="text-xs font-mono font-bold text-white truncate block">valqore.pro.paul@fam</span>
+                </div>
+                <button
+                  onClick={handleCopyUpi}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-primary/20 text-text-secondary hover:text-primary border border-white/10 hover:border-primary/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer flex-shrink-0"
+                >
+                  {copiedUpi ? <><Check size={12} className="text-emerald-400" /> Copied</> : <><Copy size={12} /> Copy</>}
+                </button>
+              </div>
+
+              {/* Live WebSocket Verification Radar */}
+              <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/25 relative overflow-hidden flex items-center gap-3">
+                <div className="relative flex items-center justify-center flex-shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-30 animate-ping"></span>
+                  <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+                    <Loader2 size={16} className="text-primary animate-spin" />
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-primary uppercase tracking-wider leading-none mb-1">
+                    Auto-Verification Active
+                  </p>
+                  <p className="text-[11px] text-text-secondary leading-tight">
+                    Instant sync with banking gateway. Keeps window open.
+                  </p>
+                </div>
+              </div>
+
             </div>
 
-            {/* QR Code */}
-            <div className="p-3 bg-white rounded-2xl shadow-[0_0_35px_rgba(255,255,255,0.18)] mb-4 relative group">
-              <img
-                src={orderData.qrCode}
-                alt="UPI QR Code"
-                className="w-48 h-48 sm:w-52 sm:h-52 rounded-xl object-contain"
-              />
+            {/* Right Column: High-Res QR Card */}
+            <div className="md:col-span-6 flex flex-col items-center">
+              <div className="w-full max-w-[260px] p-4 bg-gradient-to-b from-[#18181C] to-[#121214] border border-white/15 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] relative group text-center">
+                
+                {/* Floating Scan Header Pill */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-black text-[10px] font-black uppercase tracking-wider shadow-[0_0_15px_rgba(220,248,54,0.4)] mb-3">
+                  <QrCode size={12} /> Scan with Any UPI App
+                </div>
+
+                {/* QR Container with Crisp Glass Edge */}
+                <div className="p-2.5 bg-white rounded-2xl shadow-2xl relative overflow-hidden mb-3 mx-auto w-fit">
+                  <img
+                    src={orderData.qrCode}
+                    alt="UPI QR Code"
+                    className="w-44 h-44 sm:w-48 sm:h-48 rounded-xl object-contain"
+                  />
+                </div>
+
+                <p className="text-[11px] text-text-secondary font-medium px-2">
+                  Open GPay / PhonePe / Paytm to complete checkout.
+                </p>
+              </div>
             </div>
 
-            {/* Supported UPI Logos */}
-            <div className="w-full flex justify-center items-center py-2 px-4 bg-white/5 rounded-xl border border-white/5 mb-5">
-              <img
-                src="/UPI-apps2.jpg"
-                alt="Google Pay, PhonePe, Paytm"
-                className="h-7 w-auto object-contain brightness-110"
-              />
-            </div>
-
-            {/* Automatic Verification Notice */}
-            <div className="w-full mt-4 flex flex-col items-center justify-center p-4 bg-primary/10 border border-primary/20 rounded-xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-primary/5 animate-pulse rounded-xl"></div>
-              <Loader2 size={24} className="text-primary animate-spin mb-2" />
-              <p className="text-sm font-bold text-primary mb-1 uppercase tracking-wider text-center z-10">
-                Waiting for payment confirmation...
-              </p>
-              <p className="text-xs text-text-secondary text-center max-w-[250px] z-10">
-                Scan the QR with any UPI app. Your payment will be verified automatically. Please do not close this window.
-              </p>
-            </div>
           </div>
         )}
 
@@ -257,15 +339,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
             {/* Premium Animated Icon with Layered Glow Rings */}
             <div className="relative mb-6">
-              {/* Outer Pulsing Waves */}
               <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-ping opacity-60"></div>
               <div className="absolute -inset-2 bg-primary/30 rounded-full blur-md animate-pulse"></div>
               
-              {/* Main Badge */}
               <div className="relative w-24 h-24 bg-gradient-to-tr from-[#121214] via-[#1c2211] to-[#121214] border-2 border-primary rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(220,248,54,0.6)]">
                 <CheckCircle2 size={52} className="text-primary animate-in zoom-in-75 duration-700 drop-shadow-[0_0_15px_rgba(220,248,54,0.8)]" />
                 
-                {/* Micro Sparkle Accents */}
                 <div className="absolute -top-1 -right-1 text-primary animate-bounce">
                   <Sparkles size={18} />
                 </div>
@@ -281,16 +360,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               Payment <span className="text-primary">Successful!</span>
             </h3>
             
-            <p className="text-text-secondary text-xs sm:text-sm max-w-xs mb-6 leading-relaxed">
-              Your order has been verified. Your game licenses and launcher access are now ready in your library.
+            <p className="text-text-secondary text-xs sm:text-sm max-w-sm mb-6 leading-relaxed">
+              Your order has been verified. Your game licenses and launcher access are unlocked and ready in your library.
             </p>
 
             {/* Auto Redirect Banner */}
-            <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-5 flex items-center justify-between text-xs">
+            <div className="w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-3.5 mb-5 flex items-center justify-between text-xs">
               <span className="text-text-secondary font-medium flex items-center gap-2">
                 <Gamepad2 size={16} className="text-primary" /> Redirecting to Library in
               </span>
-              <span className="font-heading font-black text-primary text-sm px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
+              <span className="font-heading font-black text-primary text-sm px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
                 {redirectCountdown}s
               </span>
             </div>
@@ -298,7 +377,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* CTA Button */}
             <button
               onClick={onSuccess}
-              className="w-full py-4 bg-primary hover:bg-white text-background font-heading font-black text-sm sm:text-base rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(220,248,54,0.4)] hover:shadow-[0_0_35px_rgba(255,255,255,0.6)] uppercase tracking-wider flex items-center justify-center gap-2 group cursor-pointer hover:scale-[1.02] active:scale-95"
+              className="w-full max-w-sm py-4 bg-primary hover:bg-white text-background font-heading font-black text-sm sm:text-base rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(220,248,54,0.4)] hover:shadow-[0_0_35px_rgba(255,255,255,0.6)] uppercase tracking-wider flex items-center justify-center gap-2 group cursor-pointer hover:scale-[1.02] active:scale-95"
             >
               <span>Go to My Library Now</span>
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -311,4 +390,5 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     document.body
   );
 };
+
 
