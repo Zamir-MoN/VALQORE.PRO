@@ -171,27 +171,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         )}
 
-        {/* Close Button */}
-        {status === 'PENDING' && (
-          <button
-            onClick={() => setShowCancelConfirm(true)}
-            className="absolute top-5 right-5 p-2 text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-20 cursor-pointer"
-            title="Close"
-          >
-            <X size={20} />
-          </button>
-        )}
-
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-3 h-3 bg-primary rotate-45 shadow-[0_0_10px_rgba(220,248,54,0.8)]"></div>
-          <span className="font-heading font-black tracking-wider text-xl uppercase text-white">
-            Delta <span className="text-primary">APay</span>
-          </span>
-          <span className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black">
+        <div className="flex items-center justify-between gap-3 mb-6 pr-10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-3 h-3 bg-primary rotate-45 shadow-[0_0_10px_rgba(220,248,54,0.8)]"></div>
+            <span className="font-heading font-black tracking-wider text-xl uppercase text-white">
+              Delta <span className="text-primary">APay</span>
+            </span>
+          </div>
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black">
             <Shield size={12} /> Instant UPI
           </span>
         </div>
+
+        {/* Close Button cleanly aligned in upper-right corner */}
+        {status === 'PENDING' && (
+          <button
+            onClick={() => setShowCancelConfirm(true)}
+            className="absolute top-4 right-4 p-2 text-text-secondary hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-20 cursor-pointer"
+            title="Close payment window"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        )}
 
         {status === 'PENDING' && (
           <div className="flex flex-col items-center">
