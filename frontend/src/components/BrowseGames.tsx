@@ -4,7 +4,7 @@ import { Search, Filter, ChevronDown, ArrowLeft } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { GameCard } from './GameCard';
 
-const GENRES = ['All', 'Action', 'Action RPG', 'Adventure', 'RPG', 'Horror', 'Fighting', 'Racing', 'Rentals'];
+const GENRES = ['All', 'Exclusives', 'Deals', 'Rentals', 'Action', 'Action RPG', 'Adventure', 'RPG', 'Horror', 'Fighting', 'Racing'];
 const SORT_OPTIONS = ['Relevance', 'Price: Low to High', 'Price: High to Low', 'Highest Rated', 'Newest'];
 
 export const BrowseGames = () => {
@@ -65,16 +65,19 @@ export const BrowseGames = () => {
     
     // Check if the game's genre contains the active genre (case-insensitive)
     let matchesGenre = false;
-    if (activeGenre === 'All') {
+    const lowerGenre = activeGenre.toLowerCase();
+    
+    if (lowerGenre === 'all') {
       matchesGenre = true;
-    } else if (activeGenre === 'Rentals') {
+    } else if (lowerGenre === 'rentals') {
       matchesGenre = !!game.isRentable;
-    } else if (activeGenre === 'Exclusives') {
-      matchesGenre = (game.rating && game.rating >= 90) || (game.discount && game.discount >= 20) || (game.genre && game.genre.toLowerCase().includes('action'));
-    } else if (activeGenre === 'Deals' || activeGenre === 'Discounted') {
-      matchesGenre = (game.discount && game.discount > 0);
+    } else if (lowerGenre === 'deals' || lowerGenre === 'discounted' || lowerGenre === 'discounts') {
+      matchesGenre = Number(game.discount || 0) > 0;
+    } else if (lowerGenre === 'exclusives') {
+      // Exclusives: games with discounts, high rating, or featured titles
+      matchesGenre = Number(game.discount || 0) > 0 || Number(game.rating || 0) >= 85 || !!game.creatorAccess;
     } else {
-      matchesGenre = game.genre.toLowerCase().includes(activeGenre.toLowerCase());
+      matchesGenre = (game.genre || '').toLowerCase().includes(lowerGenre);
     }
 
     // Check DRM/Platform
