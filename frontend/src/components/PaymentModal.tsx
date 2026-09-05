@@ -76,11 +76,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     return () => {
       document.body.style.overflow = originalOverflow;
     };
-  }, [isOpen, orderData, socket]);
+  }, [isOpen, orderData?.orderId, socket]);
 
   // Handle countdown and auto-redirect when payment completes
   useEffect(() => {
     if (status !== 'COMPLETED') return;
+
+    setRedirectCountdown(4);
 
     const timer = setInterval(() => {
       setRedirectCountdown((prev) => {
@@ -113,12 +115,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       } catch (err) {
         // silent polling catch
       }
-    }, 3500);
+    }, 3000);
 
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [isOpen, orderData, status, token]);
+  }, [isOpen, orderData?.orderId, status, token]);
 
   if (!isOpen || !orderData) return null;
 

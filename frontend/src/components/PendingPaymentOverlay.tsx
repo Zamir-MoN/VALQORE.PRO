@@ -135,9 +135,9 @@ export const PendingPaymentOverlay: React.FC = () => {
     }
   };
 
-  // Don't display overlay on admin routes or if dismissed / no pending order
+  // Don't display overlay on admin routes or if no pending order (unless payment modal is actively open)
   const isAdminRoute = location.pathname.startsWith('/admin');
-  if (!pendingOrder || isAdminRoute) {
+  if (isAdminRoute || (!pendingOrder && !isPaymentModalOpen)) {
     return null;
   }
 
@@ -169,13 +169,12 @@ export const PendingPaymentOverlay: React.FC = () => {
                 Pending Payment
               </span>
               <span className="text-xs font-bold text-white leading-tight">
-                {formatPrice(pendingOrder.totalAmount)}
+                {pendingOrder ? formatPrice(pendingOrder.totalAmount) : ''}
               </span>
             </div>
           </button>
         </div>
 
-        {/* Delta APay Payment Gateway Modal */}
         <PaymentModal
           isOpen={isPaymentModalOpen}
           onClose={() => {
