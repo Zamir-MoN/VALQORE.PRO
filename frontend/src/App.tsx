@@ -26,6 +26,7 @@ const AdminLogin = lazy(() => import('./components/AdminLogin').then(m => ({ def
 const CreatorGuidelines = lazy(() => import('./components/CreatorGuidelines').then(m => ({ default: m.CreatorGuidelines })));
 const CreatorApplication = lazy(() => import('./components/CreatorApplication').then(m => ({ default: m.CreatorApplication })));
 const Support = lazy(() => import('./components/Support').then(m => ({ default: m.Support })));
+const TermsOfService = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfService })));
 
 
 import { AuthProvider } from './context/AuthContext';
@@ -154,6 +155,8 @@ function App() {
 
                             <Route path="/admin" element={<AdminDashboard />} />
                             <Route path="/support" element={<Support />} />
+                            <Route path="/terms" element={<TermsOfService />} />
+                            <Route path="/terms-of-service" element={<TermsOfService />} />
                             <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
                             <Route path="/creator/apply" element={<CreatorApplication />} />
                           </Routes>

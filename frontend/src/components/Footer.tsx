@@ -105,7 +105,7 @@ export const Footer = () => {
             <h4 className="font-heading font-bold text-white mb-6 uppercase tracking-wider text-sm">Legal</h4>
             <ul className="space-y-4">
               {[
-                { name: 'Terms of Service', url: '#' },
+                { name: 'Terms of Service', url: '/terms' },
                 { name: 'Privacy Policy', url: '#' },
                 { name: 'Creator Guidelines', url: '/creator/guidelines' }
               ].map((link) => (
