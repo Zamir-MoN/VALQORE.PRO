@@ -71,11 +71,9 @@ export const BrowseGames = () => {
       matchesGenre = true;
     } else if (lowerGenre === 'rentals') {
       matchesGenre = !!game.isRentable;
-    } else if (lowerGenre === 'deals' || lowerGenre === 'discounted' || lowerGenre === 'discounts') {
+    } else if (lowerGenre === 'exclusives' || lowerGenre === 'deals' || lowerGenre === 'discounted' || lowerGenre === 'discounts') {
+      // Strictly show ONLY discounted games
       matchesGenre = Number(game.discount || 0) > 0;
-    } else if (lowerGenre === 'exclusives') {
-      // Exclusives: games with discounts, high rating, or featured titles
-      matchesGenre = Number(game.discount || 0) > 0 || Number(game.rating || 0) >= 85 || !!game.creatorAccess;
     } else {
       matchesGenre = (game.genre || '').toLowerCase().includes(lowerGenre);
     }
