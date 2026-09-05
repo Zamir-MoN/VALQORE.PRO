@@ -15,6 +15,7 @@ import { FAQ } from './components/FAQ';
 import { Newsletter } from './components/Newsletter';
 import { Footer } from './components/Footer';
 import { AuthModal } from './components/Auth';
+import { PendingPaymentOverlay } from './components/PendingPaymentOverlay';
 
 const BrowseGames = lazy(() => import('./components/BrowseGames').then(m => ({ default: m.BrowseGames })));
 const GameDetails = lazy(() => import('./components/GameDetails').then(m => ({ default: m.GameDetails })));
@@ -133,6 +134,7 @@ function App() {
                         }}
                       />
                       <Navbar />
+                      <PendingPaymentOverlay />
                       <main className="flex-grow">
                         <Suspense fallback={<div className="min-h-[60vh] w-full flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div></div>}>
                           <Routes>
