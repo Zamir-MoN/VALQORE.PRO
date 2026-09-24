@@ -1887,39 +1887,49 @@ export const AdminDashboard = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent sm:hidden"></div>
                               </div>
                               
-                              <div className="flex-1 flex flex-col w-full z-10 sm:py-2">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                  <div>
-                                    <div className="flex items-center gap-2">
+                              <div className="flex-1 min-w-0 flex flex-col w-full z-10 sm:py-1">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
                                       <span className="sm:hidden text-text-secondary cursor-grab"><GripVertical size={16} /></span>
-                                      <h3 className="font-bold text-xl text-white mb-1 leading-tight group-hover:text-primary transition-colors">{game.title}</h3>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
-                                      {game.bundleGames && (
-                                        <span className="text-xs text-text-secondary/80 flex items-center gap-1">
-                                          • <Gamepad2 size={12} className="text-[#A855F7]" /> {game.bundleGames}
+                                      <h3 className="font-bold text-lg sm:text-xl text-white leading-tight group-hover:text-primary transition-colors truncate">
+                                        {game.title}
+                                      </h3>
+                                      {game.isBundle && (
+                                        <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wider uppercase bg-[#A855F7]/15 text-[#A855F7] border border-[#A855F7]/30 shadow-[0_0_10px_rgba(168,85,247,0.15)] shrink-0">
+                                          <Package size={11} /> Bundle
+                                        </span>
+                                      )}
+                                      {game.creatorAccess && (
+                                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] tracking-wider uppercase bg-primary/10 text-primary border border-primary/30 shrink-0">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                          Creator
                                         </span>
                                       )}
                                     </div>
+
+                                    <div className="flex items-center gap-2.5 text-sm flex-wrap">
+                                      <span className="text-primary font-heading font-black">{formatPrice(game.price)}</span>
+                                      {game.bundleGames && (() => {
+                                        const count = game.bundleGames.split(/[,+]/).map(g => g.trim()).filter(Boolean).length;
+                                        return (
+                                          <span 
+                                            className="text-xs text-text-secondary/80 flex items-center gap-1 truncate max-w-md sm:max-w-lg" 
+                                            title={game.bundleGames}
+                                          >
+                                            • <Gamepad2 size={12} className="text-[#A855F7] shrink-0" />
+                                            <span className="font-bold text-white/80">{count} Games:</span>
+                                            <span className="truncate">{game.bundleGames}</span>
+                                          </span>
+                                        );
+                                      })()}
+                                    </div>
                                   </div>
                                   
-                                  <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
-                                    {game.isBundle && (
-                                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/30 shadow-[0_0_10px_rgba(168,85,247,0.15)]">
-                                        <Package size={12} /> Bundle
-                                      </span>
-                                    )}
-                                    {game.creatorAccess && (
-                                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(220,248,54,0.15)]">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                                        Creator Access
-                                      </span>
-                                    )}
-
+                                  <div className="flex items-center gap-3 sm:gap-4 shrink-0 flex-wrap sm:flex-nowrap">
                                     <button 
                                       onClick={() => toggleOutOfStock(game.id, game.outOfStock || false)}
-                                      className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 border ${
+                                      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full font-bold text-xs tracking-wider uppercase transition-all duration-300 border ${
                                         game.outOfStock 
                                         ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
                                         : 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
@@ -1935,22 +1945,22 @@ export const AdminDashboard = () => {
                                       </span>
                                     )}
 
-                                    <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
+                                    <div className="h-6 w-px bg-white/10 hidden sm:block shrink-0"></div>
 
-                                    <div className="flex gap-2">
+                                    <div className="flex items-center gap-2 shrink-0">
                                       <button 
                                         onClick={() => editGame(game)} 
-                                        className="p-2.5 bg-black/40 hover:bg-primary/20 border border-white/5 hover:border-primary/50 rounded-xl text-text-secondary hover:text-primary transition-all duration-300 tooltip-trigger"
+                                        className="p-2 bg-black/40 hover:bg-primary/20 border border-white/5 hover:border-primary/50 rounded-xl text-text-secondary hover:text-primary transition-all duration-300 tooltip-trigger"
                                         title="Edit Game"
                                       >
-                                        <Edit2 size={18} />
+                                        <Edit2 size={16} />
                                       </button>
                                       <button 
                                         onClick={() => handleDelete(game.id)} 
-                                        className="p-2.5 bg-black/40 hover:bg-error/20 border border-white/5 hover:border-error/50 rounded-xl text-text-secondary hover:text-error transition-all duration-300 tooltip-trigger"
+                                        className="p-2 bg-black/40 hover:bg-error/20 border border-white/5 hover:border-error/50 rounded-xl text-text-secondary hover:text-error transition-all duration-300 tooltip-trigger"
                                         title="Delete Game"
                                       >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={16} />
                                       </button>
                                     </div>
                                   </div>
