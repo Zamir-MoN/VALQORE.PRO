@@ -789,18 +789,53 @@ export const AdminDashboard = () => {
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <div data-lenis-prevent="true" className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
-              >
-                <X size={20} />
-              </button>
-              <h2 className="text-2xl font-bold mb-6 text-primary">
-                {isEditing 
-                  ? (formData.isBundle ? 'Edit Bundle' : formData.isGiveaway ? 'Edit Giveaway' : 'Edit Game') 
-                  : (formData.isBundle ? 'Add New Bundle' : formData.isGiveaway ? 'Add New Giveaway' : 'Add New Game')}
-              </h2>
-              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+              {/* Sticky Top Header with Title, Save Button & Close Button */}
+              <div className="sticky -top-6 -mx-6 px-6 pt-2 pb-4 mb-5 bg-background/95 backdrop-blur-md border-b border-white/10 z-30 flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-xl sm:text-2xl font-bold text-primary truncate font-heading">
+                    {isEditing 
+                      ? (formData.isBundle ? 'Edit Bundle' : formData.isGiveaway ? 'Edit Giveaway' : 'Edit Game') 
+                      : (formData.isBundle ? 'Add New Bundle' : formData.isGiveaway ? 'Add New Giveaway' : 'Add New Game')}
+                  </h2>
+                  <p className="text-xs text-text-secondary truncate mt-0.5">
+                    {formData.title ? formData.title : 'Configure details and save changes'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {/* Save Option at Top */}
+                  <button
+                    type="submit"
+                    form="admin-game-form"
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg cursor-pointer ${
+                      formData.isBundle 
+                        ? 'bg-[#A855F7] hover:bg-[#A855F7]/90 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)]' 
+                        : formData.isGiveaway
+                        ? 'bg-[#00F0FF] hover:bg-[#00F0FF]/90 text-black shadow-[0_0_15px_rgba(0,240,255,0.35)]'
+                        : 'bg-primary hover:bg-primary/90 text-background shadow-[0_0_15px_rgba(220,248,54,0.35)]'
+                    }`}
+                  >
+                    <Check size={16} strokeWidth={2.5} />
+                    <span>
+                      {isEditing 
+                        ? (formData.isBundle ? 'Save Bundle' : formData.isGiveaway ? 'Save Giveaway' : 'Save Game') 
+                        : (formData.isBundle ? 'Create Bundle' : formData.isGiveaway ? 'Create Giveaway' : 'Create Game')}
+                    </span>
+                  </button>
+
+                  {/* Close Modal Button */}
+                  <button 
+                    type="button"
+                    onClick={() => { resetForm(); setIsModalOpen(false); }}
+                    className="text-text-secondary hover:text-white transition-colors bg-cards hover:bg-white/10 p-2.5 rounded-xl border border-white/5 cursor-pointer"
+                    title="Close"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              <form id="admin-game-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
                 
                 {/* Basic Information */}
                 <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
@@ -1728,8 +1763,21 @@ export const AdminDashboard = () => {
                 <div className="flex flex-col gap-8">
                   {/* Create Poster Form */}
                   <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
-                    <h3 className="text-2xl font-bold mb-6 text-white font-heading">Add New Poster</h3>
-                    <form onSubmit={handlePosterSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                      <div>
+                        <h3 className="text-2xl font-bold text-white font-heading">Add New Poster</h3>
+                        <p className="text-text-secondary text-xs mt-0.5">Upload or link hero artwork posters</p>
+                      </div>
+                      <button 
+                        type="submit" 
+                        form="admin-poster-form"
+                        className="bg-[#00FFAA] text-black font-bold py-2.5 px-6 rounded-xl hover:bg-[#00FFAA]/90 transition-all shadow-[0_0_15px_rgba(0,255,170,0.3)] flex items-center gap-1.5 cursor-pointer text-sm"
+                      >
+                        <Check size={16} strokeWidth={2.5} />
+                        <span>Save Poster</span>
+                      </button>
+                    </div>
+                    <form id="admin-poster-form" onSubmit={handlePosterSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
                       <div className="flex flex-col gap-2 w-full flex-1">
                         <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Image URL</label>
                         <input 
@@ -1993,8 +2041,21 @@ export const AdminDashboard = () => {
           {activeTab === 'coupons' && (
             <div className="w-full mt-6">
               <div className="glass p-6 rounded-2xl border border-white/5 mb-8">
-                <h3 className="text-2xl font-bold mb-6 text-white font-heading">Create New Coupon</h3>
-                <form onSubmit={handleCouponSubmit} className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white font-heading">Create New Coupon</h3>
+                    <p className="text-text-secondary text-xs mt-0.5">Configure discounts and creator referral codes</p>
+                  </div>
+                  <button 
+                    type="submit" 
+                    form="admin-coupon-form"
+                    className="bg-[#FF00F0] hover:bg-[#FF00F0]/80 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_0_15px_rgba(255,0,240,0.3)] flex items-center gap-1.5 cursor-pointer text-sm"
+                  >
+                    <Check size={16} strokeWidth={2.5} />
+                    <span>Save Coupon</span>
+                  </button>
+                </div>
+                <form id="admin-coupon-form" onSubmit={handleCouponSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex flex-col gap-2 w-full flex-1">
                       <label className="text-xs text-text-secondary uppercase tracking-wider font-bold">Admin</label>
@@ -2383,13 +2444,27 @@ export const AdminDashboard = () => {
       {selectedOrder && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div data-lenis-prevent="true" className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-            <button 
-              onClick={() => { setSelectedOrder(null); setIsCopied(false); }}
-              className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-2xl font-bold mb-6 text-white border-b border-white/10 pb-4">Order Details</h2>
+            <div className="sticky -top-6 -mx-6 px-6 pt-2 pb-4 mb-4 bg-background/95 backdrop-blur-md border-b border-white/10 z-30 flex items-center justify-between gap-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-white font-heading">Order Details</h2>
+              <div className="flex items-center gap-2">
+                {selectedOrder.status === 'PENDING' && (
+                  <button 
+                    onClick={() => updateOrderStatus(selectedOrder.id, 'COMPLETED')}
+                    className="bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(34,197,94,0.3)] cursor-pointer"
+                  >
+                    <Check size={14} strokeWidth={2.5} />
+                    <span>Mark Paid</span>
+                  </button>
+                )}
+                <button 
+                  onClick={() => { setSelectedOrder(null); setIsCopied(false); }}
+                  className="text-text-secondary hover:text-white transition-colors bg-cards hover:bg-white/10 p-2 rounded-xl border border-white/5 cursor-pointer"
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
             
             <div className="flex flex-col gap-6">
               {/* Order Info */}
@@ -2498,13 +2573,36 @@ export const AdminDashboard = () => {
       {selectedCreatorRequest && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div data-lenis-prevent="true" className="bg-background border border-white/10 rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
-            <button 
-              onClick={() => setSelectedCreatorRequest(null)}
-              className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors z-10 bg-cards p-2 rounded-lg"
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-2xl font-bold mb-6 text-white border-b border-white/10 pb-4">Creator Application Details</h2>
+            <div className="sticky -top-6 -mx-6 px-6 pt-2 pb-4 mb-4 bg-background/95 backdrop-blur-md border-b border-white/10 z-30 flex items-center justify-between gap-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-white font-heading">Creator Application Details</h2>
+              <div className="flex items-center gap-2">
+                {selectedCreatorRequest.status === 'PENDING' && (
+                  <>
+                    <button 
+                      onClick={() => updateCreatorRequestStatus(selectedCreatorRequest.id, 'APPROVED')}
+                      className="bg-green-500 hover:bg-green-400 text-black px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <Check size={14} strokeWidth={2.5} />
+                      <span>Approve</span>
+                    </button>
+                    <button 
+                      onClick={() => updateCreatorRequestStatus(selectedCreatorRequest.id, 'REJECTED')}
+                      className="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <X size={14} />
+                      <span>Reject</span>
+                    </button>
+                  </>
+                )}
+                <button 
+                  onClick={() => setSelectedCreatorRequest(null)}
+                  className="text-text-secondary hover:text-white transition-colors bg-cards hover:bg-white/10 p-2 rounded-xl border border-white/5 cursor-pointer"
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
             
             <div className="flex flex-col gap-6">
               {/* Applicant Info */}
@@ -2896,17 +2994,33 @@ export const AdminDashboard = () => {
       {selectedPayment && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div data-lenis-prevent="true" className="bg-[#121214] border border-white/10 rounded-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative">
-            <button
-              onClick={() => setSelectedPayment(null)}
-              className="absolute top-5 right-5 p-2 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white rounded-xl transition-colors cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <h3 className="text-2xl font-heading font-black text-white mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
-              <span className="w-2.5 h-6 bg-emerald-400 rounded-full"></span>
-              Payment Session Details
-            </h3>
+            <div className="sticky -top-6 sm:-top-8 -mx-6 sm:-mx-8 px-6 sm:px-8 pt-2 pb-4 mb-4 bg-[#121214]/95 backdrop-blur-md border-b border-white/10 z-30 flex items-center justify-between gap-4">
+              <h3 className="text-xl sm:text-2xl font-heading font-black text-white flex items-center gap-2.5">
+                <span className="w-2.5 h-6 bg-emerald-400 rounded-full"></span>
+                <span>Payment Session Details</span>
+              </h3>
+              <div className="flex items-center gap-2">
+                {selectedPayment.status === 'PENDING' && (
+                  <button
+                    onClick={() => {
+                      handleAdminVerifyPayment(selectedPayment.id, selectedPayment.submittedUtr);
+                      setSelectedPayment(null);
+                    }}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-white text-black font-heading font-black rounded-xl text-xs uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Check size={14} strokeWidth={2.5} />
+                    <span>Approve</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setSelectedPayment(null)}
+                  className="p-2 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white rounded-xl transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
 
             <div className="space-y-6">
               {/* Top Banner */}
