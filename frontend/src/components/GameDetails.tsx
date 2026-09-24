@@ -330,12 +330,42 @@ export const GameDetails = () => {
 
   // DEDICATED BUNDLE PAGE REDESIGN
   if (game.isBundle) {
-    const bundlePosters = screenshots.filter(Boolean);
     const hasSavings = game.steamPrice != null && game.steamPrice > game.price && game.price > 0;
     const savingsPercent = hasSavings ? Math.round(((game.steamPrice! - game.price) / game.steamPrice!) * 100) : 0;
     const gamesList = game.bundleGames 
       ? game.bundleGames.split(/[,+]/).map(g => g.trim()).filter(Boolean)
       : [];
+
+    // Match games with website catalog to get real posters
+    const matchedWebsiteGames = gamesList.map(item => {
+      return games.find(g => 
+        g.id === item || 
+        g.title.toLowerCase() === item.toLowerCase() ||
+        (g.slug && g.slug.toLowerCase() === item.toLowerCase())
+      );
+    }).filter(Boolean) as typeof games;
+
+    // Build multi game posters list:
+    // If games are selected from website, use their coverImages as posters
+    const websitePosters = matchedWebsiteGames.map(bg => ({
+      url: bg.coverImage,
+      title: bg.title,
+      price: bg.price,
+      slug: bg.slug || bg.id
+    })).filter(p => !!p.url);
+
+    const manualScreenshots = screenshots.filter(Boolean).map((url, idx) => ({
+      url,
+      title: gamesList[idx] || `Game #${idx + 1}`,
+      price: null as number | null,
+      slug: null as string | null
+    }));
+
+    // Combine website posters and manual posters (avoid duplicate URLs)
+    const combinedPosters = [
+      ...websitePosters,
+      ...manualScreenshots.filter(mp => !websitePosters.some(wp => wp.url === mp.url))
+    ];
 
     return (
       <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="bundle-details">
@@ -426,34 +456,34 @@ export const GameDetails = () => {
                         <p className="text-xs text-text-secondary">Official artwork & posters for games in this pack</p>
                       </div>
                     </div>
-                    {bundlePosters.length > 0 && (
+                    {combinedPosters.length > 0 && (
                       <span className="text-xs font-bold text-white/60 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                        {bundlePosters.length} {bundlePosters.length === 1 ? 'Poster' : 'Game Posters'}
+                        {combinedPosters.length} {combinedPosters.length === 1 ? 'Poster' : 'Game Posters'}
                       </span>
                     )}
                   </div>
 
                   {/* Multi-Poster Grid */}
-                  {bundlePosters.length > 0 ? (
+                  {combinedPosters.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
-                      {bundlePosters.map((posterUrl, idx) => (
+                      {combinedPosters.map((posterItem, idx) => (
                         <div
                           key={idx}
-                          onClick={() => setSelectedPoster(posterUrl)}
+                          onClick={() => setSelectedPoster(posterItem.url)}
                           className="group relative flex flex-col bg-black/60 rounded-xl overflow-hidden border border-white/10 hover:border-[#A855F7]/60 transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] hover:-translate-y-1.5 cursor-pointer"
                         >
                           {/* Portrait Game Poster (3:4 aspect) */}
                           <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/40">
                             <img
-                              src={getImageUrl(posterUrl)}
-                              alt={`Bundle Game Poster ${idx + 1}`}
+                              src={getImageUrl(posterItem.url)}
+                              alt={posterItem.title}
                               loading="lazy"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
 
                             {/* Poster Number / Badge */}
-                            <div className="absolute top-2.5 left-2.5 bg-black/80 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[10px] font-black px-2 py-0.5 rounded shadow uppercase">
+                            <div className="absolute top-2.5 left-2.5 bg-black/85 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[10px] font-black px-2 py-0.5 rounded shadow uppercase">
                               Game #{idx + 1}
                             </div>
 
@@ -466,13 +496,16 @@ export const GameDetails = () => {
                           </div>
 
                           {/* Caption */}
-                          {gamesList[idx] && (
-                            <div className="p-3 bg-cards/80 border-t border-white/5">
-                              <h4 className="font-bold text-xs text-white group-hover:text-[#A855F7] transition-colors truncate">
-                                {gamesList[idx]}
-                              </h4>
-                            </div>
-                          )}
+                          <div className="p-3 bg-cards/80 border-t border-white/5 flex flex-col gap-0.5">
+                            <h4 className="font-bold text-xs text-white group-hover:text-[#A855F7] transition-colors truncate">
+                              {posterItem.title}
+                            </h4>
+                            {posterItem.price != null && (
+                              <span className="text-[10px] text-text-secondary">
+                                Standalone: {formatPrice(posterItem.price)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -523,17 +556,41 @@ export const GameDetails = () => {
                         Games Included in this Pack:
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {gamesList.map((gName, idx) => (
-                          <div 
-                            key={idx}
-                            className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
-                          >
-                            <div className="w-6 h-6 rounded-lg bg-[#A855F7]/20 text-[#A855F7] flex items-center justify-center text-xs font-black flex-shrink-0">
-                              {idx + 1}
+                        {matchedWebsiteGames.length > 0 ? (
+                          matchedWebsiteGames.map((gItem, idx) => (
+                            <Link 
+                              to={`/game/${gItem.slug || gItem.id}`}
+                              key={idx}
+                              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#A855F7]/40 hover:bg-white/[0.06] transition-all group/item"
+                            >
+                              <img
+                                src={getImageUrl(gItem.coverImage) || '/images/hero-artwork.png'}
+                                alt={gItem.title}
+                                className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
+                              />
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-sm font-bold text-white truncate group-hover/item:text-[#A855F7] transition-colors">
+                                  {gItem.title}
+                                </span>
+                                <span className="text-xs text-text-secondary">
+                                  {formatPrice(gItem.price)}
+                                </span>
+                              </div>
+                            </Link>
+                          ))
+                        ) : (
+                          gamesList.map((gName, idx) => (
+                            <div 
+                              key={idx}
+                              className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
+                            >
+                              <div className="w-6 h-6 rounded-lg bg-[#A855F7]/20 text-[#A855F7] flex items-center justify-center text-xs font-black flex-shrink-0">
+                                {idx + 1}
+                              </div>
+                              <span className="text-sm font-bold text-white truncate">{gName}</span>
                             </div>
-                            <span className="text-sm font-bold text-white truncate">{gName}</span>
-                          </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </div>
                   )}

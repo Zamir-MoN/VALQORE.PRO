@@ -29,6 +29,7 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
   const backupFileInputRef = useRef<HTMLInputElement>(null);
+  const [bundleSearchTerm, setBundleSearchTerm] = useState('');
 
   // Payments State
   const [adminPayments, setAdminPayments] = useState<any[]>([]);
@@ -852,39 +853,218 @@ export const AdminDashboard = () => {
                       <input type="text" name="steamAppId" value={formData.steamAppId} onChange={handleInputChange} placeholder="E.g. 1196590" className="bg-cards border border-[#00F0FF]/30 rounded-lg p-3 text-white focus:border-[#00F0FF] outline-none" />
                     </div>
 
-                    {formData.isBundle && (
-                      <>
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-xs text-[#A855F7] uppercase tracking-wider font-bold ml-1 flex items-center gap-1">
-                            <Package size={13} /> Included Games / Contents (Optional)
-                          </label>
-                          <input 
-                            type="text" 
-                            name="bundleGames" 
-                            value={formData.bundleGames} 
-                            onChange={handleInputChange} 
-                            placeholder="E.g. Grand Theft Auto V, Red Dead Redemption 2, Max Payne 3" 
-                            className="bg-cards border border-[#A855F7]/30 rounded-lg p-3 text-white focus:border-[#A855F7] outline-none" 
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-xs text-[#A855F7] uppercase tracking-wider font-bold ml-1 flex items-center gap-1">
-                            <FileText size={13} /> Bundle Description
-                          </label>
-                          <textarea 
-                            name="description" 
-                            value={formData.description} 
-                            onChange={handleInputChange} 
-                            rows={4}
-                            placeholder="Write a detailed description for this bundle pack, storyline, features, editions, and instructions..." 
-                            className="bg-cards border border-[#A855F7]/30 rounded-lg p-3 text-white focus:border-[#A855F7] outline-none text-sm resize-y" 
-                          />
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
+
+                {/* Bundle Configuration: Included Games & Description */}
+                {formData.isBundle && (
+                  <div className="flex flex-col gap-6">
+                    {/* 1. Included Games Section with All Available Website Posters */}
+                    <div className="p-5 border border-[#A855F7]/40 rounded-xl bg-cards/30 shadow-[0_0_20px_rgba(168,85,247,0.1)] flex flex-col gap-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                        <div>
+                          <h3 className="font-bold text-white text-base flex items-center gap-2">
+                            <Package className="text-[#A855F7]" size={18} />
+                            <span>Included Games in this Bundle</span>
+                          </h3>
+                          <p className="text-xs text-text-secondary mt-0.5">
+                            Click game posters below to select all games from the website included in this bundle pack.
+                          </p>
+                        </div>
+                        {(() => {
+                          const selectedList = formData.bundleGames 
+                            ? formData.bundleGames.split(/[,+]/).map(s => s.trim()).filter(Boolean)
+                            : [];
+                          return (
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#A855F7]/20 border border-[#A855F7]/30 text-[#A855F7]">
+                              {selectedList.length} Selected
+                            </span>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Selected Games Badges */}
+                      {(() => {
+                        const selectedList = formData.bundleGames 
+                          ? formData.bundleGames.split(/[,+]/).map(s => s.trim()).filter(Boolean)
+                          : [];
+                        if (selectedList.length === 0) return null;
+
+                        return (
+                          <div className="flex flex-col gap-2 p-3 bg-black/40 rounded-xl border border-white/5">
+                            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                              Currently Selected Games:
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedList.map((item, idx) => {
+                                const matched = games.find(g => g.id === item || g.title.toLowerCase() === item.toLowerCase());
+                                return (
+                                  <div 
+                                    key={idx}
+                                    className="inline-flex items-center gap-2 bg-[#A855F7]/20 border border-[#A855F7]/40 text-white rounded-lg pl-1.5 pr-2.5 py-1 text-xs font-bold shadow-md"
+                                  >
+                                    {matched?.coverImage ? (
+                                      <img 
+                                        src={getImageUrl(matched.coverImage)} 
+                                        alt={item} 
+                                        className="w-5 h-6 object-cover rounded"
+                                      />
+                                    ) : (
+                                      <Gamepad2 size={13} className="text-[#A855F7]" />
+                                    )}
+                                    <span>{matched?.title || item}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = selectedList.filter((_, i) => i !== idx);
+                                        setFormData(prev => ({ ...prev, bundleGames: updated.join(', ') }));
+                                      }}
+                                      className="text-white/60 hover:text-red-400 p-0.5 rounded cursor-pointer ml-0.5"
+                                      title="Remove"
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Search Games Input */}
+                      <div className="relative">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                        <input
+                          type="text"
+                          placeholder="Search all available games on website..."
+                          value={bundleSearchTerm}
+                          onChange={(e) => setBundleSearchTerm(e.target.value)}
+                          className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:border-[#A855F7] outline-none"
+                        />
+                      </div>
+
+                      {/* Game Posters Grid */}
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">
+                          All Available Games on Website (Click to Select / Deselect):
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-80 overflow-y-auto p-2.5 bg-black/40 rounded-xl border border-white/5 no-scrollbar">
+                          {games
+                            .filter(g => !g.isBundle && g.id !== currentId)
+                            .filter(g => 
+                              !bundleSearchTerm.trim() || 
+                              g.title.toLowerCase().includes(bundleSearchTerm.toLowerCase()) ||
+                              g.developer.toLowerCase().includes(bundleSearchTerm.toLowerCase()) ||
+                              g.genre.toLowerCase().includes(bundleSearchTerm.toLowerCase())
+                            )
+                            .map((gameItem) => {
+                              const selectedList = formData.bundleGames 
+                                ? formData.bundleGames.split(/[,+]/).map(s => s.trim()).filter(Boolean)
+                                : [];
+                              const isSelected = selectedList.some(
+                                item => item.toLowerCase() === gameItem.title.toLowerCase() || item === gameItem.id
+                              );
+
+                              return (
+                                <div
+                                  key={gameItem.id}
+                                  onClick={() => {
+                                    let updated: string[];
+                                    if (isSelected) {
+                                      updated = selectedList.filter(
+                                        item => item.toLowerCase() !== gameItem.title.toLowerCase() && item !== gameItem.id
+                                      );
+                                    } else {
+                                      updated = [...selectedList, gameItem.title];
+                                    }
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      bundleGames: updated.join(', ')
+                                    }));
+                                  }}
+                                  className={`group relative flex flex-col rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-200 select-none ${
+                                    isSelected
+                                      ? 'border-[#A855F7] bg-[#A855F7]/15 shadow-[0_0_15px_rgba(168,85,247,0.4)] scale-[0.98]'
+                                      : 'border-white/10 hover:border-white/30 bg-cards/60 opacity-80 hover:opacity-100 hover:scale-[1.02]'
+                                  }`}
+                                >
+                                  {/* Poster Image */}
+                                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/60">
+                                    <img
+                                      src={getImageUrl(gameItem.coverImage) || '/images/hero-artwork.png'}
+                                      alt={gameItem.title}
+                                      loading="lazy"
+                                      className="w-full h-full object-cover"
+                                    />
+                                    {isSelected ? (
+                                      <div className="absolute inset-0 bg-[#A855F7]/35 flex items-center justify-center">
+                                        <div className="w-7 h-7 rounded-full bg-[#A855F7] text-white flex items-center justify-center shadow-lg border border-white/30">
+                                          <Check size={16} strokeWidth={3} />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 text-white">
+                                        <Plus size={12} />
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="p-1.5 bg-black/90 flex flex-col">
+                                    <span className="text-[11px] font-bold text-white truncate group-hover:text-[#A855F7] transition-colors">
+                                      {gameItem.title}
+                                    </span>
+                                    <span className="text-[9px] text-text-secondary truncate">
+                                      {formatPrice(gameItem.price)}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+
+                      {/* Manual text input fallback */}
+                      <div className="flex flex-col gap-1 pt-2 border-t border-white/5">
+                        <label className="text-[11px] text-text-secondary font-bold">
+                          Included Games Text (Auto-updates or type custom names):
+                        </label>
+                        <input
+                          type="text"
+                          name="bundleGames"
+                          value={formData.bundleGames}
+                          onChange={handleInputChange}
+                          placeholder="E.g. Grand Theft Auto V, Red Dead Redemption 2"
+                          className="w-full bg-cards border border-white/10 rounded-lg p-2.5 text-xs text-white focus:border-[#A855F7] outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 2. Bundle Description Section */}
+                    <div className="p-5 border border-[#A855F7]/40 rounded-xl bg-cards/30 shadow-[0_0_20px_rgba(168,85,247,0.1)] flex flex-col gap-3">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                        <h3 className="font-bold text-white text-base flex items-center gap-2">
+                          <FileText className="text-[#A855F7]" size={18} />
+                          <span>Bundle Description</span>
+                        </h3>
+                        <span className="text-[11px] text-text-secondary uppercase tracking-wider font-bold">
+                          Rich Overview
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-secondary">
+                        Write a detailed description for this bundle pack, storyline, features, editions, DLCs, and activation instructions.
+                      </p>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={5}
+                        placeholder="Write a detailed description for this bundle pack, storyline, features, editions, DLCs, and activation instructions..."
+                        className="w-full bg-cards border border-white/10 rounded-xl p-3.5 text-white focus:border-[#A855F7] outline-none text-sm resize-y leading-relaxed"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Pricing & Rating */}
                 {!formData.isGiveaway && (
