@@ -69,7 +69,7 @@ export const Cart = () => {
   );
   
   const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
-  let total = cartItems.reduce((acc, item) => acc + (item.price * (1 - item.discount / 100)), 0);
+  let total = cartItems.reduce((acc, item) => acc + item.price, 0);
   let savings = subtotal - total;
 
   if (couponApplied) {
@@ -148,13 +148,8 @@ export const Cart = () => {
               <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-cards/40 border border-white/5 rounded-2xl p-4 sm:p-6 transition-all hover:bg-cards/60 hover:border-white/10 group relative">
                 
                 {/* Item Image */}
-                <Link to={`/game/${item.id}`} className="w-full sm:w-40 aspect-video sm:aspect-[3/4] flex-shrink-0 rounded-xl overflow-hidden relative border border-white/10">
+                <Link to={`/game/${item.slug || item.id}`} className="w-full sm:w-40 aspect-video sm:aspect-[3/4] flex-shrink-0 rounded-xl overflow-hidden relative border border-white/10">
                   <img src={item.coverImage} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  {item.discount > 0 && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg">
-                      -{item.discount}%
-                    </div>
-                  )}
                 </Link>
                 
                 {/* Item Details */}
@@ -165,7 +160,7 @@ export const Cart = () => {
                         <span className="px-2 py-0.5 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{item.genre}</span>
                         <span className="px-2 py-0.5 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{item.platforms[0]}</span>
                       </div>
-                      <Link to={`/game/${item.id}`}>
+                      <Link to={`/game/${item.slug || item.id}`}>
                         <h3 className="text-xl font-bold text-white hover:text-primary transition-colors line-clamp-2 leading-tight">
                           {item.title}
                         </h3>
@@ -186,16 +181,7 @@ export const Cart = () => {
                       Instant Delivery
                     </span>
                     <div className="flex flex-col items-end">
-                      {item.discount > 0 ? (
-                        <div className="flex flex-col items-end">
-                          <span className="text-text-secondary line-through text-sm">{formatPrice(item.price)}</span>
-                          <span className="text-lg font-heading font-black text-white">
-                            {formatPrice(item.price * (1 - item.discount / 100))}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-2xl font-heading font-black text-white">{formatPrice(item.price)}</span>
-                      )}
+                      <span className="text-2xl font-heading font-black text-white">{formatPrice(item.price)}</span>
                     </div>
                   </div>
                 </div>

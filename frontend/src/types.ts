@@ -6,6 +6,7 @@ export interface Category {
 
 export interface Game {
   id: string;
+  slug?: string;
   title: string;
   developer: string;
   rating: number;
@@ -28,6 +29,7 @@ export interface Game {
   screenshots?: string;
   tagImage?: string;
   steamAppId?: string;
+  steamPrice?: number | null;
   creatorAccess?: boolean;
 }
 

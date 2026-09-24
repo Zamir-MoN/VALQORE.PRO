@@ -2,20 +2,27 @@ import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../prismaClient';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
+import rateLimit from 'express-rate-limit';
 
 import { OAuth2Client } from 'google-auth-library';
 import { sendOtpEmail } from '../utils/resendEmail';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'valqore_super_secret_key_2026';
-const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID || '421887773463-f2994me4o8934id4nudoo7kg9ng0kdft.apps.googleusercontent.com';
+const JWT_SECRET = process.env.JWT_SECRET as string;
+const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID as string;
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs for sensitive auth routes
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
 
 // ----------------------------------------------------
 // Google OAuth Sign In / Sign Up
 // ----------------------------------------------------
-router.post('/google', async (req: Request, res: Response): Promise<void> => {
+router.post('/google', authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { credential, accessToken } = req.body;
 
@@ -103,7 +110,7 @@ router.post('/google', async (req: Request, res: Response): Promise<void> => {
 // ----------------------------------------------------
 // Send Registration OTP
 // ----------------------------------------------------
-router.post('/send-register-otp', async (req: Request, res: Response): Promise<void> => {
+router.post('/send-register-otp', authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email } = req.body;
 
@@ -237,7 +244,7 @@ router.post('/verify-register-otp', async (req: Request, res: Response): Promise
 });
 
 // Register a new user (Direct fallback)
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
+router.post('/register', authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
 
@@ -278,13 +285,13 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
 
 // Login user
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+router.post('/login', authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password } = req.body;
 
-    // Check for hardcoded admin fallback
-    const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'admin').trim();
-    const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'valqore2026').trim();
+    // Check for explicit admin auth
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME as string;
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD as string;
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '24h' });
@@ -352,7 +359,7 @@ router.get('/me', authMiddleware, async (req: Request, res: Response): Promise<v
 // ----------------------------------------------------
 // Request OTP for changing password
 // ----------------------------------------------------
-router.post('/password/send-otp', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.post('/password/send-otp', authMiddleware, authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
 
@@ -399,7 +406,7 @@ router.post('/password/send-otp', authMiddleware, async (req: Request, res: Resp
 // ----------------------------------------------------
 // Change user password with OTP verification
 // ----------------------------------------------------
-router.put('/password', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.put('/password', authMiddleware, authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
     const { currentPassword, newPassword, otp } = req.body;

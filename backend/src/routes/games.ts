@@ -1,9 +1,21 @@
 import { Router } from 'express';
 import { prisma } from '../prismaClient';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 import { getIO } from '../socket';
 
 const router = Router();
+
+const generateSlug = async (title: string, excludeId?: string): Promise<string> => {
+  const baseSlug = (title || 'untitled').toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+  const safeSlug = baseSlug || 'game';
+  let slug = safeSlug;
+  let counter = 1;
+  while (await prisma.game.findFirst({ where: { slug, id: { not: excludeId } } })) {
+    slug = `${safeSlug}-${counter}`;
+    counter++;
+  }
+  return slug;
+};
 
 // Get all games (ordered by custom position first, then createdAt)
 router.get('/', async (req, res) => {
@@ -14,15 +26,38 @@ router.get('/', async (req, res) => {
         { createdAt: 'desc' }
       ]
     });
-    res.json(games);
+    
+    // Sanitize: remove internalCost
+    const publicGames = games.map(g => {
+      const { internalCost, ...rest } = g as any;
+      return rest;
+    });
+    
+    res.json(publicGames);
   } catch (error) {
     console.error('[GET /api/games] ERROR:', error);
     res.status(500).json({ error: 'Failed to fetch games' });
   }
 });
 
+// Get all games for Admin (includes internalCost)
+router.get('/admin', authMiddleware, isAdminMiddleware, async (req, res) => {
+  try {
+    const games = await prisma.game.findMany({
+      orderBy: [
+        { position: 'asc' },
+        { createdAt: 'desc' }
+      ]
+    });
+    res.json(games);
+  } catch (error) {
+    console.error('[GET /api/games/admin] ERROR:', error);
+    res.status(500).json({ error: 'Failed to fetch games for admin' });
+  }
+});
+
 // Reorder games (Admin only)
-router.put('/reorder', authMiddleware, async (req, res) => {
+router.put('/reorder', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const { gameIds } = req.body; // Array of IDs in new order: ["id1", "id2", ...]
     if (!Array.isArray(gameIds)) {
@@ -66,8 +101,13 @@ const getBaseReactions = (gameId: string) => {
 // Get a single game (including base + real like/dislike counts and user reaction)
 router.get('/:id', async (req, res) => {
   try {
-    const game = await prisma.game.findUnique({
-      where: { id: req.params.id }
+    const game = await prisma.game.findFirst({
+      where: { 
+        OR: [
+          { id: req.params.id },
+          { slug: req.params.id }
+        ]
+      }
     });
     if (!game) {
       res.status(404).json({ error: 'Game not found' });
@@ -81,8 +121,11 @@ router.get('/:id', async (req, res) => {
 
     const { baseLikes, baseDislikes } = getBaseReactions(game.id);
 
+    // Sanitize: remove internalCost
+    const { internalCost, ...publicGame } = game as any;
+
     res.json({
-      ...game,
+      ...publicGame,
       likesCount: baseLikes + likesCount,
       dislikesCount: baseDislikes + dislikesCount
     });
@@ -207,18 +250,43 @@ router.post('/:id/react', authMiddleware, async (req, res) => {
 
 
 // Create a new game
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const gameData = req.body;
     // ensure numeric fields are numbers
     gameData.rating = parseFloat(gameData.rating) || 0;
     gameData.price = parseFloat(gameData.price) || 0;
-    gameData.discount = parseFloat(gameData.discount) || 0;
+    gameData.discount = 0;
+    
+    if (gameData.steamPrice !== undefined) {
+      if (gameData.steamPrice === null || gameData.steamPrice === '') {
+        gameData.steamPrice = null;
+      } else {
+        gameData.steamPrice = parseFloat(gameData.steamPrice);
+      }
+    }
+    
+    if (gameData.internalCost !== undefined) {
+      const userPayload = (req as any).user;
+      if (!userPayload.userId) {
+        if (gameData.internalCost === null || gameData.internalCost === '') {
+          gameData.internalCost = null;
+        } else {
+          gameData.internalCost = parseFloat(gameData.internalCost);
+        }
+      } else {
+        delete gameData.internalCost;
+      }
+    }
     
     gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
     if (gameData.giveawayRules === undefined || gameData.giveawayRules === null) {
       gameData.giveawayRules = null;
     }
+    gameData.creatorAccess = gameData.creatorAccess === true || gameData.creatorAccess === 'true';
+    
+    // Slug generation
+    gameData.slug = await generateSlug(gameData.title);
 
     gameData.isRentable = gameData.isRentable === true || gameData.isRentable === 'true';
     if (gameData.rentPrice !== undefined && gameData.rentPrice !== null && gameData.rentPrice !== '') {
@@ -248,12 +316,33 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Update a game
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const gameData = req.body;
     if (gameData.rating !== undefined) gameData.rating = parseFloat(gameData.rating) || 0;
     if (gameData.price !== undefined) gameData.price = parseFloat(gameData.price) || 0;
-    if (gameData.discount !== undefined) gameData.discount = parseFloat(gameData.discount) || 0;
+    gameData.discount = 0;
+
+    if (gameData.steamPrice !== undefined) {
+      if (gameData.steamPrice === null || gameData.steamPrice === '') {
+        gameData.steamPrice = null;
+      } else {
+        gameData.steamPrice = parseFloat(gameData.steamPrice);
+      }
+    }
+
+    if (gameData.internalCost !== undefined) {
+      const userPayload = (req as any).user;
+      if (!userPayload.userId) {
+        if (gameData.internalCost === null || gameData.internalCost === '') {
+          gameData.internalCost = null;
+        } else {
+          gameData.internalCost = parseFloat(gameData.internalCost);
+        }
+      } else {
+        delete gameData.internalCost;
+      }
+    }
 
     if (gameData.isGiveaway !== undefined) {
       gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
@@ -261,6 +350,20 @@ router.put('/:id', authMiddleware, async (req, res) => {
     
     if (gameData.giveawayRules !== undefined && gameData.giveawayRules === '') {
       gameData.giveawayRules = null;
+    }
+
+    if (gameData.creatorAccess !== undefined) {
+      gameData.creatorAccess = gameData.creatorAccess === true || gameData.creatorAccess === 'true';
+    }
+
+    // Never automatically change an existing slug, but populate it if missing
+    const existingGame = await prisma.game.findUnique({ where: { id: req.params.id } });
+    if (!existingGame) {
+      res.status(404).json({ error: 'Game not found' });
+      return;
+    }
+    if (!existingGame.slug && gameData.title) {
+      gameData.slug = await generateSlug(gameData.title, existingGame.id);
     }
 
     if (gameData.isRentable !== undefined) {
@@ -300,7 +403,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // Delete a game
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const gameId = req.params.id;
     
@@ -322,7 +425,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 });
 
 // Export all games backup (JSON)
-router.get('/backup/export', authMiddleware, async (req, res) => {
+router.get('/backup/export', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const userPayload = (req as any).user;
 
@@ -349,7 +452,7 @@ router.get('/backup/export', authMiddleware, async (req, res) => {
 });
 
 // Import games backup (JSON)
-router.post('/backup/import', authMiddleware, async (req, res) => {
+router.post('/backup/import', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const userPayload = (req as any).user;
     if (userPayload.userId) {
@@ -372,7 +475,7 @@ router.post('/backup/import', authMiddleware, async (req, res) => {
         rating: typeof g.rating === 'number' ? g.rating : parseFloat(g.rating) || 0,
         genre: g.genre || 'Action',
         price: typeof g.price === 'number' ? g.price : parseFloat(g.price) || 0,
-        discount: typeof g.discount === 'number' ? g.discount : parseFloat(g.discount) || 0,
+        discount: 0,
         coverImage: g.coverImage || '',
         releaseDate: g.releaseDate || new Date().toISOString().slice(0, 10),
         platforms: g.platforms || 'PC',
@@ -389,6 +492,8 @@ router.post('/backup/import', authMiddleware, async (req, res) => {
         screenshots: g.screenshots || null,
         tagImage: g.tagImage || null,
         steamAppId: g.steamAppId || null,
+        steamPrice: g.steamPrice !== undefined && g.steamPrice !== null ? parseFloat(g.steamPrice) : null,
+        internalCost: g.internalCost !== undefined && g.internalCost !== null ? parseFloat(g.internalCost) : null,
       };
 
       if (g.id) {
@@ -413,11 +518,38 @@ router.post('/backup/import', authMiddleware, async (req, res) => {
   }
 });
 
+const escapeHtml = (unsafe: string) => {
+  return (unsafe || '').toString().replace(/[&<"'>]/g, (match) => {
+    const escapeMap: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return escapeMap[match];
+  });
+};
+
 // Server-side meta tag endpoint for social preview crawlers (WhatsApp, Instagram, Twitter, Discord, Facebook)
-router.get('/share-meta/:id', async (req, res) => {
+router.get('/share-meta/:identifier', async (req, res) => {
   try {
-    const game = await prisma.game.findUnique({
-      where: { id: req.params.id }
+    const identifier = req.params.identifier;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
+    
+    if (!uuidRegex.test(identifier) && !slugRegex.test(identifier)) {
+      res.status(400).send('Invalid Game Identifier');
+      return;
+    }
+
+    const game = await prisma.game.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { slug: identifier }
+        ]
+      }
     });
 
     const fallbackImage = 'https://valqore.pro/images/hero-artwork.png';
@@ -431,11 +563,12 @@ router.get('/share-meta/:id', async (req, res) => {
       }
     }
 
-    const title = game ? `${game.title} | VALQORE` : 'VALQORE';
-    const description = game?.description 
-      ? game.description.slice(0, 180).replace(/"/g, '&quot;')
-      : 'Discover top digital PC & console games, exclusive giveaways, verified game accounts, and instant delivery on VALQORE.';
-    const gameUrl = `https://valqore.pro/game/${req.params.id}`;
+    const title = escapeHtml(game ? `${game.title} | VALQORE` : 'VALQORE');
+    const description = escapeHtml(
+      'Discover top digital PC & console games, exclusive giveaways, verified game accounts, and instant delivery on VALQORE.'
+    );
+    const gameUrl = `https://valqore.pro/game/${escapeHtml(game?.slug || identifier)}`;
+    const safePosterImage = escapeHtml(posterImage);
 
     const html = `<!doctype html>
 <html lang="en">
@@ -447,14 +580,14 @@ router.get('/share-meta/:id', async (req, res) => {
   <meta property="og:site_name" content="VALQORE" />
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${description}" />
-  <meta property="og:image" content="${posterImage}" />
-  <meta property="og:image:secure_url" content="${posterImage}" />
-  <meta property="og:image:alt" content="${game ? game.title : 'VALQORE'}" />
+  <meta property="og:image" content="${safePosterImage}" />
+  <meta property="og:image:secure_url" content="${safePosterImage}" />
+  <meta property="og:image:alt" content="${escapeHtml(game ? game.title : 'VALQORE')}" />
   <meta property="og:url" content="${gameUrl}" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${title}" />
   <meta name="twitter:description" content="${description}" />
-  <meta name="twitter:image" content="${posterImage}" />
+  <meta name="twitter:image" content="${safePosterImage}" />
   <meta http-equiv="refresh" content="0;url=${gameUrl}" />
   <script>window.location.replace("${gameUrl}");</script>
 </head>
@@ -467,7 +600,7 @@ router.get('/share-meta/:id', async (req, res) => {
     res.send(html);
   } catch (error) {
     console.error('[SHARE META ERROR]:', error);
-    res.redirect(`https://valqore.pro/game/${req.params.id}`);
+    res.redirect(`https://valqore.pro/game/${escapeHtml(req.params.identifier)}`);
   }
 });
 

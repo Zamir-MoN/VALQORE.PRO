@@ -18,7 +18,7 @@ export const GameCard = ({ game }: GameCardProps) => {
 
   return (
     <Link 
-      to={`/game/${game.id}`} 
+      to={`/game/${game.slug || game.id}`} 
       className="group relative flex flex-col bg-cards/50 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-2xl p-2.5 transition-all duration-300 cursor-pointer hover:-translate-y-1.5 shadow-lg backdrop-blur-md block transform-gpu will-change-transform"
     >
       {/* Cover Image Container */}
@@ -50,11 +50,7 @@ export const GameCard = ({ game }: GameCardProps) => {
           <div className="absolute top-2.5 right-2.5 bg-red-600/90 backdrop-blur-sm border border-red-500/50 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-md shadow-lg z-20">
             OUT OF STOCK
           </div>
-        ) : game.discount > 0 && (
-          <div className="absolute top-2.5 right-2.5 bg-red-500 text-white font-black text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-md shadow-lg">
-            -{game.discount}%
-          </div>
-        )}
+        ) : null}
 
         {/* Bottom Left Tag Image */}
         {game.tagImage && (
@@ -69,27 +65,40 @@ export const GameCard = ({ game }: GameCardProps) => {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-grow px-1">
+      <div className="flex flex-col flex-grow px-1 mt-1">
         <h3 className="font-heading font-bold text-sm sm:text-base leading-tight mb-1 group-hover:text-primary transition-colors line-clamp-1 text-white">
           {game.title}
         </h3>
         
-        <div className="mt-auto flex items-end justify-between pt-1">
-          <p className="text-[11px] sm:text-xs text-text-secondary line-clamp-1 flex-1 pr-2">
-            {game.genre}, {game.developer}
-          </p>
-          
-          <div className="text-right whitespace-nowrap">
-            {game.discount > 0 ? (
-              <span className="text-primary font-black text-sm sm:text-base">
-                {formatPrice(game.price * (1 - game.discount / 100))}
-              </span>
-            ) : (
-              <span className="text-primary font-black text-sm sm:text-base">
-                {formatPrice(game.price)}
-              </span>
-            )}
-          </div>
+        <p className="text-[11px] sm:text-xs text-text-secondary line-clamp-1 mb-1.5">
+          {game.genre}, {game.developer}
+        </p>
+        
+        <div className="mt-auto flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          {(() => {
+            const finalPrice = game.price;
+            const hasSteamSavings = game.steamPrice != null && game.steamPrice > finalPrice && finalPrice > 0;
+            const savingsPercent = hasSteamSavings ? Math.round(((game.steamPrice! - finalPrice) / game.steamPrice!) * 100) : 0;
+            
+            return (
+              <>
+                <span className="text-primary font-black text-sm sm:text-base leading-none">
+                  {formatPrice(finalPrice)}
+                </span>
+                
+                {hasSteamSavings && isFinite(savingsPercent) && (
+                  <>
+                    <span className="text-[11px] sm:text-xs text-text-secondary/80 line-through leading-none">
+                      {formatPrice(game.steamPrice!)}
+                    </span>
+                    <span className="bg-primary/20 text-primary text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded shadow whitespace-nowrap leading-none">
+                      SAVE {savingsPercent}%
+                    </span>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </Link>

@@ -6,16 +6,20 @@ export const getImageUrl = (url: string | null | undefined): string => {
     return url;
   }
   
+  // If it's a frontend static asset (like badges), return as is
+  if (url.startsWith('/badges/')) {
+    let finalUrl = url;
+    if (finalUrl.includes('STEAM.png')) {
+      finalUrl += '?v=' + new Date().getTime();
+    }
+    return finalUrl;
+  }
+  
   // Get backend base URL from VITE_API_URL by removing '/api'
   const apiUrl = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
   const baseUrl = apiUrl.replace(/\/api\/?$/, '');
   
   let finalUrl = `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-  
-  // Cache busting for the steam badge
-  if (finalUrl.includes('STEAM.png')) {
-    finalUrl += '?v=' + new Date().getTime();
-  }
   
   return finalUrl;
 };

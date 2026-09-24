@@ -22,7 +22,7 @@ export const GameDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const game = games.find(g => g.id === id);
+  const game = games.find(g => g.id === id || g.slug === id);
   const hasTrailer = !!(game?.trailerUrl && getYouTubeVideoId(game.trailerUrl));
   const [activeMedia, setActiveMedia] = useState<number>(hasTrailer ? -1 : 0);
 
@@ -32,34 +32,113 @@ export const GameDetails = () => {
   const [dislikesCount, setDislikesCount] = useState<number>(0);
   const [isReacting, setIsReacting] = useState(false);
 
+  // Creator status state
+  const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
+
   useEffect(() => {
+    if (user && token) {
+      const fetchCreatorStatus = async () => {
+        try {
+          const res = await axios.get(`${API_URL}/creators/status`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setCreatorStatus(res.data.status);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      fetchCreatorStatus();
+    }
+  }, [user, token]);
+
+  useEffect(() => {
+    const createdElements: HTMLElement[] = [];
+
     if (game) {
+      const originalTitle = document.title;
       document.title = `${game.title} | VALQORE`;
 
       const gameImage = game.coverImage ? getImageUrl(game.coverImage) : 'https://valqore.pro/images/hero-artwork.png';
-      const gameDesc = game.description || `Check out ${game.title} on VALQORE!`;
-      const currentUrl = window.location.href;
+      const gameDesc = `Check out ${game.title} on VALQORE!`;
+      const canonicalUrl = `https://valqore.pro/game/${game.slug || game.id}`;
 
       const setMetaTag = (selector: string, attribute: string, value: string) => {
         let el = document.querySelector(selector);
+        let created = false;
         if (!el) {
           el = document.createElement('meta');
           const [key, val] = selector.replace(/[\[\]"]/g, '').split('=');
           el.setAttribute(key, val);
           document.head.appendChild(el);
+          created = true;
         }
         el.setAttribute(attribute, value);
+        if (created) createdElements.push(el as HTMLElement);
       };
 
+      const setLinkTag = (rel: string, href: string) => {
+        let el = document.querySelector(`link[rel="${rel}"]`);
+        let created = false;
+        if (!el) {
+          el = document.createElement('link');
+          el.setAttribute('rel', rel);
+          document.head.appendChild(el);
+          created = true;
+        }
+        el.setAttribute('href', href);
+        if (created) createdElements.push(el as HTMLElement);
+      };
+
+      setMetaTag('meta[name="description"]', 'content', gameDesc);
+      
       setMetaTag('meta[property="og:title"]', 'content', `${game.title} - VALQORE`);
       setMetaTag('meta[property="og:description"]', 'content', gameDesc);
       setMetaTag('meta[property="og:image"]', 'content', gameImage);
-      setMetaTag('meta[property="og:url"]', 'content', currentUrl);
+      setMetaTag('meta[property="og:url"]', 'content', canonicalUrl);
+      setMetaTag('meta[property="og:type"]', 'content', 'website');
 
-      setMetaTag('meta[property="twitter:title"]', 'content', `${game.title} - VALQORE`);
-      setMetaTag('meta[property="twitter:description"]', 'content', gameDesc);
-      setMetaTag('meta[property="twitter:image"]', 'content', gameImage);
-      setMetaTag('meta[property="twitter:url"]', 'content', currentUrl);
+      setMetaTag('meta[name="twitter:card"]', 'content', 'summary_large_image');
+      setMetaTag('meta[name="twitter:title"]', 'content', `${game.title} - VALQORE`);
+      setMetaTag('meta[name="twitter:description"]', 'content', gameDesc);
+      setMetaTag('meta[name="twitter:image"]', 'content', gameImage);
+      setMetaTag('meta[name="twitter:url"]', 'content', canonicalUrl);
+
+      setLinkTag('canonical', canonicalUrl);
+
+      let jsonLdScript = document.querySelector('script[type="application/ld+json"][id="product-jsonld"]');
+      let jsonLdCreated = false;
+      if (!jsonLdScript) {
+        jsonLdScript = document.createElement('script');
+        jsonLdScript.setAttribute('type', 'application/ld+json');
+        jsonLdScript.setAttribute('id', 'product-jsonld');
+        document.head.appendChild(jsonLdScript);
+        jsonLdCreated = true;
+      }
+      
+      const jsonLdData = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": game.title,
+        "image": gameImage,
+        "description": gameDesc,
+        "url": canonicalUrl,
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "INR",
+          "price": game.price
+        }
+      };
+      jsonLdScript.textContent = JSON.stringify(jsonLdData);
+      if (jsonLdCreated) createdElements.push(jsonLdScript as HTMLElement);
+
+      return () => {
+        document.title = originalTitle;
+        createdElements.forEach(el => {
+          if (el && el.parentNode) {
+            el.parentNode.removeChild(el);
+          }
+        });
+      };
     } else {
       document.title = 'VALQORE';
     }
@@ -67,19 +146,19 @@ export const GameDetails = () => {
 
 
   useEffect(() => {
-    if (id) {
+    if (game?.id) {
       // Fetch public reactions or user reaction if logged in
       const fetchReaction = async () => {
         try {
           if (token) {
-            const res = await axios.get(`${API_URL}/games/${id}/reaction`, {
+            const res = await axios.get(`${API_URL}/games/${game.id}/reaction`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             setUserReaction(res.data.userReaction);
             setLikesCount(res.data.likesCount || 0);
             setDislikesCount(res.data.dislikesCount || 0);
           } else {
-            const res = await axios.get(`${API_URL}/games/${id}`);
+            const res = await axios.get(`${API_URL}/games/${game.id}`);
             setLikesCount(res.data.likesCount || 0);
             setDislikesCount(res.data.dislikesCount || 0);
           }
@@ -89,7 +168,7 @@ export const GameDetails = () => {
       };
       fetchReaction();
     }
-  }, [id, token]);
+  }, [game?.id, token]);
 
 
   const handleReaction = async (type: 'LIKE' | 'DISLIKE') => {
@@ -99,11 +178,11 @@ export const GameDetails = () => {
       return;
     }
 
-    if (isReacting || !id) return;
+    if (isReacting || !game?.id) return;
     setIsReacting(true);
 
     try {
-      const res = await axios.post(`${API_URL}/games/${id}/react`, { type }, {
+      const res = await axios.post(`${API_URL}/games/${game.id}/react`, { type }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserReaction(res.data.userReaction);
@@ -140,12 +219,40 @@ export const GameDetails = () => {
 
     // Use the backend share-meta endpoint which guarantees Instagram, WhatsApp, Discord, iMessage crawlers get the exact poster image
     const apiUrl = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
-    const shareUrl = `${apiUrl}/games/share-meta/${game.id}`;
+    const shareUrl = `${apiUrl}/games/share-meta/${game.slug || game.id}`;
 
     const shareData = {
       title: game.title,
-      text: `Check out ${game.title} on VALQORE for ${formatPrice(game.price * (1 - game.discount / 100))}!`,
+      text: `Check out ${game.title} on VALQORE for ${formatPrice(game.price)}!`,
       url: shareUrl,
+    };
+
+    const copyToClipboardFallback = (text: string) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          toast.success('Game link copied to clipboard!');
+        }).catch(() => {
+          toast.error('Failed to copy link');
+        });
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            toast.success('Game link copied to clipboard!');
+          } else {
+            toast.error('Failed to copy link');
+          }
+        } catch (err) {
+          toast.error('Failed to copy link');
+        }
+        document.body.removeChild(textArea);
+      }
     };
 
     if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
@@ -153,13 +260,11 @@ export const GameDetails = () => {
         await navigator.share(shareData);
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          navigator.clipboard.writeText(shareUrl);
-          toast.success('Game link copied to clipboard!');
+          copyToClipboardFallback(shareUrl);
         }
       }
     } else {
-      navigator.clipboard.writeText(shareUrl);
-      toast.success('Game link copied to clipboard!');
+      copyToClipboardFallback(shareUrl);
     }
   };
 
@@ -325,11 +430,7 @@ export const GameDetails = () => {
                     {platformsList.length > 0 && (
                       <span className="px-2 py-1 bg-white/10 text-text-secondary text-[10px] font-bold rounded uppercase tracking-wider">{platformsList[0]}</span>
                     )}
-                    {game.discount > 0 && (
-                      <span className="ml-auto bg-red-500 text-white font-black px-2 py-1 rounded shadow-lg text-[10px]">
-                        -{game.discount}% OFF
-                      </span>
-                    )}
+
                   </div>
 
 
@@ -354,18 +455,28 @@ export const GameDetails = () => {
                     <>
                       <div className="flex flex-col gap-1 border-b border-white/10 pb-4">
                         <span className="text-text-secondary text-[11px] font-bold uppercase tracking-widest">Your Price</span>
-                        {game.discount > 0 ? (
-                          <div className="flex items-center gap-3">
-                            <span className="text-3xl font-heading font-black text-white">{formatPrice(game.price * (1 - game.discount / 100))}</span>
-                            <span className="text-text-secondary line-through text-sm">{formatPrice(game.price)}</span>
-                          </div>
-                        ) : (
-                          <span className="text-3xl font-heading font-black text-white">{formatPrice(game.price)}</span>
-                        )}
+                        {(() => {
+                          const finalPrice = game.price;
+                          const hasSteamSavings = game.steamPrice != null && game.steamPrice > finalPrice && finalPrice > 0;
+                          const savingsPercent = hasSteamSavings ? Math.round(((game.steamPrice! - finalPrice) / game.steamPrice!) * 100) : 0;
+                          
+                          return (
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <span className="text-3xl font-heading font-black text-white">{formatPrice(finalPrice)}</span>
+                              
+                              {hasSteamSavings && isFinite(savingsPercent) ? (
+                                <>
+                                  <span className="text-text-secondary line-through text-sm">{formatPrice(game.steamPrice!)}</span>
+                                  <span className="bg-primary/20 text-primary text-[10px] font-black px-1.5 py-0.5 rounded shadow whitespace-nowrap">SAVE {savingsPercent}%</span>
+                                </>
+                              ) : null}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Creator Access Promotion & Claim */}
-                      {game.creatorAccess && (
+                      {game.creatorAccess && creatorStatus === 'APPROVED' && (
                         <div className="p-3.5 rounded-xl bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/40 flex flex-col gap-2 shadow-[0_0_15px_rgba(220,248,54,0.15)]">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-black text-primary uppercase tracking-wider flex items-center gap-1.5">
@@ -603,13 +714,11 @@ export const GameDetails = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
                   {displayGames.map(relGame => {
-                    const discountedPrice = relGame.discount > 0 
-                      ? relGame.price * (1 - relGame.discount / 100) 
-                      : relGame.price;
+                    const discountedPrice = relGame.price;
 
                     return (
                       <Link 
-                        to={`/game/${relGame.id}`} 
+                        to={`/game/${relGame.slug || relGame.id}`} 
                         key={relGame.id}
                         className="group bg-cards/40 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-2xl p-3 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col cursor-pointer"
                       >
@@ -620,11 +729,18 @@ export const GameDetails = () => {
                             loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
-                          {relGame.discount > 0 && (
-                            <div className="absolute top-2 right-2 bg-red-500 text-white font-black text-[10px] px-2 py-0.5 rounded shadow">
-                              -{relGame.discount}%
-                            </div>
-                          )}
+                          {(() => {
+                             const hasSteamSavings = relGame.steamPrice != null && relGame.steamPrice > relGame.price && relGame.price > 0;
+                             const savingsPercent = hasSteamSavings ? Math.round(((relGame.steamPrice! - relGame.price) / relGame.steamPrice!) * 100) : 0;
+                             if (hasSteamSavings && isFinite(savingsPercent)) {
+                               return (
+                                 <div className="absolute top-2 right-2 bg-primary/90 text-background font-black text-[10px] px-2 py-0.5 rounded shadow">
+                                   SAVE {savingsPercent}%
+                                 </div>
+                               );
+                             }
+                             return null;
+                          })()}
                         </div>
 
                         <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors truncate mb-1">
@@ -634,9 +750,13 @@ export const GameDetails = () => {
                         
                         <div className="mt-auto flex items-center justify-between pt-2 border-t border-white/5">
                           <span className="text-primary font-black text-sm">{formatPrice(discountedPrice)}</span>
-                          {relGame.discount > 0 && (
-                            <span className="text-text-secondary line-through text-[11px]">{formatPrice(relGame.price)}</span>
-                          )}
+                          {(() => {
+                             const hasSteamSavings = relGame.steamPrice != null && relGame.steamPrice > relGame.price && relGame.price > 0;
+                             if (hasSteamSavings) {
+                               return <span className="text-text-secondary line-through text-[11px]">{formatPrice(relGame.steamPrice!)}</span>;
+                             }
+                             return null;
+                          })()}
                         </div>
                       </Link>
                     );

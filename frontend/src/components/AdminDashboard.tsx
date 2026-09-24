@@ -72,6 +72,8 @@ export const AdminDashboard = () => {
     rating: 0,
     genre: '',
     price: 0,
+    steamPrice: '',
+    internalCost: '',
     discount: 0,
     coverImage: '',
     releaseDate: '',
@@ -249,7 +251,9 @@ export const AdminDashboard = () => {
 
   const fetchGames = async () => {
     try {
-      const res = await axios.get(`${API_URL}/games`);
+      const res = await axios.get(`${API_URL}/games/admin`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       setGames(res.data);
       setLoading(false);
     } catch (err) {
@@ -612,6 +616,8 @@ export const AdminDashboard = () => {
       rating: game.rating,
       genre: game.genre,
       price: game.price,
+      steamPrice: game.steamPrice || '',
+      internalCost: game.internalCost || '',
       discount: game.discount,
       coverImage: game.coverImage,
       releaseDate: game.releaseDate,
@@ -685,6 +691,8 @@ export const AdminDashboard = () => {
       rating: 0,
       genre: '',
       price: 0,
+      steamPrice: '',
+      internalCost: '',
       discount: 0,
       coverImage: '',
       releaseDate: '',
@@ -833,14 +841,18 @@ export const AdminDashboard = () => {
                 {!formData.isGiveaway && (
                   <div className="p-5 border border-white/10 rounded-xl bg-cards/30">
                   <h3 className="font-bold text-white mb-4 flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full"></span>Pricing & Rating</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Price (₹)</label>
                       <input type="number" step="0.1" name="price" value={formData.price} onChange={handleInputChange} placeholder="0.00" required className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Discount (%)</label>
-                      <input type="number" step="1" name="discount" value={formData.discount} onChange={handleInputChange} placeholder="0" className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Steam Price (₹)</label>
+                      <input type="number" step="0.1" name="steamPrice" value={formData.steamPrice} onChange={handleInputChange} placeholder="0.00" className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Our Cost (₹)</label>
+                      <input type="number" step="0.1" name="internalCost" value={formData.internalCost} onChange={handleInputChange} placeholder="0.00" className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none" />
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs text-text-secondary uppercase tracking-wider font-bold ml-1">Rating (0-5)</label>
@@ -1603,6 +1615,12 @@ export const AdminDashboard = () => {
                                       <div className={`w-2 h-2 rounded-full ${game.outOfStock ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]'}`}></div>
                                       {game.outOfStock ? 'Out of Stock' : 'In Stock'}
                                     </button>
+
+                                    {game.internalCost != null && (
+                                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-white/5 text-text-secondary border border-white/10 shadow-sm" title="Internal admin cost">
+                                        OUR COST: ₹{game.internalCost}
+                                      </span>
+                                    )}
 
                                     <div className="h-8 w-px bg-white/10 hidden sm:block"></div>
 

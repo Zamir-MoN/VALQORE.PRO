@@ -61,8 +61,12 @@ export const TrendingGames = () => {
   const validGames = games.filter(g => !g.isGiveaway);
   const trendingGames = validGames.slice(0, 12);
   const dealsGames = validGames
-    .filter(g => (g.discount || 0) > 0)
-    .sort((a, b) => (b.discount || 0) - (a.discount || 0))
+    .filter(g => g.steamPrice != null && g.steamPrice > g.price && g.price > 0)
+    .sort((a, b) => {
+      const savingsA = ((a.steamPrice! - a.price) / a.steamPrice!) * 100;
+      const savingsB = ((b.steamPrice! - b.price) / b.steamPrice!) * 100;
+      return savingsB - savingsA;
+    })
     .slice(0, 3);
   const newGames = [...validGames]
     .sort((a, b) => new Date(b.createdAt || b.releaseDate).getTime() - new Date(a.createdAt || a.releaseDate).getTime())
@@ -116,9 +120,9 @@ export const TrendingGames = () => {
                 </h3>
                 <div className="space-y-6">
                   {dealsGames.map(game => {
-                    const discountedPrice = game.price * (1 - (game.discount || 0) / 100);
+                    const savingsPercent = Math.round(((game.steamPrice! - game.price) / game.steamPrice!) * 100);
                     return (
-                      <Link to={`/game/${game.id}`} key={`deal-${game.id}`} className="flex gap-4 group cursor-pointer">
+                      <Link to={`/game/${game.slug || game.id}`} key={`deal-${game.id}`} className="flex gap-4 group cursor-pointer">
                         <img 
                           src={game.coverImage || '/images/hero-artwork.png'} 
                           alt={game.title} 
@@ -128,10 +132,10 @@ export const TrendingGames = () => {
                         <div className="flex flex-col justify-center min-w-0">
                           <h4 className="font-bold text-sm text-white truncate group-hover:text-primary transition-colors">{game.title}</h4>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-text-secondary line-through">{formatPrice(game.price)}</span>
-                            <span className="text-sm font-bold text-primary">{formatPrice(discountedPrice)}</span>
+                            <span className="text-sm font-bold text-primary">{formatPrice(game.price)}</span>
+                            <span className="text-xs text-text-secondary line-through">{formatPrice(game.steamPrice!)}</span>
                             <span className="text-[10px] font-black text-black bg-primary px-1.5 py-0.5 rounded">
-                              -{game.discount}%
+                              SAVE {savingsPercent}%
                             </span>
                           </div>
                         </div>
@@ -148,7 +152,7 @@ export const TrendingGames = () => {
               <h3 className="text-xl font-bold font-heading mb-6">New Arrivals</h3>
               <div className="space-y-6">
                 {newGames.map(game => (
-                  <Link to={`/game/${game.id}`} key={`new-${game.id}`} className="flex gap-4 group cursor-pointer">
+                  <Link to={`/game/${game.slug || game.id}`} key={`new-${game.id}`} className="flex gap-4 group cursor-pointer">
                     <img 
                       src={game.coverImage || '/images/hero-artwork.png'} 
                       alt={game.title} 

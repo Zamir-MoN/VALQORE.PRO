@@ -3,7 +3,7 @@ import crypto from 'crypto';
 
 const STEAM_MON_API_URL = process.env.STEAM_MON_API_URL || 'http://localhost:3001/api';
 const STEAM_MON_ADMIN_USERNAME = process.env.STEAM_MON_ADMIN_USERNAME || 'zamir';
-const STEAM_MON_ADMIN_PASSWORD = process.env.STEAM_MON_ADMIN_PASSWORD || 'zamir';
+const STEAM_MON_ADMIN_PASSWORD = process.env.STEAM_MON_ADMIN_PASSWORD as string;
 
 let adminToken: string | null = null;
 

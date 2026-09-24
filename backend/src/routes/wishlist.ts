@@ -18,7 +18,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
       include: { game: true }
     });
 
-    res.json(wishlistItems.map(item => item.game));
+    res.json(wishlistItems.map(item => {
+      const { internalCost, ...publicGame } = item.game as any;
+      return publicGame;
+    }));
   } catch (error) {
     console.error('[GET WISHLIST ERROR]', error);
     res.status(500).json({ error: 'Failed to fetch wishlist' });
@@ -48,7 +51,8 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
       include: { game: true }
     });
 
-    res.status(201).json(wishlistItem.game);
+    const { internalCost, ...publicGame } = wishlistItem.game as any;
+    res.status(201).json(publicGame);
   } catch (error: any) {
     if (error.code === 'P2002') {
       res.status(400).json({ error: 'Game is already in wishlist' });

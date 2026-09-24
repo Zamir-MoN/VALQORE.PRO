@@ -1,12 +1,24 @@
 node_modules/
 .env
+*.env
+backend/.env
+frontend/.env
 dist/
 build/
 backend/uploads/
-.DS_Store
+frontend.bak/
+frontend.bak
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.DS_Store
 .idea/
 .vscode/
+
+# Scratch & test scripts
+backend/inspect_db.js
+backend/src/inspect_db.ts
+backend/test_final.js
+backend/test_phase10.js
+backend/test_slug.js

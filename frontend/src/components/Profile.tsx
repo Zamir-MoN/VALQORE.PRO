@@ -436,7 +436,7 @@ export const Profile = () => {
                                   <img src={item.game.coverImage} alt={item.game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                  <Link to={`/game/${item.game.id}`} className="text-lg font-bold text-white hover:text-primary transition-colors line-clamp-1 mb-1">
+                                  <Link to={`/game/${item.game.slug || item.game.id}`} className="text-lg font-bold text-white hover:text-primary transition-colors line-clamp-1 mb-1">
                                     {item.game.title}
                                   </Link>
                                   <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">{item.game.developer}</p>

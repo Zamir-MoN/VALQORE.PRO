@@ -3,7 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Gamepad2, Search, Play, ArrowRight, ArrowLeft, ShieldCheck, Download, Loader2, Sparkles, Star, Key, ExternalLink } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Gamepad2, Search, Play, ArrowRight, ArrowLeft, ShieldCheck, Download, Loader2, Sparkles, Star, Key, ExternalLink, X, Copy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -22,6 +24,19 @@ export const Library = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'COMPLETED' | 'CREATOR_ACCESS'>('COMPLETED');
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
+
+  // Phase 11: Account Info Modal State
+  const [selectedAccountGame, setSelectedAccountGame] = useState<any | null>(null);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+
+  // Handle escape key for modal
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsAccountModalOpen(false);
+    };
+    if (isAccountModalOpen) window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isAccountModalOpen]);
 
   useEffect(() => {
     document.title = 'VALQORE';
@@ -134,6 +149,48 @@ export const Library = () => {
     window.open(`https://ig.me/m/valqore.pro?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
+  const copyToClipboardFallback = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        toast.success('Order details copied to clipboard!');
+      } else {
+        toast.error('Failed to copy details');
+      }
+    } catch (err) {
+      toast.error('Failed to copy details');
+    }
+    document.body.removeChild(textArea);
+  };
+
+  const handleCopyOrderDetails = (game: any) => {
+    const text = `Hi Valqore.pro! 👋
+
+I need the account details for my purchased game.
+
+🎮 Game: ${game.title}
+🆔 Order ID: #${game.orderId}
+💰 Amount: ₹${game.pricePaid}
+📅 Purchase Date: ${new Date(game.orderDate).toLocaleDateString()}
+
+Please provide my game account details.
+Thank you!`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => toast.success('Order details copied to clipboard!'))
+        .catch(() => copyToClipboardFallback(text));
+    } else {
+      copyToClipboardFallback(text);
+    }
+  };
+
   return (
     <div className="pt-24 sm:pt-32 pb-20 sm:pb-24 px-3 sm:px-6 lg:px-12 relative z-10 min-h-screen" id="library-page">
       {/* Background ambient glow */}
@@ -233,14 +290,14 @@ export const Library = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
             {filteredGames.map((item, idx) => (
               <div 
                 key={`${item.id}-${item.orderId}-${idx}`} 
-                className="group bg-cards/40 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-2xl p-3.5 sm:p-4 transition-all duration-300 hover:-translate-y-1.5 shadow-xl flex flex-col backdrop-blur-sm relative overflow-hidden"
+                className="group bg-cards/40 hover:bg-cards/80 border border-white/5 hover:border-primary/40 rounded-xl p-2.5 sm:p-3 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col backdrop-blur-sm relative overflow-hidden"
               >
                 {/* Cover Art */}
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl mb-3 sm:mb-4 bg-black/40">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg mb-2.5 bg-black/40">
                   <img 
                     src={item.coverImage ? getImageUrl(item.coverImage) : '/images/hero-artwork.png'} 
                     alt={item.title} 
@@ -250,22 +307,22 @@ export const Library = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-80"></div>
                   
                   {/* Status Badge */}
-                  <div className="absolute top-2.5 right-2.5 z-10">
-                    <span className={`px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg ${
+                  <div className="absolute top-2 right-2 z-10">
+                    <span className={`px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-wider shadow-lg ${
                       item.isCreatorGame
-                        ? 'bg-primary text-black shadow-[0_0_15px_rgba(220,248,54,0.4)]'
+                        ? 'bg-primary text-black shadow-[0_0_10px_rgba(220,248,54,0.4)]'
                         : item.orderStatus === 'COMPLETED' 
-                        ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+                        ? 'bg-green-500 text-black shadow-[0_0_10px_rgba(34,197,94,0.4)]' 
                         : item.orderStatus === 'CANCELLED'
                         ? 'bg-red-500 text-white'
                         : 'bg-yellow-500 text-black'
                     }`}>
-                      {item.isCreatorGame ? '★ Creator Access' : item.orderStatus === 'COMPLETED' ? 'Ready to Play' : item.orderStatus}
+                      {item.isCreatorGame ? '★ Creator' : item.orderStatus === 'COMPLETED' ? 'Ready' : item.orderStatus}
                     </span>
                   </div>
 
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
-                    <span className="text-[9px] sm:text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 backdrop-blur-md">
+                  <div className="absolute bottom-2 left-2 right-2 z-10">
+                    <span className="text-[8px] sm:text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20 backdrop-blur-md">
                       {item.genre || 'Game'}
                     </span>
                   </div>
@@ -273,43 +330,46 @@ export const Library = () => {
 
                 {/* Title & Info */}
                 <div className="flex flex-col flex-1">
-                  <h3 className="font-heading font-black text-base sm:text-lg text-white group-hover:text-primary transition-colors truncate mb-1">
+                  <h3 className="font-heading font-black text-sm sm:text-base text-white group-hover:text-primary transition-colors truncate mb-0.5">
                     {item.title}
                   </h3>
-                  <p className="text-text-secondary text-xs truncate mb-3 sm:mb-4">{item.developer || 'Publisher'}</p>
+                  <p className="text-text-secondary text-[10px] sm:text-xs truncate mb-2">{item.developer || 'Publisher'}</p>
 
-                  <div className="mt-auto pt-2.5 sm:pt-3 border-t border-white/5 flex items-center justify-between text-xs text-text-secondary mb-3 sm:mb-4">
+                  <div className="mt-auto pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between text-[10px] text-text-secondary mb-2.5 sm:mb-3 gap-1 sm:gap-0">
                     <span>{item.isCreatorGame ? 'Access Type' : 'Purchased'}</span>
-                    <span className="text-white font-mono font-bold text-[11px] sm:text-xs">
-                      {item.isCreatorGame ? 'Creator Free Pass' : new Date(item.orderDate).toLocaleDateString()}
+                    <span className="text-white font-mono font-bold">
+                      {item.isCreatorGame ? 'Creator Pass' : new Date(item.orderDate).toLocaleDateString()}
                     </span>
                   </div>
 
                   {/* Actions */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
                     <Link
-                      to={`/game/${item.id}`}
-                      className="flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center active:scale-95"
+                      to={`/game/${item.slug || item.id}`}
+                      className="flex items-center justify-center gap-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold transition-all text-center active:scale-95"
                     >
-                      <Play size={13} className="text-primary flex-shrink-0" />
+                      <Play size={11} className="text-primary flex-shrink-0" />
                       <span>Details</span>
                     </Link>
                     {item.isCreatorGame ? (
                       <button
                         onClick={() => handleClaimCreatorGame(item.title)}
-                        className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-primary to-[#c4e320] hover:from-white hover:to-white text-black font-black border border-primary/40 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_20px_rgba(220,248,54,0.6)] active:scale-95 cursor-pointer"
+                        className="flex items-center justify-center gap-1 bg-gradient-to-r from-primary to-[#c4e320] hover:from-white hover:to-white text-black font-black border border-primary/40 rounded-lg py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.3)] hover:shadow-[0_0_15px_rgba(220,248,54,0.6)] active:scale-95 cursor-pointer"
                       >
-                        <Key size={13} className="flex-shrink-0" />
+                        <Key size={11} className="flex-shrink-0" />
                         <span>Claim</span>
                       </button>
                     ) : (
-                      <Link
-                        to="/profile"
-                        className="flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-xl py-2 sm:py-2.5 text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)] active:scale-95"
+                      <button
+                        onClick={() => {
+                          setSelectedAccountGame(item);
+                          setIsAccountModalOpen(true);
+                        }}
+                        className="flex items-center justify-center gap-1 bg-primary/10 hover:bg-primary text-primary hover:text-black border border-primary/20 rounded-lg py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold transition-all text-center shadow-[0_0_10px_rgba(220,248,54,0.1)] active:scale-95 cursor-pointer"
                       >
-                        <ShieldCheck size={13} className="flex-shrink-0" />
-                        <span>Account Info</span>
-                      </Link>
+                        <ShieldCheck size={11} className="flex-shrink-0" />
+                        <span>Account</span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -318,6 +378,89 @@ export const Library = () => {
           </div>
         )}
       </div>
+
+      {/* Account Info Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {isAccountModalOpen && selectedAccountGame && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAccountModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-background border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 sm:p-6 border-b border-white/10 bg-cards/50">
+                <h3 className="font-heading font-black text-xl text-white">Purchase Details</h3>
+                <button
+                  onClick={() => setIsAccountModalOpen(false)}
+                  className="p-2 text-text-secondary hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar">
+                <div className="text-center mb-6">
+                  <h4 className="text-xl font-bold text-primary mb-2">Thank you for your purchase! 🎮</h4>
+                  <p className="text-sm text-text-secondary">
+                    Please use the purchase details below when contacting Valqore to receive your game account credentials.
+                  </p>
+                </div>
+                
+                <div className="bg-cards border border-white/10 rounded-xl p-4 mb-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-text-secondary text-xs">Order ID</span>
+                    <span className="text-white font-mono font-bold text-sm">{selectedAccountGame.orderId}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-text-secondary text-xs">Game</span>
+                    <span className="text-white font-bold text-sm text-right">{selectedAccountGame.title}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-text-secondary text-xs">Amount Paid</span>
+                    <span className="text-primary font-bold text-sm">₹{selectedAccountGame.pricePaid}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-text-secondary text-xs">Purchase Date</span>
+                    <span className="text-white font-mono text-sm">{new Date(selectedAccountGame.orderDate).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => handleCopyOrderDetails(selectedAccountGame)}
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold transition-all cursor-pointer active:scale-95"
+                  >
+                    <Copy size={16} />
+                    <span>Copy Order Details</span>
+                  </button>
+                  
+                  <a
+                    href="https://ig.me/m/valqore.pro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-primary hover:bg-white text-black rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_20px_rgba(220,248,54,0.5)] cursor-pointer active:scale-95"
+                  >
+                    <ExternalLink size={16} />
+                    <span>Contact us on Instagram</span>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };

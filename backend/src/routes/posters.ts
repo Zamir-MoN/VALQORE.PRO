@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../prismaClient';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 import { getIO } from '../socket';
 
 const router = Router();
@@ -20,13 +20,8 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Create a new poster
-router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.post('/', authMiddleware, isAdminMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userPayload = (req as any).user;
-    if (userPayload.userId) {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
 
     const { imageUrl, imageUrls } = req.body;
     
@@ -58,13 +53,8 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
 });
 
 // Delete a poster
-router.delete('/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.delete('/:id', authMiddleware, isAdminMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userPayload = (req as any).user;
-    if (userPayload.userId) {
-      res.status(403).json({ error: 'Admin access required' });
-      return;
-    }
 
     const { id } = req.params;
     

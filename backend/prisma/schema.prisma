@@ -13,6 +13,7 @@ datasource db {
 
 model Game {
   id          String   @id @default(uuid())
+  slug        String?  @unique
   title       String
   developer   String
   rating      Float
@@ -35,6 +36,8 @@ model Game {
   screenshots      String?
   tagImage         String?
   steamAppId       String?
+  steamPrice       Float?
+  internalCost     Float?
   creatorAccess    Boolean  @default(false)
   position         Int      @default(0)
   createdAt        DateTime @default(now())

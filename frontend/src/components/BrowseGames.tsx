@@ -73,7 +73,7 @@ export const BrowseGames = () => {
       matchesGenre = !!game.isRentable;
     } else if (lowerGenre === 'exclusives' || lowerGenre === 'deals' || lowerGenre === 'discounted' || lowerGenre === 'discounts') {
       // Strictly show ONLY discounted games
-      matchesGenre = Number(game.discount || 0) > 0;
+      matchesGenre = game.steamPrice != null && game.steamPrice > game.price && game.price > 0;
     } else {
       matchesGenre = (game.genre || '').toLowerCase().includes(lowerGenre);
     }
@@ -92,8 +92,8 @@ export const BrowseGames = () => {
   });
 
   const sortedGames = [...filteredGames].sort((a, b) => {
-    const finalPriceA = a.discount > 0 ? a.price * (1 - a.discount / 100) : a.price;
-    const finalPriceB = b.discount > 0 ? b.price * (1 - b.discount / 100) : b.price;
+    const finalPriceA = a.price;
+    const finalPriceB = b.price;
 
     switch (sortBy) {
       case 'Price: Low to High':

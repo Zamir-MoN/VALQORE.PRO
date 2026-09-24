@@ -59,7 +59,7 @@ export const GiveawayGames = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {giveawayGamesData.map((game) => (
               <Link 
-                to={`/game/${game.id}`}
+                to={`/game/${game.slug || game.id}`}
                 key={`giveaway-${game.id}`} 
                 className="group flex flex-col text-left bg-cards/40 hover:bg-cards border border-white/5 hover:border-[#00F0FF]/50 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer shadow-lg w-full"
               >

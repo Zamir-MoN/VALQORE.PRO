@@ -23,6 +23,8 @@ export default defineConfig({
     }
   },
   server: {
+    host: true,
+    port: 80,
     proxy: {
       '/uploads': {
         target: 'http://127.0.0.1:5005',

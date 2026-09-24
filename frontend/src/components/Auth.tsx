@@ -110,12 +110,11 @@ export const AuthModal = () => {
 
       setLoading(true);
       try {
-        const res = await axios.post(`${API_URL}/auth/send-register-otp`, { username, email });
-        setSuccessMsg(res.data.message || 'OTP sent to your email!');
-        setStep('otp');
-        setResendCooldown(60);
+        const res = await axios.post(`${API_URL}/auth/register`, { username, email, password });
+        login(res.data.token, res.data.user);
+        resetModal();
       } catch (err: any) {
-        setError(err.response?.data?.error || 'Failed to send verification code');
+        setError(err.response?.data?.error || 'Registration failed');
       } finally {
         setLoading(false);
       }

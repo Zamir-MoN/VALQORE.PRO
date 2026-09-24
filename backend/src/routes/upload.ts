@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -21,9 +21,22 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only JPG, PNG, WEBP, and GIF are allowed.'));
+  }
+};
 
-router.post('/', authMiddleware, upload.single('image'), (req, res) => {
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+  fileFilter
+});
+
+router.post('/', authMiddleware, isAdminMiddleware, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
@@ -31,7 +44,7 @@ router.post('/', authMiddleware, upload.single('image'), (req, res) => {
   res.json({ url: imageUrl });
 });
 
-router.post('/multiple', authMiddleware, upload.array('images', 10), (req, res) => {
+router.post('/multiple', authMiddleware, isAdminMiddleware, upload.array('images', 10), (req, res) => {
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
     return res.status(400).json({ error: 'No files uploaded' });
   }

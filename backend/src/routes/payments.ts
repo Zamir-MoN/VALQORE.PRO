@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../prismaClient';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 import QRCode from 'qrcode';
 
 import { getIO } from '../socket';
@@ -64,7 +64,7 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
 
     // Calculate total amount
     let totalAmount = cartItems.reduce((acc, item) => {
-      return acc + (item.game.price * (1 - item.game.discount / 100));
+      return acc + item.game.price;
     }, 0);
 
     // Validate coupon
@@ -118,7 +118,7 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
               items: {
                 create: cartItems.map(item => ({
                   gameId: item.gameId,
-                  pricePaid: item.game.price * (1 - item.game.discount / 100)
+                  pricePaid: item.game.price
                 }))
               }
             },
@@ -220,7 +220,10 @@ router.get('/:orderId', authMiddleware, async (req: Request, res: Response): Pro
       upiUri,
       qrCode,
       submittedUtr: order.submittedUtr,
-      items: (order as any).items
+      items: (order as any).items.map((item: any) => {
+        const { internalCost, ...publicGame } = item.game;
+        return { ...item, game: publicGame };
+      })
     });
   } catch (error) {
     console.error('[GET PAYMENT DETAILS ERROR]', error);
@@ -268,13 +271,8 @@ router.post('/:orderId/cancel', authMiddleware, async (req: Request, res: Respon
 });
 
 // 5. Admin: Get all payments/transactions
-router.get('/admin/all', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.get('/admin/all', authMiddleware, isAdminMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userPayload = (req as any).user;
-    if (userPayload.userId) {
-      res.status(403).json({ error: 'Admins only' });
-      return;
-    }
 
     const { status, search } = req.query;
 
@@ -311,13 +309,8 @@ router.get('/admin/all', authMiddleware, async (req: Request, res: Response): Pr
 });
 
 // 6. Admin: Manually verify/approve payment
-router.put('/admin/:orderId/verify', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.put('/admin/:orderId/verify', authMiddleware, isAdminMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userPayload = (req as any).user;
-    if (userPayload.userId) {
-      res.status(403).json({ error: 'Admins only' });
-      return;
-    }
 
     const orderId = String(req.params.orderId);
     const { utr } = req.body;

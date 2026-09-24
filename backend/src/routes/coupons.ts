@@ -1,6 +1,6 @@
 import express from 'express';
 import { prisma } from '../prismaClient';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Create a new coupon
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const { code, discount, createdBy, usageLimit, creatorId, commissionRate } = req.body;
     
@@ -73,7 +73,7 @@ router.post('/validate', authMiddleware, async (req, res) => {
 });
 
 // Delete a coupon
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, isAdminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.coupon.delete({
