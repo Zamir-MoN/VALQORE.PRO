@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown, CreditCard, CheckCircle2, Clock } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown, CreditCard, CheckCircle2, Clock, FileText } from 'lucide-react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 import { getYouTubeVideoId } from '../utils/youtube';
@@ -93,7 +93,8 @@ export const AdminDashboard = () => {
     steamAppId: '',
     creatorAccess: false,
     isBundle: false,
-    bundleGames: ''
+    bundleGames: '',
+    description: ''
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -642,7 +643,8 @@ export const AdminDashboard = () => {
       steamAppId: game.steamAppId || '',
       creatorAccess: game.creatorAccess || false,
       isBundle: game.isBundle || false,
-      bundleGames: game.bundleGames || ''
+      bundleGames: game.bundleGames || '',
+      description: game.description || ''
     });
     setImageFile(null);
     setTagImageFile(null);
@@ -710,6 +712,7 @@ export const AdminDashboard = () => {
       giveawayRules: '',
       isBundle: mode === 'bundle',
       bundleGames: '',
+      description: '',
       rentPrice: '',
       rentDurationDays: 7,
       rentRules: '',
@@ -850,19 +853,35 @@ export const AdminDashboard = () => {
                     </div>
 
                     {formData.isBundle && (
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-[#A855F7] uppercase tracking-wider font-bold ml-1 flex items-center gap-1">
-                          <Package size={13} /> Included Games / Contents (Optional)
-                        </label>
-                        <input 
-                          type="text" 
-                          name="bundleGames" 
-                          value={formData.bundleGames} 
-                          onChange={handleInputChange} 
-                          placeholder="E.g. Grand Theft Auto V, Red Dead Redemption 2, Max Payne 3" 
-                          className="bg-cards border border-[#A855F7]/30 rounded-lg p-3 text-white focus:border-[#A855F7] outline-none" 
-                        />
-                      </div>
+                      <>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-[#A855F7] uppercase tracking-wider font-bold ml-1 flex items-center gap-1">
+                            <Package size={13} /> Included Games / Contents (Optional)
+                          </label>
+                          <input 
+                            type="text" 
+                            name="bundleGames" 
+                            value={formData.bundleGames} 
+                            onChange={handleInputChange} 
+                            placeholder="E.g. Grand Theft Auto V, Red Dead Redemption 2, Max Payne 3" 
+                            className="bg-cards border border-[#A855F7]/30 rounded-lg p-3 text-white focus:border-[#A855F7] outline-none" 
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs text-[#A855F7] uppercase tracking-wider font-bold ml-1 flex items-center gap-1">
+                            <FileText size={13} /> Bundle Description
+                          </label>
+                          <textarea 
+                            name="description" 
+                            value={formData.description} 
+                            onChange={handleInputChange} 
+                            rows={4}
+                            placeholder="Write a detailed description for this bundle pack, storyline, features, editions, and instructions..." 
+                            className="bg-cards border border-[#A855F7]/30 rounded-lg p-3 text-white focus:border-[#A855F7] outline-none text-sm resize-y" 
+                          />
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -1072,7 +1091,7 @@ export const AdminDashboard = () => {
 
 
               {/* System Requirements */}
-              {!formData.isGiveaway && (
+              {!formData.isGiveaway && !formData.isBundle && (
                 <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
                   <h3 className="font-bold text-white mb-4">System Requirements (Optional)</h3>
                   <div className="flex flex-col gap-4">
@@ -1102,25 +1121,38 @@ export const AdminDashboard = () => {
                 </div>
               )}
 
-              {/* Game Media */}
+              {/* Game Media / Multi Game Posters */}
               {!formData.isGiveaway && (
                 <div className="mt-4 p-4 border border-white/10 rounded-xl bg-cards/30">
-                <h3 className="font-bold text-white mb-4">Game Media (Epic Layout)</h3>
+                <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                  {formData.isBundle ? (
+                    <>
+                      <Package size={18} className="text-[#A855F7]" />
+                      <span>Multi Game Posters / Artwork</span>
+                    </>
+                  ) : (
+                    <span>Game Media (Epic Layout)</span>
+                  )}
+                </h3>
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm text-text-secondary">YouTube Trailer URL</label>
-                    <input 
-                      type="text" 
-                      name="trailerUrl" 
-                      value={formData.trailerUrl} 
-                      onChange={handleInputChange} 
-                      placeholder="https://www.youtube.com/watch?v=..." 
-                      className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" 
-                    />
-                  </div>
+                  {!formData.isBundle && (
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm text-text-secondary">YouTube Trailer URL</label>
+                      <input 
+                        type="text" 
+                        name="trailerUrl" 
+                        value={formData.trailerUrl} 
+                        onChange={handleInputChange} 
+                        placeholder="https://www.youtube.com/watch?v=..." 
+                        className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-primary outline-none w-full" 
+                      />
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm text-text-secondary">Screenshots (Upload Multiple)</label>
+                      <label className="text-sm font-bold text-white">
+                        {formData.isBundle ? 'Multi Game Posters (Upload Individual Game Posters)' : 'Screenshots (Upload Multiple)'}
+                      </label>
                       {screenshotFiles.length > 0 && (
                         <button type="button" onClick={clearScreenshots} className="text-xs flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors">
                           <X size={12} /> Clear ({screenshotFiles.length})

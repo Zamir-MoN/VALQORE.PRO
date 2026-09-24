@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2, Package, Layers, FileText, Gamepad2, ZoomIn, X } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -25,6 +25,7 @@ export const GameDetails = () => {
   const game = games.find(g => g.id === id || g.slug === id);
   const hasTrailer = !!(game?.trailerUrl && getYouTubeVideoId(game.trailerUrl));
   const [activeMedia, setActiveMedia] = useState<number>(hasTrailer ? -1 : 0);
+  const [selectedPoster, setSelectedPoster] = useState<string | null>(null);
 
   // Real reaction state
   const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
@@ -327,6 +328,485 @@ export const GameDetails = () => {
     ? game.platforms 
     : (typeof game.platforms === 'string' ? (game.platforms as string).split(',').map(p => p.trim()) : ['PC']);
 
+  // DEDICATED BUNDLE PAGE REDESIGN
+  if (game.isBundle) {
+    const bundlePosters = screenshots.filter(Boolean);
+    const hasSavings = game.steamPrice != null && game.steamPrice > game.price && game.price > 0;
+    const savingsPercent = hasSavings ? Math.round(((game.steamPrice! - game.price) / game.steamPrice!) * 100) : 0;
+    const gamesList = game.bundleGames 
+      ? game.bundleGames.split(/[,+]/).map(g => g.trim()).filter(Boolean)
+      : [];
+
+    return (
+      <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="bundle-details">
+        {/* Full-screen Lightbox modal for viewing posters */}
+        {selectedPoster && (
+          <div 
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+            onClick={() => setSelectedPoster(null)}
+          >
+            <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
+              <button 
+                onClick={() => setSelectedPoster(null)}
+                className="absolute -top-12 right-0 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer"
+                title="Close preview"
+              >
+                <X size={20} />
+              </button>
+              <img 
+                src={getImageUrl(selectedPoster)} 
+                alt="Game Poster Full View" 
+                className="max-h-[85vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/10" 
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="container mx-auto max-w-[1400px]">
+          <div className="flex flex-col gap-6">
+            {/* Top Navigation & Breadcrumb */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors group cursor-pointer"
+              >
+                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                <span className="font-bold tracking-wider uppercase text-sm">Back</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-[#A855F7]/15 border border-[#A855F7]/30 text-[#A855F7] text-xs font-black uppercase tracking-wider rounded-lg shadow-[0_0_12px_rgba(168,85,247,0.2)]">
+                  <Package size={14} />
+                  <span>Bundle Pack</span>
+                </span>
+                {hasSavings && (
+                  <span className="px-2.5 py-1 bg-primary/20 text-primary border border-primary/30 text-xs font-black rounded-lg shadow-[0_0_12px_rgba(220,248,54,0.2)]">
+                    SAVE {savingsPercent}%
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Title & Included Games Subline */}
+            <div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight text-white mb-3">
+                {game.title}
+              </h1>
+              {gamesList.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <span className="text-xs text-text-secondary font-bold uppercase tracking-wider mr-1">Includes:</span>
+                  {gamesList.map((gName, idx) => (
+                    <span 
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-white/90"
+                    >
+                      <Gamepad2 size={13} className="text-[#A855F7]" />
+                      <span>{gName}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Two Column Layout: Left 68% / Right 32% */}
+            <div className="flex flex-col lg:flex-row gap-8 mt-2">
+              
+              {/* Left Column: Multi Game Poster Showcase + Description */}
+              <div className="w-full lg:w-[68%] flex flex-col gap-8">
+                
+                {/* 1. Multi Game Posters Section */}
+                <div className="bg-cards/40 border border-white/10 rounded-2xl p-5 sm:p-7 backdrop-blur-md relative overflow-hidden shadow-2xl">
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-[#A855F7]/15 text-[#A855F7] border border-[#A855F7]/30">
+                        <Layers size={20} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Multi Game Posters</h2>
+                        <p className="text-xs text-text-secondary">Official artwork & posters for games in this pack</p>
+                      </div>
+                    </div>
+                    {bundlePosters.length > 0 && (
+                      <span className="text-xs font-bold text-white/60 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                        {bundlePosters.length} {bundlePosters.length === 1 ? 'Poster' : 'Game Posters'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Multi-Poster Grid */}
+                  {bundlePosters.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+                      {bundlePosters.map((posterUrl, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => setSelectedPoster(posterUrl)}
+                          className="group relative flex flex-col bg-black/60 rounded-xl overflow-hidden border border-white/10 hover:border-[#A855F7]/60 transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] hover:-translate-y-1.5 cursor-pointer"
+                        >
+                          {/* Portrait Game Poster (3:4 aspect) */}
+                          <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/40">
+                            <img
+                              src={getImageUrl(posterUrl)}
+                              alt={`Bundle Game Poster ${idx + 1}`}
+                              loading="lazy"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
+
+                            {/* Poster Number / Badge */}
+                            <div className="absolute top-2.5 left-2.5 bg-black/80 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[10px] font-black px-2 py-0.5 rounded shadow uppercase">
+                              Game #{idx + 1}
+                            </div>
+
+                            {/* Zoom In hover overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                              <div className="p-2.5 bg-black/80 text-white rounded-full border border-white/20 shadow-xl">
+                                <ZoomIn size={18} />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Caption */}
+                          {gamesList[idx] && (
+                            <div className="p-3 bg-cards/80 border-t border-white/5">
+                              <h4 className="font-bold text-xs text-white group-hover:text-[#A855F7] transition-colors truncate">
+                                {gamesList[idx]}
+                              </h4>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Fallback: Bundle Cover Image banner */
+                    <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/10 group">
+                      <img
+                        src={getImageUrl(game.coverImage) || '/images/hero-artwork.png'}
+                        alt={game.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/10 text-xs font-bold text-white">
+                        {game.title} - Bundle Cover Banner
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Bundle Description Section */}
+                <div className="bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
+                  <div className="flex items-center gap-2.5 mb-4 border-b border-white/10 pb-4">
+                    <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                      <FileText size={20} />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Bundle Description</h2>
+                  </div>
+
+                  {game.description ? (
+                    <div className="text-sm sm:text-base text-gray-200 leading-relaxed whitespace-pre-line font-normal">
+                      {game.description}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-text-secondary leading-relaxed space-y-2">
+                      <p>
+                        Get the complete collection with the <strong className="text-white">{game.title}</strong> pack. This bundle delivers full digital access to all included games at a major discount.
+                      </p>
+                      <p>
+                        All games are provided with instant digital delivery, verified accounts, and 24/7 dedicated support.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Included Games Breakdown */}
+                  {gamesList.length > 0 && (
+                    <div className="mt-6 pt-5 border-t border-white/10">
+                      <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
+                        Games Included in this Pack:
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {gamesList.map((gName, idx) => (
+                          <div 
+                            key={idx}
+                            className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
+                          >
+                            <div className="w-6 h-6 rounded-lg bg-[#A855F7]/20 text-[#A855F7] flex items-center justify-center text-xs font-black flex-shrink-0">
+                              {idx + 1}
+                            </div>
+                            <span className="text-sm font-bold text-white truncate">{gName}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Account Details / Guarantees */}
+                <div className="bg-cards/30 border border-white/5 rounded-2xl p-6 sm:p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm">
+                    <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Shield size={20} /></div>
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Instant Delivery</h4>
+                        <p className="text-text-secondary text-xs leading-relaxed">All bundle games delivered immediately to your account & email.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Globe size={20} /></div>
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Global Region Free</h4>
+                        <p className="text-text-secondary text-xs leading-relaxed">Play seamlessly from any country without VPN restrictions.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><CheckCircle2 size={20} /></div>
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Lifetime Guarantee</h4>
+                        <p className="text-text-secondary text-xs leading-relaxed">100% verified working digital copies with permanent ownership.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Buy Box & Specs */}
+              <div className="w-full lg:w-[32%] flex flex-col gap-6">
+                
+                {/* Buy Box */}
+                <div className="bg-cards border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col gap-5 sticky top-28">
+                  {/* Subtle Background Art */}
+                  <div
+                    className="absolute inset-0 z-0 opacity-25 bg-cover bg-center pointer-events-none"
+                    style={{ backgroundImage: `url(${getImageUrl(game.coverImage)})` }}
+                  />
+                  <div className="absolute inset-0 z-0 bg-gradient-to-t from-cards via-cards/90 to-cards/70 pointer-events-none" />
+
+                  <div className="relative z-10 flex flex-col gap-5">
+                    {/* Header tags */}
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 bg-[#A855F7]/20 border border-[#A855F7]/30 text-[#A855F7] text-xs font-black rounded-lg uppercase tracking-wider flex items-center gap-1">
+                        <Package size={12} /> Bundle
+                      </span>
+                      <span className="text-xs text-text-secondary font-bold">
+                        {platformsList.join(', ')}
+                      </span>
+                    </div>
+
+                    {/* Price Section */}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-text-secondary uppercase tracking-wider font-bold">Total Price</span>
+                      <div className="flex items-baseline gap-3 flex-wrap">
+                        <span className="text-3xl sm:text-4xl font-heading font-black text-primary">
+                          {formatPrice(game.price)}
+                        </span>
+                        {hasSavings && game.steamPrice && (
+                          <>
+                            <span className="text-base text-text-secondary/80 line-through">
+                              {formatPrice(game.steamPrice)}
+                            </span>
+                            <span className="bg-primary/20 text-primary border border-primary/30 text-xs font-black px-2 py-0.5 rounded shadow">
+                              SAVE {savingsPercent}%
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    {isOwned(game.id) ? (
+                      <div className="flex flex-col gap-2">
+                        <Link 
+                          to="/library"
+                          className="w-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/40 font-heading font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                        >
+                          <CheckCircle2 size={18} className="text-emerald-400" />
+                          Already In Library
+                        </Link>
+                      </div>
+                    ) : game.outOfStock ? (
+                      <button 
+                        disabled
+                        className="w-full bg-red-600/50 text-white/50 cursor-not-allowed font-black text-sm px-4 py-3.5 rounded-xl uppercase tracking-wider"
+                      >
+                        Out of Stock
+                      </button>
+                    ) : (
+                      <div className="flex flex-col gap-2.5">
+                        <button 
+                          onClick={() => {
+                            if (!inCart) addToCart(game.id);
+                            navigate('/cart');
+                          }}
+                          className="w-full bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] cursor-pointer active:scale-95"
+                        >
+                          <ShoppingCart size={16} />
+                          <span>Buy Now</span>
+                        </button>
+
+                        <button 
+                          onClick={() => addToCart(game.id)}
+                          disabled={inCart}
+                          className={`w-full font-bold text-xs py-2.5 px-4 rounded-xl border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                            inCart
+                              ? 'bg-white/10 text-white border-white/20'
+                              : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
+                          }`}
+                        >
+                          {inCart ? (
+                            <>
+                              <CheckCircle2 size={14} className="text-primary" />
+                              <span>In Cart</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart size={14} />
+                              <span>Add to Cart</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Secure Payments Badge */}
+                    <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+                      <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Secure Checkout</span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-10 rounded bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="UPI">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-2.5 object-contain" />
+                        </div>
+                        <div className="h-6 w-10 rounded bg-white/5 border border-white/10 flex items-center justify-center grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="USDT">
+                          <img src="https://cryptologos.cc/logos/tether-usdt-logo.svg?v=032" alt="USDT" className="h-3 object-contain" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bundle Specs */}
+                    <div className="pt-4 border-t border-white/10 flex flex-col gap-2.5 text-xs">
+                      <div className="flex justify-between items-center py-1 border-b border-white/5">
+                        <span className="text-text-secondary">Publisher / Dev</span>
+                        <span className="font-bold text-white text-right">{game.developer}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1 border-b border-white/5">
+                        <span className="text-text-secondary">Release Date</span>
+                        <span className="font-bold text-white text-right">{new Date(game.releaseDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1 border-b border-white/5">
+                        <span className="text-text-secondary">Product Type</span>
+                        <span className="font-bold text-[#A855F7] text-right">Game Bundle</span>
+                      </div>
+                      <div className="flex justify-between items-start py-1">
+                        <span className="text-text-secondary">Platforms</span>
+                        <div className="flex flex-col items-end gap-1">
+                          {platformsList.map(p => (
+                            <span key={p} className="text-white text-right font-bold">{p}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Social Reactions & Share */}
+                    <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleReaction('LIKE')}
+                          disabled={isReacting}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-bold cursor-pointer ${
+                            userReaction === 'LIKE' 
+                              ? 'bg-primary/20 border-primary text-primary' 
+                              : 'bg-white/5 border-white/10 hover:border-primary/40 text-text-secondary hover:text-white'
+                          }`}
+                        >
+                          <ThumbsUp size={14} className={userReaction === 'LIKE' ? 'fill-primary/30' : ''} />
+                          <span>{likesCount}</span>
+                        </button>
+                        <button 
+                          onClick={() => handleReaction('DISLIKE')}
+                          disabled={isReacting}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-bold cursor-pointer ${
+                            userReaction === 'DISLIKE' 
+                              ? 'bg-red-500/20 border-red-500 text-red-400' 
+                              : 'bg-white/5 border-white/10 hover:border-red-500/40 text-text-secondary hover:text-white'
+                          }`}
+                        >
+                          <ThumbsDown size={14} className={userReaction === 'DISLIKE' ? 'fill-red-500/30' : ''} />
+                          <span>{dislikesCount}</span>
+                        </button>
+                      </div>
+                      <button 
+                        onClick={handleShareGame}
+                        className="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-colors cursor-pointer"
+                        title="Share bundle"
+                      >
+                        <Share2 size={16} />
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Related Bundles */}
+            {(() => {
+              const otherBundles = games.filter(g => g.id !== game.id && g.isBundle).slice(0, 4);
+              const relatedList = otherBundles.length > 0 
+                ? otherBundles 
+                : games.filter(g => g.id !== game.id && !g.isGiveaway).slice(0, 4);
+
+              if (relatedList.length === 0) return null;
+
+              return (
+                <div className="col-span-full mt-12 pt-8 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-[#A855F7] rotate-45"></div>
+                      <h2 className="text-xl font-heading font-black tracking-widest uppercase text-white">
+                        {otherBundles.length > 0 ? 'More Bundles & Special Packs' : 'You May Also Like'}
+                      </h2>
+                    </div>
+                    <Link to="/store" className="text-xs font-bold text-primary hover:text-white transition-colors">
+                      Explore Store &rarr;
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {relatedList.map(relGame => (
+                      <Link 
+                        to={`/game/${relGame.slug || relGame.id}`} 
+                        key={relGame.id}
+                        className="group bg-cards/40 hover:bg-cards/80 border border-white/10 hover:border-[#A855F7]/50 rounded-xl p-2.5 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col cursor-pointer"
+                      >
+                        <div className="relative aspect-[16/9] overflow-hidden rounded-lg mb-2.5 bg-black/40">
+                          <img 
+                            src={relGame.coverImage ? getImageUrl(relGame.coverImage) : '/images/hero-artwork.png'} 
+                            alt={relGame.title} 
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute top-2 left-2 bg-black/80 text-[#A855F7] border border-[#A855F7]/40 text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                            Bundle
+                          </div>
+                        </div>
+                        <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors truncate mb-1">
+                          {relGame.title}
+                        </h3>
+                        <p className="text-text-secondary text-xs truncate mb-2">{relGame.bundleGames || relGame.developer}</p>
+                        <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-2">
+                          <span className="text-base font-heading font-black text-primary">{formatPrice(relGame.price)}</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="game-details">

@@ -33,6 +33,7 @@ export interface Game {
   creatorAccess?: boolean;
   isBundle?: boolean;
   bundleGames?: string | null;
+  description?: string;
 }
 
 

@@ -29,6 +29,7 @@ model Game {
   giveawayRules    String?
   isBundle         Boolean  @default(false)
   bundleGames      String?
+  description      String?
   rentPrice        Float?
   rentDurationDays Int?     @default(7)
   rentRules        String?
