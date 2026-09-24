@@ -142,8 +142,8 @@ function App() {
                             <Route path="/" element={
                               <>
                                 <Hero />
-                                <TrendingGames />
                                 <BundleGames />
+                                <TrendingGames />
                                 <RentalGames />
                                 <GiveawayGames />
                                 <Testimonials />
