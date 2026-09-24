@@ -46,22 +46,36 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Poster Image Container */}
-      <div className="relative w-full aspect-[4/5] overflow-hidden bg-black/50">
+      <div className="relative w-full aspect-[4/5] sm:aspect-video max-h-[480px] overflow-hidden bg-black/60 flex items-center justify-center">
+        {/* Ambient Blurred Background Glow */}
+        {posters.map((poster, idx) => (
+          <img
+            key={`bg-${idx}`}
+            src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover blur-2xl opacity-35 scale-110 transition-all duration-700 ease-in-out pointer-events-none ${
+              idx === currentIndex ? 'opacity-35' : 'opacity-0'
+            }`}
+          />
+        ))}
+
+        {/* Sharp Foreground Poster */}
         {posters.map((poster, idx) => (
           <img
             key={idx}
             src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
             alt={poster.title}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${
+            className={`relative z-0 h-full max-h-[480px] w-auto max-w-full object-contain sm:rounded-xl sm:my-2 shadow-2xl transition-all duration-700 ease-in-out ${
               idx === currentIndex 
                 ? 'opacity-100 scale-100' 
-                : 'opacity-0 scale-105 pointer-events-none'
+                : 'opacity-0 scale-105 pointer-events-none absolute'
             }`}
           />
         ))}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none z-[1]" />
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
@@ -535,8 +549,11 @@ export const GameDetails = () => {
             {/* Two Column Layout: Left 68% / Right 32% */}
             <div className="flex flex-col lg:flex-row gap-8 mt-2">
               
-              {/* Left Column: Bundle Description */}
+              {/* Left Column: Poster Carousel + Bundle Description */}
               <div className="w-full lg:w-[68%] flex flex-col gap-8">
+
+                {/* Auto-Switching Included Games Poster */}
+                <BundlePosterCarousel posters={bundlePosters} />
 
                 {/* Bundle Description Section */}
                 <div className="bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
@@ -633,11 +650,8 @@ export const GameDetails = () => {
 
               </div>
 
-              {/* Right Column: Poster Carousel & Buy Box */}
+              {/* Right Column: Buy Box & Specs */}
               <div className="w-full lg:w-[32%] flex flex-col gap-6">
-                
-                {/* Auto-Switching Included Games Poster */}
-                <BundlePosterCarousel posters={bundlePosters} />
 
                 {/* Buy Box */}
                 <div className="bg-cards border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col gap-5 sticky top-28">
