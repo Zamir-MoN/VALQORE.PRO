@@ -151,16 +151,16 @@ export const BundlesPage = () => {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-2xl p-3 overflow-hidden animate-pulse">
-                <div className="w-full aspect-[16/9] bg-white/5 rounded-xl" />
-                <div className="p-3 flex flex-col gap-2">
-                  <div className="h-4 w-3/4 bg-white/10 rounded" />
-                  <div className="h-3 w-1/2 bg-white/5 rounded" />
-                  <div className="flex justify-between items-center mt-3 pt-2 border-t border-white/5">
-                    <div className="h-5 w-16 bg-white/10 rounded" />
-                    <div className="h-8 w-24 bg-white/10 rounded-lg" />
+              <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-xl sm:rounded-2xl p-2 sm:p-3 overflow-hidden animate-pulse">
+                <div className="w-full aspect-[16/9] bg-white/5 rounded-lg sm:rounded-xl" />
+                <div className="p-1.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2">
+                  <div className="h-3.5 sm:h-4 w-3/4 bg-white/10 rounded" />
+                  <div className="h-2.5 sm:h-3 w-1/2 bg-white/5 rounded" />
+                  <div className="flex justify-between items-center mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-white/5">
+                    <div className="h-4 sm:h-5 w-12 sm:w-16 bg-white/10 rounded" />
+                    <div className="h-6 sm:h-8 w-14 sm:w-24 bg-white/10 rounded-lg" />
                   </div>
                 </div>
               </div>
@@ -186,8 +186,8 @@ export const BundlesPage = () => {
             )}
           </div>
         ) : (
-          /* Bundles Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          /* Bundles Grid: 2 per line on mobile, responsive on larger screens */
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {sortedBundles.map((bundle) => {
               const hasSavings = bundle.steamPrice != null && bundle.steamPrice > bundle.price && bundle.price > 0;
               const savingsPercent = hasSavings ? Math.round(((bundle.steamPrice! - bundle.price) / bundle.steamPrice!) * 100) : 0;
@@ -202,10 +202,10 @@ export const BundlesPage = () => {
               return (
                 <div
                   key={bundle.id}
-                  className="group flex flex-col bg-cards/50 hover:bg-cards/90 border border-white/10 hover:border-primary/40 rounded-2xl p-3 transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,248,54,0.15)] hover:-translate-y-1 relative"
+                  className="group flex flex-col bg-cards/50 hover:bg-cards/90 border border-white/10 hover:border-primary/40 rounded-xl sm:rounded-2xl p-2 sm:p-3 transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,248,54,0.15)] hover:-translate-y-1 relative"
                 >
                   {/* Landscape Image Banner (16:9) */}
-                  <Link to={`/game/${bundle.slug || bundle.id}`} className="block relative w-full aspect-[16/9] overflow-hidden rounded-xl bg-black/60">
+                  <Link to={`/game/${bundle.slug || bundle.id}`} className="block relative w-full aspect-[16/9] overflow-hidden rounded-lg sm:rounded-xl bg-black/60">
                     <img
                       src={getImageUrl(bundle.coverImage) || '/images/hero-artwork.png'}
                       alt={bundle.title}
@@ -215,66 +215,67 @@ export const BundlesPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
 
                     {/* Top Left: Bundle Badge */}
-                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-primary/30 text-primary text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md uppercase tracking-wider">
-                      <Package size={12} className="text-primary" />
-                      <span>Bundle Pack</span>
+                    <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 flex items-center gap-1 sm:gap-1.5 bg-black/80 backdrop-blur-md border border-primary/30 text-primary text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg shadow-md uppercase tracking-wider">
+                      <Package size={11} className="text-primary" />
+                      <span>Bundle</span>
                     </div>
 
                     {/* Top Right: Status / Savings Badge */}
                     {bundle.outOfStock ? (
-                      <div className="absolute top-2.5 right-2.5 bg-red-500/90 text-white font-black text-[10px] px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-md">
+                      <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 bg-red-500/90 text-white font-black text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg uppercase tracking-wider shadow-md">
                         Out of Stock
                       </div>
                     ) : owned ? (
-                      <div className="absolute top-2.5 right-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
-                        <Check size={11} strokeWidth={3} />
+                      <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg shadow-md flex items-center gap-1">
+                        <Check size={10} strokeWidth={3} />
                         <span>In Library</span>
                       </div>
                     ) : hasSavings && isFinite(savingsPercent) ? (
-                      <div className="absolute top-2.5 right-2.5 bg-primary/20 text-primary border border-primary/30 backdrop-blur-md text-[10px] font-black px-2.5 py-1 rounded-lg shadow-[0_0_10px_rgba(220,248,54,0.2)] whitespace-nowrap">
+                      <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 bg-primary/20 text-primary border border-primary/30 backdrop-blur-md text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg shadow-[0_0_10px_rgba(220,248,54,0.2)] whitespace-nowrap">
                         SAVE {savingsPercent}%
                       </div>
                     ) : null}
                   </Link>
 
                   {/* Card Body */}
-                  <div className="p-2 sm:p-3 flex flex-col justify-between flex-1 gap-3">
+                  <div className="p-1 sm:p-2 flex flex-col justify-between flex-1 gap-2 sm:gap-3">
                     <div>
                       <Link to={`/game/${bundle.slug || bundle.id}`}>
-                        <h3 className="font-heading font-black text-base sm:text-lg text-white group-hover:text-primary transition-colors line-clamp-1 leading-snug">
+                        <h3 className="font-heading font-black text-xs sm:text-lg text-white group-hover:text-primary transition-colors line-clamp-1 leading-snug">
                           {bundle.title}
                         </h3>
                       </Link>
 
                       {/* Included Games Pill / Count */}
                       {includedList.length > 0 ? (
-                        <div className="mt-1.5 flex items-center gap-1.5 text-xs text-text-secondary">
-                          <Gamepad2 size={13} className="text-primary shrink-0" />
-                          <span className="font-semibold text-white/80">{includedList.length} Games Included:</span>
+                        <div className="mt-1 flex items-center gap-1 text-[10px] sm:text-xs text-text-secondary">
+                          <Gamepad2 size={12} className="text-primary shrink-0" />
+                          <span className="font-semibold text-white/80 hidden sm:inline">{includedList.length} Games Included:</span>
+                          <span className="font-semibold text-white/80 sm:hidden">{includedList.length} Games:</span>
                           <span className="truncate text-text-secondary">{includedList.slice(0, 2).join(', ')}{includedList.length > 2 ? '...' : ''}</span>
                         </div>
                       ) : bundle.bundleGames ? (
-                        <div className="mt-1.5 flex items-center gap-1.5 text-xs text-text-secondary truncate">
-                          <Gamepad2 size={13} className="text-primary shrink-0" />
+                        <div className="mt-1 flex items-center gap-1 text-[10px] sm:text-xs text-text-secondary truncate">
+                          <Gamepad2 size={12} className="text-primary shrink-0" />
                           <span className="truncate">{bundle.bundleGames}</span>
                         </div>
                       ) : (
-                        <p className="mt-1.5 text-xs text-text-secondary truncate">
+                        <p className="mt-1 text-[10px] sm:text-xs text-text-secondary truncate">
                           {bundle.developer || bundle.genre}
                         </p>
                       )}
                     </div>
 
                     {/* Pricing & Add to Cart Row */}
-                    <div className="flex items-center justify-between pt-3 border-t border-white/5 gap-2 mt-auto">
+                    <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-white/5 gap-1.5 mt-auto">
                       <div className="flex flex-col min-w-0">
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="font-heading font-black text-lg sm:text-xl text-primary">
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-heading font-black text-xs sm:text-xl text-primary truncate">
                             {formatPrice(bundle.price)}
                           </span>
                         </div>
                         {hasSavings && (
-                          <span className="text-[11px] text-text-secondary/70 line-through">
+                          <span className="text-[9px] sm:text-[11px] text-text-secondary/70 line-through">
                             {formatPrice(bundle.steamPrice!)}
                           </span>
                         )}
@@ -285,26 +286,26 @@ export const BundlesPage = () => {
                         owned ? (
                           <Link
                             to="/library"
-                            className="p-2.5 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-xl transition-all border border-emerald-500/30"
+                            className="p-1.5 sm:p-2.5 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 rounded-lg sm:rounded-xl transition-all border border-emerald-500/30 shrink-0"
                             title="Owned in Library"
                           >
-                            <Check size={18} strokeWidth={2.5} />
+                            <Check size={14} strokeWidth={2.5} />
                           </Link>
                         ) : inCart ? (
                           <Link
                             to="/cart"
-                            className="flex items-center gap-1.5 px-3 py-2 bg-primary/20 border border-primary/40 text-primary rounded-xl text-xs font-bold transition-all shadow-[0_0_12px_rgba(220,248,54,0.2)]"
+                            className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-2 bg-primary/20 border border-primary/40 text-primary rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all shadow-[0_0_12px_rgba(220,248,54,0.2)] shrink-0"
                           >
-                            <Check size={14} />
+                            <Check size={12} />
                             <span>In Cart</span>
                           </Link>
                         ) : (
                           <button
                             onClick={() => addToCart(bundle)}
-                            className="flex items-center gap-1.5 px-3.5 py-2 bg-primary hover:bg-white text-background rounded-xl text-xs font-black transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+                            className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-primary hover:bg-white text-background rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                           >
-                            <ShoppingCart size={14} />
-                            <span>Get Pack</span>
+                            <ShoppingCart size={12} />
+                            <span className="sm:inline">Get Pack</span>
                           </button>
                         )
                       )}
