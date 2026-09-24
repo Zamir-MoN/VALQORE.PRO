@@ -540,11 +540,21 @@ export const GameDetails = () => {
 
                 {/* Bundle Description Section */}
                 <div className="bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
-                  <div className="flex items-center gap-2.5 mb-4 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2.5 mb-6 border-b border-white/10 pb-4">
                     <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
                       <FileText size={20} />
                     </div>
                     <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Bundle Description</h2>
+                  </div>
+
+                  {/* Bundle Image inside Description Card */}
+                  <div className="relative w-full aspect-video max-h-[380px] rounded-xl overflow-hidden mb-6 border border-white/10 bg-black/40 shadow-lg group">
+                    <img
+                      src={getImageUrl(game.coverImage) || '/images/hero-artwork.png'}
+                      alt={game.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                   </div>
 
                   {game.description ? (
