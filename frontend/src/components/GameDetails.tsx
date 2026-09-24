@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2, Package, Layers, FileText, Gamepad2, ZoomIn, X } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2, Package, FileText, Gamepad2, X } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -25,7 +25,6 @@ export const GameDetails = () => {
   const game = games.find(g => g.id === id || g.slug === id);
   const hasTrailer = !!(game?.trailerUrl && getYouTubeVideoId(game.trailerUrl));
   const [activeMedia, setActiveMedia] = useState<number>(hasTrailer ? -1 : 0);
-  const [selectedPoster, setSelectedPoster] = useState<string | null>(null);
 
   // Real reaction state
   const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
@@ -345,53 +344,8 @@ export const GameDetails = () => {
       );
     }).filter(Boolean) as typeof games;
 
-    // Build multi game posters list:
-    // If games are selected from website, use their coverImages as posters
-    const websitePosters = matchedWebsiteGames.map(bg => ({
-      url: bg.coverImage,
-      title: bg.title,
-      price: bg.price,
-      slug: bg.slug || bg.id
-    })).filter(p => !!p.url);
-
-    const manualScreenshots = screenshots.filter(Boolean).map((url, idx) => ({
-      url,
-      title: gamesList[idx] || `Game #${idx + 1}`,
-      price: null as number | null,
-      slug: null as string | null
-    }));
-
-    // Combine website posters and manual posters (avoid duplicate URLs)
-    const combinedPosters = [
-      ...websitePosters,
-      ...manualScreenshots.filter(mp => !websitePosters.some(wp => wp.url === mp.url))
-    ];
-
     return (
       <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="bundle-details">
-        {/* Full-screen Lightbox modal for viewing posters */}
-        {selectedPoster && (
-          <div 
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
-            onClick={() => setSelectedPoster(null)}
-          >
-            <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onClick={e => e.stopPropagation()}>
-              <button 
-                onClick={() => setSelectedPoster(null)}
-                className="absolute -top-12 right-0 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer"
-                title="Close preview"
-              >
-                <X size={20} />
-              </button>
-              <img 
-                src={getImageUrl(selectedPoster)} 
-                alt="Game Poster Full View" 
-                className="max-h-[85vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/10" 
-              />
-            </div>
-          </div>
-        )}
-
         <div className="container mx-auto max-w-[1400px]">
           <div className="flex flex-col gap-6">
             {/* Top Navigation & Breadcrumb */}
@@ -441,91 +395,20 @@ export const GameDetails = () => {
             {/* Two Column Layout: Left 68% / Right 32% */}
             <div className="flex flex-col lg:flex-row gap-8 mt-2">
               
-              {/* Left Column: Multi Game Poster Showcase + Description */}
+              {/* Left Column: Bundle Artwork + Description */}
               <div className="w-full lg:w-[68%] flex flex-col gap-8">
                 
-                {/* 1. Multi Game Posters Section */}
-                <div className="bg-cards/40 border border-white/10 rounded-2xl p-5 sm:p-7 backdrop-blur-md relative overflow-hidden shadow-2xl">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-[#A855F7]/15 text-[#A855F7] border border-[#A855F7]/30">
-                        <Layers size={20} />
-                      </div>
-                      <div>
-                        <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Multi Game Posters</h2>
-                        <p className="text-xs text-text-secondary">Official artwork & posters for games in this pack</p>
-                      </div>
-                    </div>
-                    {combinedPosters.length > 0 && (
-                      <span className="text-xs font-bold text-white/60 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                        {combinedPosters.length} {combinedPosters.length === 1 ? 'Poster' : 'Game Posters'}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Multi-Poster Grid */}
-                  {combinedPosters.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
-                      {combinedPosters.map((posterItem, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => setSelectedPoster(posterItem.url)}
-                          className="group relative flex flex-col bg-black/60 rounded-xl overflow-hidden border border-white/10 hover:border-[#A855F7]/60 transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] hover:-translate-y-1.5 cursor-pointer"
-                        >
-                          {/* Portrait Game Poster (3:4 aspect) */}
-                          <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/40">
-                            <img
-                              src={getImageUrl(posterItem.url)}
-                              alt={posterItem.title}
-                              loading="lazy"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
-
-                            {/* Poster Number / Badge */}
-                            <div className="absolute top-2.5 left-2.5 bg-black/85 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[10px] font-black px-2 py-0.5 rounded shadow uppercase">
-                              Game #{idx + 1}
-                            </div>
-
-                            {/* Zoom In hover overlay */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                              <div className="p-2.5 bg-black/80 text-white rounded-full border border-white/20 shadow-xl">
-                                <ZoomIn size={18} />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Caption */}
-                          <div className="p-3 bg-cards/80 border-t border-white/5 flex flex-col gap-0.5">
-                            <h4 className="font-bold text-xs text-white group-hover:text-[#A855F7] transition-colors truncate">
-                              {posterItem.title}
-                            </h4>
-                            {posterItem.price != null && (
-                              <span className="text-[10px] text-text-secondary">
-                                Standalone: {formatPrice(posterItem.price)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    /* Fallback: Bundle Cover Image banner */
-                    <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/10 group">
-                      <img
-                        src={getImageUrl(game.coverImage) || '/images/hero-artwork.png'}
-                        alt={game.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/10 text-xs font-bold text-white">
-                        {game.title} - Bundle Cover Banner
-                      </div>
-                    </div>
-                  )}
+                {/* Bundle Cover Banner */}
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-2xl group">
+                  <img
+                    src={getImageUrl(game.coverImage) || '/images/hero-artwork.png'}
+                    alt={game.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                 </div>
 
-                {/* 2. Bundle Description Section */}
+                {/* Bundle Description Section */}
                 <div className="bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
                   <div className="flex items-center gap-2.5 mb-4 border-b border-white/10 pb-4">
                     <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
