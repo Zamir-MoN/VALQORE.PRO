@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Search, ChevronDown, ShoppingCart, Check, Gamepad2, Sparkles, ShieldCheck, Zap, ArrowUpDown } from 'lucide-react';
+import { Package, Search, ChevronDown, ShoppingCart, Check, Gamepad2, ShieldCheck, Zap, ArrowUpDown } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
@@ -72,78 +72,52 @@ export const BundlesPage = () => {
     <div className="pt-28 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
       <div className="container mx-auto max-w-[1400px]">
 
-        {/* Hero Banner */}
-        <div className="relative rounded-3xl overflow-hidden mb-12 p-6 sm:p-10 lg:p-12 border border-white/10 bg-gradient-to-br from-purple-950/40 via-background/80 to-background/90 backdrop-blur-xl shadow-2xl">
-          {/* Ambient Glows */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#A855F7]/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 max-w-3xl">
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#A855F7]/15 border border-[#A855F7]/30 text-[#A855F7] text-xs font-black uppercase tracking-wider mb-5 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-              <Package size={14} className="animate-pulse" />
-              <span>Franchise & Mega Bundles</span>
+        {/* Page Title & Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-[#A855F7] uppercase tracking-wider bg-[#A855F7]/10 px-2.5 py-0.5 rounded-full border border-[#A855F7]/20 flex items-center gap-1.5">
+                <Package size={12} className="text-[#A855F7]" />
+                <span>Special Packs</span>
+              </span>
             </div>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-heading font-black tracking-tight text-white mb-4 leading-tight">
-              Curated Game <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A855F7] via-purple-300 to-primary">Bundles & Packs</span>
+            <h1 className="text-3xl sm:text-4xl font-heading font-black text-white tracking-tight">
+              Game Bundles
             </h1>
+          </div>
 
-            <p className="text-sm sm:text-base lg:text-lg text-text-secondary leading-relaxed mb-8 max-w-2xl font-normal">
-              Own complete franchises and game collections in a single discounted pack. Enjoy instant digital delivery, verified launcher credentials, and permanent lifetime warranty.
-            </p>
-
-            {/* Quick Stats Pills */}
-            <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-white/90">
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 rounded-xl border border-white/10">
-                <Sparkles size={14} className="text-[#A855F7]" /> Up to 80% Bundle Savings
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 rounded-xl border border-white/10">
-                <Zap size={14} className="text-primary" /> Instant Delivery
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-black/40 rounded-xl border border-white/10">
-                <ShieldCheck size={14} className="text-emerald-400" /> 100% Lifetime Warranty
-              </span>
+          {/* Search Box & Sort */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            {/* Search Box */}
+            <div className="relative w-full sm:w-80">
+              <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search bundles or games..."
+                className="w-full pl-10 pr-4 py-2.5 bg-cards/60 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/60 focus:border-[#A855F7] focus:outline-none focus:ring-1 focus:ring-[#A855F7] transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-secondary hover:text-white"
+                >
+                  Clear
+                </button>
+              )}
             </div>
-          </div>
-        </div>
-
-        {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-          {/* Search Box */}
-          <div className="relative w-full sm:w-96">
-            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search bundles or included games..."
-              className="w-full pl-10 pr-4 py-2.5 bg-cards/60 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/60 focus:border-[#A855F7] focus:outline-none focus:ring-1 focus:ring-[#A855F7] transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-secondary hover:text-white"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Results count & Sort */}
-          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-            <span className="text-xs text-text-secondary font-bold whitespace-nowrap">
-              {sortedBundles.length} {sortedBundles.length === 1 ? 'Bundle' : 'Bundles'} Available
-            </span>
 
             {/* Sort Dropdown */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-cards/60 border border-white/10 rounded-xl text-xs font-bold text-white hover:border-white/20 transition-all cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-4 py-2.5 bg-cards/60 border border-white/10 rounded-xl text-xs font-bold text-white hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
               >
-                <ArrowUpDown size={14} className="text-[#A855F7]" />
-                <span>Sort: {sortBy}</span>
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown size={14} className="text-[#A855F7]" />
+                  <span>{sortBy}</span>
+                </div>
                 <ChevronDown size={14} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
               </button>
 
