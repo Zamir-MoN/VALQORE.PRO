@@ -15,16 +15,16 @@ export const BundleGames = () => {
 
   if (loading) {
     return (
-      <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 relative z-10" id="bundles">
+      <section className="pt-2 sm:pt-6 pb-4 sm:pb-10 px-4 sm:px-6 lg:px-8 relative z-10" id="bundles">
         <div className="container mx-auto max-w-[1400px]">
-          <div className="flex justify-between items-center mb-5">
+          <div className="flex justify-between items-center mb-3 sm:mb-5">
             <div className="flex items-center gap-3">
               <div className="h-7 w-32 bg-white/10 rounded-lg animate-pulse" />
               <div className="h-5 w-20 bg-primary/10 rounded-full animate-pulse" />
             </div>
             <div className="w-20 h-5 bg-white/5 rounded animate-pulse" />
           </div>
-          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
+          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible no-scrollbar">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="w-[calc(50%-6px)] min-w-[calc(50%-6px)] sm:w-auto sm:min-w-0 flex-shrink-0 flex flex-col bg-cards/40 border border-white/5 rounded-xl p-2 sm:p-2.5 overflow-hidden animate-pulse">
                 <div className="w-full aspect-[16/9] bg-white/5 rounded-lg" />
@@ -47,10 +47,10 @@ export const BundleGames = () => {
   if (bundleGamesData.length === 0) return null;
 
   return (
-    <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 relative z-10" id="bundles">
+    <section className="pt-2 sm:pt-6 pb-4 sm:pb-10 px-4 sm:px-6 lg:px-8 relative z-10" id="bundles">
       <div className="container mx-auto max-w-[1400px]">
         {/* Section Header */}
-        <div className="flex justify-between items-center mb-4 sm:mb-5">
+        <div className="flex justify-between items-center mb-3 sm:mb-5">
           <div className="flex items-center gap-2 sm:gap-2.5">
             <h2 className="text-xl sm:text-3xl font-heading font-black tracking-tight">Bundles</h2>
             <span className="text-[10px] sm:text-[11px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 sm:px-2.5 py-0.5 rounded-full border border-primary/20 flex items-center gap-1 shadow-[0_0_12px_rgba(220,248,54,0.15)]">
@@ -69,7 +69,7 @@ export const BundleGames = () => {
         </div>
 
         {/* 2-Cards Side-by-Side in One Line with Horizontal Scroll on Mobile */}
-        <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory pb-3 sm:pb-0 no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory pb-1 sm:pb-0 no-scrollbar scroll-smooth">
           {bundleGamesData.map((bundle) => {
             const hasSavings = bundle.steamPrice != null && bundle.steamPrice > bundle.price && bundle.price > 0;
             const savingsPercent = hasSavings ? Math.round(((bundle.steamPrice! - bundle.price) / bundle.steamPrice!) * 100) : 0;

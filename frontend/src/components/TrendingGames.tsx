@@ -10,7 +10,7 @@ export const TrendingGames = () => {
   
   if (loading) {
     return (
-      <section className="py-20 px-6 lg:px-12 relative z-10" id="trending">
+      <section className="pt-4 sm:pt-16 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-12 relative z-10" id="trending">
         <div className="container mx-auto max-w-[1400px]">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             <div className="lg:col-span-3">
@@ -73,7 +73,7 @@ export const TrendingGames = () => {
     .slice(0, 3);
 
   return (
-    <section className="py-20 px-6 lg:px-12 relative z-10" id="trending">
+    <section className="pt-4 sm:pt-16 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-12 relative z-10" id="trending">
       <div className="container mx-auto max-w-[1400px]">
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
