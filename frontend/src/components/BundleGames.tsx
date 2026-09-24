@@ -15,25 +15,25 @@ export const BundleGames = () => {
 
   if (loading) {
     return (
-      <section className="py-16 px-6 lg:px-12 relative z-10" id="bundles">
+      <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 relative z-10" id="bundles">
         <div className="container mx-auto max-w-[1400px]">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-40 bg-white/10 rounded-lg animate-pulse" />
-              <div className="h-6 w-20 bg-primary/10 rounded-full animate-pulse" />
+              <div className="h-7 w-32 bg-white/10 rounded-lg animate-pulse" />
+              <div className="h-5 w-20 bg-primary/10 rounded-full animate-pulse" />
             </div>
-            <div className="w-24 h-6 bg-white/5 rounded animate-pulse" />
+            <div className="w-20 h-5 bg-white/5 rounded animate-pulse" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-2xl overflow-hidden animate-pulse">
-                <div className="w-full aspect-[16/9] bg-white/5" />
-                <div className="p-5 flex flex-col gap-3">
-                  <div className="h-6 w-3/4 bg-white/10 rounded" />
-                  <div className="h-4 w-1/2 bg-white/5 rounded" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex flex-col bg-cards/40 border border-white/5 rounded-xl p-2.5 overflow-hidden animate-pulse">
+                <div className="w-full aspect-[16/9] bg-white/5 rounded-lg" />
+                <div className="p-2.5 flex flex-col gap-2">
+                  <div className="h-4 w-3/4 bg-white/10 rounded" />
+                  <div className="h-3 w-1/2 bg-white/5 rounded" />
                   <div className="flex justify-between items-center mt-2">
-                    <div className="h-6 w-24 bg-white/10 rounded" />
-                    <div className="h-9 w-28 bg-white/10 rounded-xl" />
+                    <div className="h-5 w-16 bg-white/10 rounded" />
+                    <div className="h-7 w-20 bg-white/10 rounded-lg" />
                   </div>
                 </div>
               </div>
@@ -47,28 +47,28 @@ export const BundleGames = () => {
   if (bundleGamesData.length === 0) return null;
 
   return (
-    <section className="py-16 px-6 lg:px-12 relative z-10" id="bundles">
+    <section className="py-8 sm:py-10 px-4 sm:px-6 lg:px-8 relative z-10" id="bundles">
       <div className="container mx-auto max-w-[1400px]">
         {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-heading font-black tracking-tight">Bundles</h2>
-            <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-3 py-1 rounded-full border border-primary/20 flex items-center gap-1.5 shadow-[0_0_12px_rgba(220,248,54,0.15)]">
-              <Layers size={13} className="text-primary animate-pulse" />
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight">Bundles</h2>
+            <span className="text-[11px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 flex items-center gap-1.5 shadow-[0_0_12px_rgba(220,248,54,0.15)]">
+              <Layers size={12} className="text-primary animate-pulse" />
               <span>Special Pack</span>
             </span>
           </div>
           <Link 
             to="/store" 
-            className="flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors group cursor-pointer"
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-white transition-colors group cursor-pointer"
           >
             <span>View All</span>
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         {/* Landscape Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {bundleGamesData.map((bundle) => {
             const hasSavings = bundle.steamPrice != null && bundle.steamPrice > bundle.price && bundle.price > 0;
             const savingsPercent = hasSavings ? Math.round(((bundle.steamPrice! - bundle.price) / bundle.steamPrice!) * 100) : 0;
@@ -78,10 +78,10 @@ export const BundleGames = () => {
             return (
               <div
                 key={bundle.id}
-                className="group flex flex-col bg-cards/50 hover:bg-cards/80 border border-white/10 hover:border-primary/40 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(220,248,54,0.15)] hover:-translate-y-1 relative"
+                className="group flex flex-col bg-cards/50 hover:bg-cards/80 border border-white/10 hover:border-primary/40 rounded-xl p-2.5 transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,248,54,0.15)] hover:-translate-y-1 relative"
               >
                 {/* Landscape Image Banner (16:9) */}
-                <Link to={`/game/${bundle.slug || bundle.id}`} className="block relative w-full aspect-[16/9] overflow-hidden bg-black/40">
+                <Link to={`/game/${bundle.slug || bundle.id}`} className="block relative w-full aspect-[16/9] overflow-hidden rounded-lg bg-black/40">
                   <img
                     src={getImageUrl(bundle.coverImage) || '/images/hero-artwork.png'}
                     alt={bundle.title}
@@ -91,66 +91,59 @@ export const BundleGames = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
 
                   {/* Top Left: Bundle Badge */}
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-primary/40 text-primary text-xs font-black px-2.5 py-1 rounded-lg shadow-lg uppercase tracking-wider">
-                    <Layers size={13} className="text-primary" />
+                  <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/85 backdrop-blur-md border border-primary/40 text-primary text-[10px] font-black px-2 py-0.5 rounded shadow-md uppercase tracking-wider">
+                    <Layers size={11} className="text-primary" />
                     <span>Bundle</span>
                   </div>
 
                   {/* Top Right: Savings / Status Badge */}
                   {bundle.outOfStock ? (
-                    <div className="absolute top-3 right-3 bg-red-500/90 text-white font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-lg">
+                    <div className="absolute top-2 right-2 bg-red-500/90 text-white font-black text-[10px] px-2 py-0.5 rounded uppercase tracking-wider shadow-md">
                       Out of Stock
                     </div>
                   ) : owned ? (
-                    <div className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black px-2.5 py-1 rounded-lg shadow-lg flex items-center gap-1">
-                      <Check size={13} />
+                    <div className="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black px-2 py-0.5 rounded shadow-md flex items-center gap-1">
+                      <Check size={11} />
                       <span>In Library</span>
                     </div>
                   ) : hasSavings && isFinite(savingsPercent) ? (
-                    <div className="absolute top-3 right-3 bg-primary/20 text-primary border border-primary/30 backdrop-blur-md text-xs font-black px-2.5 py-1 rounded-lg shadow-[0_0_12px_rgba(220,248,54,0.2)] whitespace-nowrap">
+                    <div className="absolute top-2 right-2 bg-primary/20 text-primary border border-primary/30 backdrop-blur-md text-[10px] font-black px-2 py-0.5 rounded shadow-[0_0_10px_rgba(220,248,54,0.2)] whitespace-nowrap">
                       SAVE {savingsPercent}%
                     </div>
                   ) : null}
-
-                  {/* Bottom Platforms Overlay */}
-                  {bundle.platforms && (
-                    <div className="absolute bottom-3 left-3 text-[11px] font-bold text-white/70 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded border border-white/10">
-                      {Array.isArray(bundle.platforms) ? bundle.platforms.join(', ') : bundle.platforms}
-                    </div>
-                  )}
                 </Link>
 
                 {/* Card Body */}
-                <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 gap-4">
+                <div className="p-2 sm:p-2.5 flex flex-col justify-between flex-1 gap-2.5">
                   <div>
                     <Link to={`/game/${bundle.slug || bundle.id}`}>
-                      <h3 className="font-heading font-black text-lg sm:text-xl text-white group-hover:text-primary transition-colors line-clamp-1">
+                      <h3 className="font-heading font-bold text-sm sm:text-base text-white group-hover:text-primary transition-colors line-clamp-1 leading-snug">
                         {bundle.title}
                       </h3>
                     </Link>
 
                     {/* Bundled Games Preview Subtitle */}
                     {bundle.bundleGames ? (
-                      <div className="mt-1.5 flex items-center gap-1.5 text-xs text-text-secondary line-clamp-1">
-                        <Gamepad2 size={13} className="text-primary flex-shrink-0" />
+                      <div className="mt-1 flex items-center gap-1 text-[11px] text-text-secondary line-clamp-1">
+                        <Gamepad2 size={12} className="text-primary flex-shrink-0" />
                         <span className="truncate">{bundle.bundleGames}</span>
                       </div>
                     ) : (
-                      <p className="mt-1.5 text-xs text-text-secondary line-clamp-1">
+                      <p className="mt-1 text-[11px] text-text-secondary line-clamp-1">
                         {bundle.developer || bundle.genre}
                       </p>
                     )}
                   </div>
 
                   {/* Pricing and Action Row */}
-                  <div className="flex items-center justify-between pt-3 border-t border-white/5 gap-3">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 gap-2">
                     <div className="flex flex-col">
                       {hasSavings && bundle.steamPrice && (
-                        <span className="text-xs text-text-secondary/70 line-through">
+                        <span className="text-[10px] text-text-secondary/70 line-through leading-none mb-0.5">
                           {formatPrice(bundle.steamPrice)}
                         </span>
                       )}
-                      <span className="text-lg sm:text-xl font-heading font-black text-primary">
+                      <span className="text-base sm:text-lg font-heading font-black text-primary leading-none">
                         {formatPrice(bundle.price)}
                       </span>
                     </div>
@@ -158,14 +151,14 @@ export const BundleGames = () => {
                     {owned ? (
                       <Link
                         to="/library"
-                        className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold text-xs transition-all text-center"
+                        className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg font-bold text-[11px] transition-all text-center"
                       >
                         In Library
                       </Link>
                     ) : bundle.outOfStock ? (
                       <button
                         disabled
-                        className="px-4 py-2 bg-white/5 text-text-secondary border border-white/5 rounded-xl font-bold text-xs opacity-50 cursor-not-allowed"
+                        className="px-3 py-1.5 bg-white/5 text-text-secondary border border-white/5 rounded-lg font-bold text-[11px] opacity-50 cursor-not-allowed"
                       >
                         Sold Out
                       </button>
@@ -173,21 +166,21 @@ export const BundleGames = () => {
                       <button
                         onClick={() => addToCart(bundle.id)}
                         disabled={inCart}
-                        className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all duration-300 cursor-pointer ${
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-bold text-[11px] transition-all duration-300 cursor-pointer ${
                           inCart
                             ? 'bg-white/10 text-white border border-white/20'
-                            : 'bg-primary text-black hover:bg-white border border-primary/40 shadow-[0_0_15px_rgba(220,248,54,0.25)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] active:scale-95'
+                            : 'bg-primary text-black hover:bg-white border border-primary/40 shadow-[0_0_12px_rgba(220,248,54,0.25)] hover:shadow-[0_0_15px_rgba(255,255,255,0.4)] active:scale-95'
                         }`}
                       >
                         {inCart ? (
                           <>
-                            <Check size={14} />
+                            <Check size={12} />
                             <span>In Cart</span>
                           </>
                         ) : (
                           <>
-                            <ShoppingCart size={14} />
-                            <span>Add to Cart</span>
+                            <ShoppingCart size={12} />
+                            <span>Add</span>
                           </>
                         )}
                       </button>
