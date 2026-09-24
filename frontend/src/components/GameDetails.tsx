@@ -371,42 +371,18 @@ export const GameDetails = () => {
               </div>
             </div>
 
-            {/* Title & Included Games Subline */}
+            {/* Title */}
             <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight text-white mb-3">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-black tracking-tight text-white">
                 {game.title}
               </h1>
-              {gamesList.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="text-xs text-text-secondary font-bold uppercase tracking-wider mr-1">Includes:</span>
-                  {gamesList.map((gName, idx) => (
-                    <span 
-                      key={idx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-white/90"
-                    >
-                      <Gamepad2 size={13} className="text-[#A855F7]" />
-                      <span>{gName}</span>
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Two Column Layout: Left 68% / Right 32% */}
             <div className="flex flex-col lg:flex-row gap-8 mt-2">
               
-              {/* Left Column: Bundle Artwork + Description */}
+              {/* Left Column: Bundle Description */}
               <div className="w-full lg:w-[68%] flex flex-col gap-8">
-                
-                {/* Bundle Cover Banner */}
-                <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-2xl group">
-                  <img
-                    src={getImageUrl(game.coverImage) || '/images/hero-artwork.png'}
-                    alt={game.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-                </div>
 
                 {/* Bundle Description Section */}
                 <div className="bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
@@ -451,14 +427,9 @@ export const GameDetails = () => {
                                 alt={gItem.title}
                                 className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
                               />
-                              <div className="flex flex-col min-w-0 flex-1">
-                                <span className="text-sm font-bold text-white truncate group-hover/item:text-[#A855F7] transition-colors">
-                                  {gItem.title}
-                                </span>
-                                <span className="text-xs text-text-secondary">
-                                  {formatPrice(gItem.price)}
-                                </span>
-                              </div>
+                              <span className="text-sm font-bold text-white truncate group-hover/item:text-[#A855F7] transition-colors">
+                                {gItem.title}
+                              </span>
                             </Link>
                           ))
                         ) : (
