@@ -77,13 +77,13 @@ export const BundlesPage = () => {
         <div className="mb-8">
           <button 
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-white/70 hover:text-[#A855F7] transition-colors mb-6 group w-max cursor-pointer"
+            className="flex items-center gap-2 text-white/70 hover:text-primary transition-colors mb-6 group w-max cursor-pointer"
           >
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             <span className="font-semibold text-sm tracking-wide">Back</span>
           </button>
-          <p className="text-[#A855F7] font-bold text-sm mb-2 uppercase tracking-widest flex items-center gap-2">
-            <Package size={14} className="text-[#A855F7]" />
+          <p className="text-primary font-bold text-sm mb-2 uppercase tracking-widest flex items-center gap-2">
+            <Package size={14} className="text-primary" />
             <span>SPECIAL PACKS</span>
           </p>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -101,7 +101,7 @@ export const BundlesPage = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search bundles or games..."
-                  className="w-full pl-10 pr-4 py-3 bg-cards/50 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/60 focus:border-[#A855F7] focus:outline-none focus:ring-1 focus:ring-[#A855F7] transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-cards/50 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/60 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
                 />
                 {searchQuery && (
                   <button
@@ -120,7 +120,7 @@ export const BundlesPage = () => {
                   className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-4 py-3 bg-cards/50 border border-white/10 rounded-xl text-xs font-bold text-white hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
                 >
                   <div className="flex items-center gap-2">
-                    <ArrowUpDown size={14} className="text-[#A855F7]" />
+                    <ArrowUpDown size={14} className="text-primary" />
                     <span>{sortBy}</span>
                   </div>
                   <ChevronDown size={14} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
@@ -136,7 +136,7 @@ export const BundlesPage = () => {
                           setIsSortOpen(false);
                         }}
                         className={`w-full text-left px-3.5 py-2 text-xs font-bold transition-colors ${
-                          sortBy === option ? 'text-[#A855F7] bg-[#A855F7]/10' : 'text-text-secondary hover:text-white hover:bg-white/5'
+                          sortBy === option ? 'text-primary bg-primary/10' : 'text-text-secondary hover:text-white hover:bg-white/5'
                         }`}
                       >
                         {option}
@@ -169,7 +169,7 @@ export const BundlesPage = () => {
         ) : sortedBundles.length === 0 ? (
           /* Empty State */
           <div className="py-20 px-4 text-center bg-cards/30 border border-white/10 rounded-3xl backdrop-blur-md flex flex-col items-center justify-center">
-            <div className="p-4 rounded-2xl bg-[#A855F7]/10 border border-[#A855F7]/20 text-[#A855F7] mb-4">
+            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 text-primary mb-4">
               <Package size={36} />
             </div>
             <h3 className="text-xl sm:text-2xl font-heading font-black text-white mb-2">No Bundles Found</h3>
@@ -179,7 +179,7 @@ export const BundlesPage = () => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="px-5 py-2.5 bg-[#A855F7] hover:bg-[#A855F7]/90 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                className="px-5 py-2.5 bg-primary hover:bg-white text-background font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)]"
               >
                 Reset Search
               </button>
@@ -202,7 +202,7 @@ export const BundlesPage = () => {
               return (
                 <div
                   key={bundle.id}
-                  className="group flex flex-col bg-cards/50 hover:bg-cards/90 border border-white/10 hover:border-[#A855F7]/50 rounded-2xl p-3 transition-all duration-300 hover:shadow-[0_0_25px_rgba(168,85,247,0.2)] hover:-translate-y-1 relative"
+                  className="group flex flex-col bg-cards/50 hover:bg-cards/90 border border-white/10 hover:border-primary/40 rounded-2xl p-3 transition-all duration-300 hover:shadow-[0_0_20px_rgba(220,248,54,0.15)] hover:-translate-y-1 relative"
                 >
                   {/* Landscape Image Banner (16:9) */}
                   <Link to={`/game/${bundle.slug || bundle.id}`} className="block relative w-full aspect-[16/9] overflow-hidden rounded-xl bg-black/60">
@@ -215,8 +215,8 @@ export const BundlesPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
 
                     {/* Top Left: Bundle Badge */}
-                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md uppercase tracking-wider">
-                      <Package size={12} className="text-[#A855F7]" />
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-primary/30 text-primary text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md uppercase tracking-wider">
+                      <Package size={12} className="text-primary" />
                       <span>Bundle Pack</span>
                     </div>
 
@@ -231,7 +231,7 @@ export const BundlesPage = () => {
                         <span>In Library</span>
                       </div>
                     ) : hasSavings && isFinite(savingsPercent) ? (
-                      <div className="absolute top-2.5 right-2.5 bg-[#A855F7]/25 text-[#A855F7] border border-[#A855F7]/40 backdrop-blur-md text-[10px] font-black px-2.5 py-1 rounded-lg shadow-[0_0_12px_rgba(168,85,247,0.3)] whitespace-nowrap">
+                      <div className="absolute top-2.5 right-2.5 bg-primary/20 text-primary border border-primary/30 backdrop-blur-md text-[10px] font-black px-2.5 py-1 rounded-lg shadow-[0_0_10px_rgba(220,248,54,0.2)] whitespace-nowrap">
                         SAVE {savingsPercent}%
                       </div>
                     ) : null}
@@ -241,7 +241,7 @@ export const BundlesPage = () => {
                   <div className="p-2 sm:p-3 flex flex-col justify-between flex-1 gap-3">
                     <div>
                       <Link to={`/game/${bundle.slug || bundle.id}`}>
-                        <h3 className="font-heading font-black text-base sm:text-lg text-white group-hover:text-[#A855F7] transition-colors line-clamp-1 leading-snug">
+                        <h3 className="font-heading font-black text-base sm:text-lg text-white group-hover:text-primary transition-colors line-clamp-1 leading-snug">
                           {bundle.title}
                         </h3>
                       </Link>
@@ -249,13 +249,13 @@ export const BundlesPage = () => {
                       {/* Included Games Pill / Count */}
                       {includedList.length > 0 ? (
                         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-text-secondary">
-                          <Gamepad2 size={13} className="text-[#A855F7] shrink-0" />
+                          <Gamepad2 size={13} className="text-primary shrink-0" />
                           <span className="font-semibold text-white/80">{includedList.length} Games Included:</span>
                           <span className="truncate text-text-secondary">{includedList.slice(0, 2).join(', ')}{includedList.length > 2 ? '...' : ''}</span>
                         </div>
                       ) : bundle.bundleGames ? (
                         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-text-secondary truncate">
-                          <Gamepad2 size={13} className="text-[#A855F7] shrink-0" />
+                          <Gamepad2 size={13} className="text-primary shrink-0" />
                           <span className="truncate">{bundle.bundleGames}</span>
                         </div>
                       ) : (
@@ -269,7 +269,7 @@ export const BundlesPage = () => {
                     <div className="flex items-center justify-between pt-3 border-t border-white/5 gap-2 mt-auto">
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-baseline gap-1.5">
-                          <span className="font-heading font-black text-lg sm:text-xl text-white">
+                          <span className="font-heading font-black text-lg sm:text-xl text-primary">
                             {formatPrice(bundle.price)}
                           </span>
                         </div>
@@ -293,7 +293,7 @@ export const BundlesPage = () => {
                         ) : inCart ? (
                           <Link
                             to="/cart"
-                            className="flex items-center gap-1.5 px-3 py-2 bg-[#A855F7]/20 border border-[#A855F7]/40 text-[#A855F7] rounded-xl text-xs font-bold transition-all shadow-[0_0_12px_rgba(168,85,247,0.2)]"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-primary/20 border border-primary/40 text-primary rounded-xl text-xs font-bold transition-all shadow-[0_0_12px_rgba(220,248,54,0.2)]"
                           >
                             <Check size={14} />
                             <span>In Cart</span>
@@ -301,7 +301,7 @@ export const BundlesPage = () => {
                         ) : (
                           <button
                             onClick={() => addToCart(bundle)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-[#A855F7] hover:bg-[#A855F7]/90 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
+                            className="flex items-center gap-1.5 px-3.5 py-2 bg-primary hover:bg-white text-background rounded-xl text-xs font-black transition-all shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:scale-105 active:scale-95 cursor-pointer"
                           >
                             <ShoppingCart size={14} />
                             <span>Get Pack</span>
@@ -319,7 +319,7 @@ export const BundlesPage = () => {
         {/* Benefits Section at Bottom */}
         <div className="mt-20 pt-12 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-cards/40 border border-white/5 p-6 rounded-2xl flex items-start gap-4">
-            <div className="p-3 bg-[#A855F7]/15 rounded-xl border border-[#A855F7]/30 text-[#A855F7] shrink-0">
+            <div className="p-3 bg-primary/15 rounded-xl border border-primary/30 text-primary shrink-0">
               <Package size={22} />
             </div>
             <div>

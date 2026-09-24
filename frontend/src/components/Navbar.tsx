@@ -100,8 +100,8 @@ export const Navbar = () => {
           >
             Bundles
             <span className={clsx(
-              "absolute bottom-0 left-0 h-0.5 bg-[#A855F7] transition-all duration-300 rounded-full",
-              location.pathname === '/bundles' ? "w-full shadow-[0_0_10px_rgba(168,85,247,0.8)]" : "w-0 group-hover:w-full"
+              "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 rounded-full",
+              location.pathname === '/bundles' ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
             )}></span>
           </Link>
           {user && (

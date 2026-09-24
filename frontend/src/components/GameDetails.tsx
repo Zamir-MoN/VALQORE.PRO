@@ -106,7 +106,7 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
             {currentPoster.slug ? (
               <Link
                 to={`/game/${currentPoster.slug}`}
-                className="text-white hover:text-[#A855F7] font-heading font-black text-base sm:text-xl truncate drop-shadow-md block transition-colors"
+                className="text-white hover:text-primary font-heading font-black text-base sm:text-xl truncate drop-shadow-md block transition-colors"
               >
                 {currentPoster.title}
               </Link>
@@ -126,7 +126,7 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
                   onClick={() => setCurrentIndex(dotIdx)}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                     dotIdx === currentIndex 
-                      ? 'w-6 bg-[#A855F7]' 
+                      ? 'w-6 bg-primary shadow-[0_0_10px_rgba(220,248,54,0.6)]' 
                       : 'w-1.5 bg-white/30 hover:bg-white/60'
                   }`}
                   title={`Go to game ${dotIdx + 1}`}
@@ -521,7 +521,7 @@ export const GameDetails = () => {
               </button>
 
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 px-3 py-1 bg-[#A855F7]/15 border border-[#A855F7]/30 text-[#A855F7] text-xs font-black uppercase tracking-wider rounded-lg shadow-[0_0_12px_rgba(168,85,247,0.2)]">
+                <span className="flex items-center gap-1.5 px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-xs font-black uppercase tracking-wider rounded-lg shadow-[0_0_12px_rgba(220,248,54,0.2)]">
                   <Package size={14} />
                   <span>Bundle Pack</span>
                 </span>
@@ -585,14 +585,14 @@ export const GameDetails = () => {
                             <Link 
                               to={`/game/${gItem.slug || gItem.id}`}
                               key={idx}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#A855F7]/40 hover:bg-white/[0.06] transition-all group/item"
+                              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/40 hover:bg-white/[0.06] transition-all group/item"
                             >
                               <img
                                 src={getImageUrl(gItem.coverImage) || '/images/hero-artwork.png'}
                                 alt={gItem.title}
                                 className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
                               />
-                              <span className="text-sm font-bold text-white truncate group-hover/item:text-[#A855F7] transition-colors">
+                              <span className="text-sm font-bold text-white truncate group-hover/item:text-primary transition-colors">
                                 {gItem.title}
                               </span>
                             </Link>
@@ -603,7 +603,7 @@ export const GameDetails = () => {
                               key={idx}
                               className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
                             >
-                              <div className="w-6 h-6 rounded-lg bg-[#A855F7]/20 text-[#A855F7] flex items-center justify-center text-xs font-black flex-shrink-0">
+                              <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-black flex-shrink-0">
                                 {idx + 1}
                               </div>
                               <span className="text-sm font-bold text-white truncate">{gName}</span>
@@ -659,7 +659,7 @@ export const GameDetails = () => {
                   <div className="relative z-10 flex flex-col gap-5">
                     {/* Header tags */}
                     <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-1 bg-[#A855F7]/20 border border-[#A855F7]/30 text-[#A855F7] text-xs font-black rounded-lg uppercase tracking-wider flex items-center gap-1">
+                      <span className="px-2.5 py-1 bg-primary/20 border border-primary/30 text-primary text-xs font-black rounded-lg uppercase tracking-wider flex items-center gap-1">
                         <Package size={12} /> Bundle
                       </span>
                       <span className="text-xs text-text-secondary font-bold">
@@ -767,7 +767,7 @@ export const GameDetails = () => {
                       </div>
                       <div className="flex justify-between items-center py-1 border-b border-white/5">
                         <span className="text-text-secondary">Product Type</span>
-                        <span className="font-bold text-[#A855F7] text-right">Game Bundle</span>
+                        <span className="font-bold text-primary text-right">Game Bundle</span>
                       </div>
                       <div className="flex justify-between items-start py-1">
                         <span className="text-text-secondary">Platforms</span>
@@ -836,7 +836,7 @@ export const GameDetails = () => {
                 <div className="col-span-full mt-12 pt-8 border-t border-white/10">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 bg-[#A855F7] rotate-45"></div>
+                      <div className="w-3 h-3 bg-primary rotate-45 shadow-[0_0_10px_rgba(220,248,54,0.6)]"></div>
                       <h2 className="text-xl font-heading font-black tracking-widest uppercase text-white">
                         {otherBundles.length > 0 ? 'More Bundles & Special Packs' : 'You May Also Like'}
                       </h2>
@@ -851,7 +851,7 @@ export const GameDetails = () => {
                       <Link 
                         to={`/game/${relGame.slug || relGame.id}`} 
                         key={relGame.id}
-                        className="group bg-cards/40 hover:bg-cards/80 border border-white/10 hover:border-[#A855F7]/50 rounded-xl p-2.5 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col cursor-pointer"
+                        className="group bg-cards/40 hover:bg-cards/80 border border-white/10 hover:border-primary/40 rounded-xl p-2.5 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col cursor-pointer"
                       >
                         <div className="relative aspect-[16/9] overflow-hidden rounded-lg mb-2.5 bg-black/40">
                           <img 
@@ -860,7 +860,7 @@ export const GameDetails = () => {
                             loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
-                          <div className="absolute top-2 left-2 bg-black/80 text-[#A855F7] border border-[#A855F7]/40 text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                          <div className="absolute top-2 left-2 bg-black/80 text-primary border border-primary/30 text-[10px] font-black px-2 py-0.5 rounded uppercase">
                             Bundle
                           </div>
                         </div>
