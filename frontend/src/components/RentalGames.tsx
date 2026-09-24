@@ -9,8 +9,8 @@ export const RentalGames = () => {
   const { formatPrice } = useCurrency();
   const [startIndex, setStartIndex] = useState(0);
   
-  // Filter games to only show ones that are rentable and not giveaways
-  const rentalGamesData = games.filter(game => game.isRentable && !game.isGiveaway);
+  // Filter games to only show ones that are rentable and not giveaways or bundles
+  const rentalGamesData = games.filter(game => game.isRentable && !game.isGiveaway && !game.isBundle);
 
   if (loading) {
     return (
