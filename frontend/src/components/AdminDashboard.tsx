@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'games' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests' | 'users' | 'payments'>('games');
+  const [activeTab, setActiveTab] = useState<'games' | 'bundles' | 'giveaways' | 'coupons' | 'posters' | 'orders' | 'creator_requests' | 'users' | 'payments'>('games');
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
@@ -91,7 +91,9 @@ export const AdminDashboard = () => {
     screenshots: '',
     tagImage: '',
     steamAppId: '',
-    creatorAccess: false
+    creatorAccess: false,
+    isBundle: false,
+    bundleGames: ''
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -289,14 +291,17 @@ export const AdminDashboard = () => {
     const [movedGame] = reorderedFiltered.splice(draggedGameIndex, 1);
     reorderedFiltered.splice(dropIndex, 0, movedGame);
 
-    // If activeTab is 'giveaways', merge with non-giveaway games preserving their relative order
+    // If activeTab is 'giveaways' or 'bundles', merge with other games preserving relative order
     let newFullGamesList: Game[] = [];
     if (activeTab === 'giveaways') {
       const nonGiveaways = games.filter(g => !g.isGiveaway);
       newFullGamesList = [...nonGiveaways, ...reorderedFiltered];
+    } else if (activeTab === 'bundles') {
+      const nonBundles = games.filter(g => !g.isBundle);
+      newFullGamesList = [...nonBundles, ...reorderedFiltered];
     } else {
-      const giveaways = games.filter(g => g.isGiveaway);
-      newFullGamesList = [...reorderedFiltered, ...giveaways];
+      const others = games.filter(g => g.isGiveaway || g.isBundle);
+      newFullGamesList = [...reorderedFiltered, ...others];
     }
 
     // Optimistically update local UI state smoothly
@@ -635,7 +640,9 @@ export const AdminDashboard = () => {
       screenshots: game.screenshots || '',
       tagImage: game.tagImage || '',
       steamAppId: game.steamAppId || '',
-      creatorAccess: game.creatorAccess || false
+      creatorAccess: game.creatorAccess || false,
+      isBundle: game.isBundle || false,
+      bundleGames: game.bundleGames || ''
     });
     setImageFile(null);
     setTagImageFile(null);
@@ -682,14 +689,14 @@ export const AdminDashboard = () => {
     }
   };
 
-  const resetForm = (isGiveawayFlag: boolean = false) => {
+  const resetForm = (mode: 'game' | 'giveaway' | 'bundle' = 'game') => {
     setIsEditing(false);
     setCurrentId(null);
     setFormData({
       title: '',
       developer: '',
       rating: 0,
-      genre: '',
+      genre: mode === 'bundle' ? 'Bundle' : '',
       price: 0,
       steamPrice: '',
       internalCost: '',
@@ -699,8 +706,10 @@ export const AdminDashboard = () => {
       platforms: '',
       isRentable: false,
       outOfStock: false,
-      isGiveaway: isGiveawayFlag,
+      isGiveaway: mode === 'giveaway',
       giveawayRules: '',
+      isBundle: mode === 'bundle',
+      bundleGames: '',
       rentPrice: '',
       rentDurationDays: 7,
       rentRules: '',
@@ -753,7 +762,8 @@ export const AdminDashboard = () => {
 
   // if (loading) return <div className="min-h-screen pt-32 text-center text-white">Loading...</div>;
 
-  const totalGames = games.filter(g => !g.isGiveaway).length;
+  const totalGames = games.filter(g => !g.isGiveaway && !g.isBundle).length;
+  const totalBundles = games.filter(g => g.isBundle).length;
   const totalGiveaways = games.filter(g => g.isGiveaway).length;
   const outOfStockCount = games.filter(g => !g.isGiveaway && g.outOfStock).length;
 
@@ -781,7 +791,11 @@ export const AdminDashboard = () => {
               >
                 <X size={20} />
               </button>
-              <h2 className="text-2xl font-bold mb-6 text-primary">{isEditing ? 'Edit Game' : 'Add New Game'}</h2>
+              <h2 className="text-2xl font-bold mb-6 text-primary">
+                {isEditing 
+                  ? (formData.isBundle ? 'Edit Bundle' : formData.isGiveaway ? 'Edit Giveaway' : 'Edit Game') 
+                  : (formData.isBundle ? 'Add New Bundle' : formData.isGiveaway ? 'Add New Giveaway' : 'Add New Game')}
+              </h2>
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 
                 {/* Basic Information */}
@@ -834,6 +848,22 @@ export const AdminDashboard = () => {
                       <label className="text-xs text-[#00F0FF] uppercase tracking-wider font-bold ml-1 flex items-center gap-1"><Gamepad2 size={12}/> Steam Mon App ID (Optional)</label>
                       <input type="text" name="steamAppId" value={formData.steamAppId} onChange={handleInputChange} placeholder="E.g. 1196590" className="bg-cards border border-[#00F0FF]/30 rounded-lg p-3 text-white focus:border-[#00F0FF] outline-none" />
                     </div>
+
+                    {formData.isBundle && (
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs text-[#A855F7] uppercase tracking-wider font-bold ml-1 flex items-center gap-1">
+                          <Package size={13} /> Included Games / Contents (Optional)
+                        </label>
+                        <input 
+                          type="text" 
+                          name="bundleGames" 
+                          value={formData.bundleGames} 
+                          onChange={handleInputChange} 
+                          placeholder="E.g. Grand Theft Auto V, Red Dead Redemption 2, Max Payne 3" 
+                          className="bg-cards border border-[#A855F7]/30 rounded-lg p-3 text-white focus:border-[#A855F7] outline-none" 
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1223,8 +1253,8 @@ export const AdminDashboard = () => {
               )}
 
               <div className="flex gap-4 mt-4">
-                <button type="submit" className="flex-1 bg-primary text-background font-bold py-3 rounded-lg hover:bg-primary/90 transition-colors">
-                  {isEditing ? 'Update Game' : 'Add Game'}
+                <button type="submit" className={`flex-1 font-bold py-3 rounded-lg transition-colors ${formData.isBundle ? 'bg-[#A855F7] text-white hover:bg-[#A855F7]/90' : 'bg-primary text-background hover:bg-primary/90'}`}>
+                  {isEditing ? (formData.isBundle ? 'Update Bundle' : formData.isGiveaway ? 'Update Giveaway' : 'Update Game') : (formData.isBundle ? 'Add Bundle' : formData.isGiveaway ? 'Add Giveaway' : 'Add Game')}
                 </button>
                 <button type="button" onClick={() => { resetForm(); setIsModalOpen(false); }} className="bg-cards border border-white/10 text-white font-bold py-3 px-4 rounded-lg hover:bg-white/10 transition-colors">
                   Cancel
@@ -1237,7 +1267,7 @@ export const AdminDashboard = () => {
 
         <div className="w-full">
           {/* Dashboard Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-primary/30 transition-colors shadow-lg">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-500"></div>
               <div className="relative z-10 flex justify-between items-start">
@@ -1251,6 +1281,19 @@ export const AdminDashboard = () => {
               </div>
             </div>
             
+            <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-[#A855F7]/30 transition-colors shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#A855F7]/10 rounded-full blur-3xl group-hover:bg-[#A855F7]/20 transition-all duration-500"></div>
+              <div className="relative z-10 flex justify-between items-start">
+                <div>
+                  <p className="text-text-secondary text-sm font-medium uppercase tracking-wider mb-1">Bundles</p>
+                  <h3 className="text-4xl font-black text-white">{totalBundles}</h3>
+                </div>
+                <div className="p-3 bg-[#A855F7]/10 rounded-xl border border-[#A855F7]/20">
+                  <Package className="w-6 h-6 text-[#A855F7]" />
+                </div>
+              </div>
+            </div>
+
             <div className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden group hover:border-[#00F0FF]/30 transition-colors shadow-lg">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#00F0FF]/10 rounded-full blur-3xl group-hover:bg-[#00F0FF]/20 transition-all duration-500"></div>
               <div className="relative z-10 flex justify-between items-start">
@@ -1286,6 +1329,12 @@ export const AdminDashboard = () => {
                 className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'games' ? 'bg-primary text-background shadow-[0_0_20px_rgba(var(--primary),0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
               >
                 <Gamepad2 size={20} /> Games
+              </button>
+              <button 
+                onClick={() => setActiveTab('bundles')}
+                className={`flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer ${activeTab === 'bundles' ? 'bg-[#A855F7] text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}
+              >
+                <Package size={20} /> Bundles
               </button>
               <button 
                 onClick={() => setActiveTab('giveaways')}
@@ -1365,7 +1414,7 @@ export const AdminDashboard = () => {
                   <Search className="w-5 h-5" />
                   <span>Search</span>
                 </button>
-              ) : (activeTab === 'games' || activeTab === 'giveaways') && (
+              ) : (activeTab === 'games' || activeTab === 'bundles' || activeTab === 'giveaways') && (
                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   {/* Hidden file input for Import */}
                   <input 
@@ -1398,17 +1447,53 @@ export const AdminDashboard = () => {
                     <span>Import</span>
                   </button>
 
-                  {/* Add Game / Giveaway Button */}
-                  <button
-                    onClick={() => {
-                      resetForm(activeTab === 'giveaways');
-                      setIsModalOpen(true);
-                    }}
-                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${activeTab === 'games' ? 'bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]' : 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'}`}
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Add {activeTab === 'games' ? 'Game' : 'Giveaway'}</span>
-                  </button>
+                  {/* Add Game / Bundle / Giveaway Button */}
+                  {activeTab === 'giveaways' ? (
+                    <button
+                      onClick={() => {
+                        resetForm('giveaway');
+                        setIsModalOpen(true);
+                      }}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-black border border-[#00F0FF]/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>Add Giveaway</span>
+                    </button>
+                  ) : activeTab === 'bundles' ? (
+                    <button
+                      onClick={() => {
+                        resetForm('bundle');
+                        setIsModalOpen(true);
+                      }}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer bg-[#A855F7]/10 text-[#A855F7] hover:bg-[#A855F7] hover:text-white border border-[#A855F7]/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>Add Bundle</span>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          resetForm('game');
+                          setIsModalOpen(true);
+                        }}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-6 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer bg-primary/10 text-primary hover:bg-primary hover:text-background border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.2)]"
+                      >
+                        <Plus className="w-5 h-5" />
+                        <span>Add Game</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          resetForm('bundle');
+                          setIsModalOpen(true);
+                        }}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 font-bold py-3.5 px-5 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer bg-[#A855F7]/10 text-[#A855F7] hover:bg-[#A855F7] hover:text-white border border-[#A855F7]/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-sm"
+                      >
+                        <Package className="w-4 h-4" />
+                        <span>Add Bundle</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -1499,12 +1584,16 @@ export const AdminDashboard = () => {
                     </div>
                   )}
                 </div>
-              ) : activeTab === 'games' || activeTab === 'giveaways' ? (
+              ) : activeTab === 'games' || activeTab === 'bundles' || activeTab === 'giveaways' ? (
                 <>
                   {(() => {
                     const filtered = games
                       .filter(game => game.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .filter(game => (game.isGiveaway || false) === (activeTab === 'giveaways'));
+                      .filter(game => {
+                        if (activeTab === 'giveaways') return Boolean(game.isGiveaway);
+                        if (activeTab === 'bundles') return Boolean(game.isBundle);
+                        return !game.isGiveaway && !game.isBundle;
+                      });
 
                     if (filtered.length === 0) {
                       return (
@@ -1517,12 +1606,12 @@ export const AdminDashboard = () => {
                           <p className="text-text-secondary max-w-md">Your inventory is looking a little empty. Try adding a new item to get started.</p>
                           <button
                             onClick={() => {
-                              resetForm(activeTab === 'giveaways');
+                              resetForm(activeTab === 'giveaways' ? 'giveaway' : activeTab === 'bundles' ? 'bundle' : 'game');
                               setIsModalOpen(true);
                             }}
-                            className="mt-6 font-bold py-3 px-8 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all flex items-center gap-2"
+                            className="mt-6 font-bold py-3 px-8 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all flex items-center gap-2 cursor-pointer"
                           >
-                            <Plus size={18} /> Add Item
+                            <Plus size={18} /> Add {activeTab === 'bundles' ? 'Bundle' : activeTab === 'giveaways' ? 'Giveaway' : 'Game'}
                           </button>
                         </div>
                       );
@@ -1577,7 +1666,7 @@ export const AdminDashboard = () => {
                                 </div>
 
 
-                              <div className="relative shrink-0 overflow-hidden rounded-xl w-full sm:w-20 h-48 sm:h-24 shadow-lg border border-white/10">
+                              <div className={`relative shrink-0 overflow-hidden rounded-xl ${game.isBundle ? 'w-full sm:w-36 h-36 sm:h-20' : 'w-full sm:w-20 h-48 sm:h-24'} shadow-lg border border-white/10`}>
                                 <img 
                                   src={getImageUrl(game.coverImage)} 
                                   alt={game.title} 
@@ -1593,10 +1682,22 @@ export const AdminDashboard = () => {
                                       <span className="sm:hidden text-text-secondary cursor-grab"><GripVertical size={16} /></span>
                                       <h3 className="font-bold text-xl text-white mb-1 leading-tight group-hover:text-primary transition-colors">{game.title}</h3>
                                     </div>
-                                    <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="text-text-secondary text-sm font-medium">{formatPrice(game.price)}</p>
+                                      {game.bundleGames && (
+                                        <span className="text-xs text-text-secondary/80 flex items-center gap-1">
+                                          • <Gamepad2 size={12} className="text-[#A855F7]" /> {game.bundleGames}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                   
                                   <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+                                    {game.isBundle && (
+                                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/30 shadow-[0_0_10px_rgba(168,85,247,0.15)]">
+                                        <Package size={12} /> Bundle
+                                      </span>
+                                    )}
                                     {game.creatorAccess && (
                                       <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-[11px] tracking-wider uppercase bg-primary/10 text-primary border border-primary/30 shadow-[0_0_10px_rgba(220,248,54,0.15)]">
                                         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>

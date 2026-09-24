@@ -283,6 +283,10 @@ router.post('/', authMiddleware, isAdminMiddleware, async (req, res) => {
     if (gameData.giveawayRules === undefined || gameData.giveawayRules === null) {
       gameData.giveawayRules = null;
     }
+    gameData.isBundle = gameData.isBundle === true || gameData.isBundle === 'true';
+    if (gameData.bundleGames !== undefined) {
+      gameData.bundleGames = gameData.bundleGames || null;
+    }
     gameData.creatorAccess = gameData.creatorAccess === true || gameData.creatorAccess === 'true';
     
     // Slug generation
@@ -346,6 +350,12 @@ router.put('/:id', authMiddleware, isAdminMiddleware, async (req, res) => {
 
     if (gameData.isGiveaway !== undefined) {
       gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
+    }
+    if (gameData.isBundle !== undefined) {
+      gameData.isBundle = gameData.isBundle === true || gameData.isBundle === 'true';
+    }
+    if (gameData.bundleGames !== undefined) {
+      gameData.bundleGames = gameData.bundleGames || null;
     }
     
     if (gameData.giveawayRules !== undefined && gameData.giveawayRules === '') {
@@ -483,6 +493,8 @@ router.post('/backup/import', authMiddleware, isAdminMiddleware, async (req, res
         outOfStock: Boolean(g.outOfStock),
         isGiveaway: Boolean(g.isGiveaway),
         giveawayRules: g.giveawayRules || null,
+        isBundle: Boolean(g.isBundle),
+        bundleGames: g.bundleGames || null,
         rentPrice: g.rentPrice !== undefined && g.rentPrice !== null ? parseFloat(g.rentPrice) : null,
         rentDurationDays: g.rentDurationDays ? parseInt(g.rentDurationDays, 10) : 7,
         rentRules: g.rentRules || null,

@@ -8,6 +8,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { Hero } from './components/Hero';
 import { RentalGames } from './components/RentalGames';
 import { TrendingGames } from './components/TrendingGames';
+import { BundleGames } from './components/BundleGames';
 import { GiveawayGames } from './components/GiveawayGames';
 
 import { Testimonials } from './components/Testimonials';
@@ -142,6 +143,7 @@ function App() {
                               <>
                                 <Hero />
                                 <TrendingGames />
+                                <BundleGames />
                                 <RentalGames />
                                 <GiveawayGames />
                                 <Testimonials />

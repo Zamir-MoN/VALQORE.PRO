@@ -31,6 +31,8 @@ export interface Game {
   steamAppId?: string;
   steamPrice?: number | null;
   creatorAccess?: boolean;
+  isBundle?: boolean;
+  bundleGames?: string | null;
 }
 
 

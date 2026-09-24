@@ -58,7 +58,7 @@ export const TrendingGames = () => {
   }
 
 
-  const validGames = games.filter(g => !g.isGiveaway);
+  const validGames = games.filter(g => !g.isGiveaway && !g.isBundle);
   const trendingGames = validGames.slice(0, 12);
   const dealsGames = validGames
     .filter(g => g.steamPrice != null && g.steamPrice > g.price && g.price > 0)
