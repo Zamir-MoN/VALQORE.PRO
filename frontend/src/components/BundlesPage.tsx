@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Package, Search, ChevronDown, ShoppingCart, Check, Gamepad2, ShieldCheck, Zap, ArrowUpDown } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Package, Search, ChevronDown, ShoppingCart, Check, Gamepad2, ShieldCheck, Zap, ArrowUpDown, ArrowLeft } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
@@ -18,6 +18,7 @@ export const BundlesPage = () => {
   const { games, loading } = useGames();
   const { formatPrice } = useCurrency();
   const { addToCart, isInCart, isOwned } = useCart();
+  const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Highest Savings');
@@ -69,76 +70,81 @@ export const BundlesPage = () => {
   }, [filteredBundles, sortBy]);
 
   return (
-    <div className="pt-28 pb-20 px-4 sm:px-6 lg:px-12 relative z-10 min-h-screen">
+    <div className="pt-32 sm:pt-36 pb-20 px-6 lg:px-12 relative z-10 min-h-screen">
       <div className="container mx-auto max-w-[1400px]">
 
-        {/* Page Title & Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-[#A855F7] uppercase tracking-wider bg-[#A855F7]/10 px-2.5 py-0.5 rounded-full border border-[#A855F7]/20 flex items-center gap-1.5">
-                <Package size={12} className="text-[#A855F7]" />
-                <span>Special Packs</span>
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-heading font-black text-white tracking-tight">
+        {/* Header Section matching Store page */}
+        <div className="mb-8">
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-white/70 hover:text-[#A855F7] transition-colors mb-6 group w-max cursor-pointer"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="font-semibold text-sm tracking-wide">Back</span>
+          </button>
+          <p className="text-[#A855F7] font-bold text-sm mb-2 uppercase tracking-widest flex items-center gap-2">
+            <Package size={14} className="text-[#A855F7]" />
+            <span>SPECIAL PACKS</span>
+          </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <h1 className="text-4xl md:text-5xl font-heading font-bold text-white tracking-tight">
               Game Bundles
             </h1>
-          </div>
 
-          {/* Search Box & Sort */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            {/* Search Box */}
-            <div className="relative w-full sm:w-80">
-              <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search bundles or games..."
-                className="w-full pl-10 pr-4 py-2.5 bg-cards/60 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/60 focus:border-[#A855F7] focus:outline-none focus:ring-1 focus:ring-[#A855F7] transition-all"
-              />
-              {searchQuery && (
+            {/* Search Box & Sort Controls */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+              {/* Search Box */}
+              <div className="relative w-full sm:w-80">
+                <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search bundles or games..."
+                  className="w-full pl-10 pr-4 py-3 bg-cards/50 border border-white/10 rounded-xl text-sm text-white placeholder:text-text-secondary/60 focus:border-[#A855F7] focus:outline-none focus:ring-1 focus:ring-[#A855F7] transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-secondary hover:text-white"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="relative w-full sm:w-auto">
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-secondary hover:text-white"
+                  onClick={() => setIsSortOpen(!isSortOpen)}
+                  className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-4 py-3 bg-cards/50 border border-white/10 rounded-xl text-xs font-bold text-white hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
                 >
-                  Clear
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown size={14} className="text-[#A855F7]" />
+                    <span>{sortBy}</span>
+                  </div>
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
                 </button>
-              )}
-            </div>
 
-            {/* Sort Dropdown */}
-            <div className="relative w-full sm:w-auto">
-              <button
-                onClick={() => setIsSortOpen(!isSortOpen)}
-                className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-4 py-2.5 bg-cards/60 border border-white/10 rounded-xl text-xs font-bold text-white hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
-              >
-                <div className="flex items-center gap-2">
-                  <ArrowUpDown size={14} className="text-[#A855F7]" />
-                  <span>{sortBy}</span>
-                </div>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isSortOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-cards/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1.5 z-30">
-                  {SORT_OPTIONS.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => {
-                        setSortBy(option);
-                        setIsSortOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2 text-xs font-bold transition-colors ${
-                        sortBy === option ? 'text-[#A855F7] bg-[#A855F7]/10' : 'text-text-secondary hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              )}
+                {isSortOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-cards/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1.5 z-30">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          setSortBy(option);
+                          setIsSortOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-bold transition-colors ${
+                          sortBy === option ? 'text-[#A855F7] bg-[#A855F7]/10' : 'text-text-secondary hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
