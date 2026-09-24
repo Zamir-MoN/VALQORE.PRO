@@ -547,16 +547,6 @@ export const GameDetails = () => {
                     <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Bundle Description</h2>
                   </div>
 
-                  {/* Bundle Image inside Description Card */}
-                  <div className="relative w-full aspect-video max-h-[380px] rounded-xl overflow-hidden mb-6 border border-white/10 bg-black/40 shadow-lg group">
-                    <img
-                      src={getImageUrl(game.coverImage) || '/images/hero-artwork.png'}
-                      alt={game.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                  </div>
-
                   {game.description ? (
                     <div className="text-sm sm:text-base text-gray-200 leading-relaxed whitespace-pre-line font-normal">
                       {game.description}
@@ -572,43 +562,48 @@ export const GameDetails = () => {
                     </div>
                   )}
 
-                  {/* Included Games Breakdown */}
+                  {/* Included Games Images Grid */}
                   {gamesList.length > 0 && (
                     <div className="mt-6 pt-5 border-t border-white/10">
-                      <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
-                        Games Included in this Pack:
+                      <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-4">
+                        Games Included in this Pack ({gamesList.length}):
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {matchedWebsiteGames.length > 0 ? (
-                          matchedWebsiteGames.map((gItem, idx) => (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                        {gamesList.map((gName, idx) => {
+                          const gItem = matchedWebsiteGames.find(g => 
+                            g.id === gName || 
+                            g.title.toLowerCase() === gName.toLowerCase() ||
+                            (g.slug && g.slug.toLowerCase() === gName.toLowerCase())
+                          );
+                          const cover = gItem?.coverImage || (screenshots[idx] ? screenshots[idx] : null);
+
+                          return (
                             <Link 
-                              to={`/game/${gItem.slug || gItem.id}`}
+                              to={gItem ? `/game/${gItem.slug || gItem.id}` : '#'}
                               key={idx}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#A855F7]/40 hover:bg-white/[0.06] transition-all group/item"
+                              className="group/item relative flex flex-col bg-black/40 rounded-xl overflow-hidden border border-white/10 hover:border-[#A855F7]/50 hover:bg-white/[0.04] transition-all duration-300 shadow-md hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:-translate-y-1"
                             >
-                              <img
-                                src={getImageUrl(gItem.coverImage) || '/images/hero-artwork.png'}
-                                alt={gItem.title}
-                                className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
-                              />
-                              <span className="text-sm font-bold text-white truncate group-hover/item:text-[#A855F7] transition-colors">
-                                {gItem.title}
-                              </span>
-                            </Link>
-                          ))
-                        ) : (
-                          gamesList.map((gName, idx) => (
-                            <div 
-                              key={idx}
-                              className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
-                            >
-                              <div className="w-6 h-6 rounded-lg bg-[#A855F7]/20 text-[#A855F7] flex items-center justify-center text-xs font-black flex-shrink-0">
-                                {idx + 1}
+                              {/* Game Poster Image */}
+                              <div className="relative aspect-[3/4] w-full overflow-hidden bg-black/50">
+                                <img
+                                  src={cover ? getImageUrl(cover) : '/images/hero-artwork.png'}
+                                  alt={gItem ? gItem.title : gName}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover/item:opacity-40 transition-opacity" />
+                                <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/80 backdrop-blur-sm border border-[#A855F7]/30 text-[#A855F7] text-[10px] font-black uppercase rounded shadow">
+                                  #{idx + 1}
+                                </div>
                               </div>
-                              <span className="text-sm font-bold text-white truncate">{gName}</span>
-                            </div>
-                          ))
-                        )}
+                              <div className="p-3 bg-cards/80 border-t border-white/5">
+                                <span className="text-xs sm:text-sm font-bold text-white group-hover/item:text-[#A855F7] transition-colors line-clamp-1">
+                                  {gItem ? gItem.title : gName}
+                                </span>
+                              </div>
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
