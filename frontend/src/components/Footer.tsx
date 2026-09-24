@@ -70,6 +70,7 @@ export const Footer = () => {
             <ul className="space-y-4">
               {[
                 { name: 'Browse Games', url: '/store' },
+                { name: 'Game Bundles', url: '/bundles' },
                 { name: 'Rental Games', url: '/store?genre=Rentals' },
                 { name: 'Valqore Exclusives', url: '/store?genre=Exclusives' }
               ].map((link) => (

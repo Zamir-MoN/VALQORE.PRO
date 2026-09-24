@@ -81,13 +81,27 @@ export const Navbar = () => {
             onClick={handleNavClick('/store')} 
             className={clsx(
               "relative text-sm font-bold transition-colors duration-300 group py-2",
-              location.pathname === '/store' || location.pathname.startsWith('/game/') ? "text-white" : "text-text-secondary hover:text-white"
+              location.pathname === '/store' ? "text-white" : "text-text-secondary hover:text-white"
             )}
           >
             Store
             <span className={clsx(
               "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300 rounded-full",
-              location.pathname === '/store' || location.pathname.startsWith('/game/') ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
+              location.pathname === '/store' ? "w-full shadow-[0_0_10px_rgba(220,248,54,0.8)]" : "w-0 group-hover:w-full"
+            )}></span>
+          </Link>
+          <Link 
+            to="/bundles" 
+            onClick={handleNavClick('/bundles')} 
+            className={clsx(
+              "relative text-sm font-bold transition-colors duration-300 group py-2",
+              location.pathname === '/bundles' ? "text-white" : "text-text-secondary hover:text-white"
+            )}
+          >
+            Bundles
+            <span className={clsx(
+              "absolute bottom-0 left-0 h-0.5 bg-[#A855F7] transition-all duration-300 rounded-full",
+              location.pathname === '/bundles' ? "w-full shadow-[0_0_10px_rgba(168,85,247,0.8)]" : "w-0 group-hover:w-full"
             )}></span>
           </Link>
           {user && (
@@ -203,6 +217,7 @@ export const Navbar = () => {
           items={[
             { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
             { label: 'Store', ariaLabel: 'Browse the store', link: '/store' },
+            { label: 'Bundles', ariaLabel: 'Browse game bundles & packs', link: '/bundles' },
             ...(user ? [{ label: 'Library', ariaLabel: 'View your purchased games', link: '/library' }] : []),
             { label: 'Support', ariaLabel: 'Get help', link: '/support' },
             ...(user 

@@ -59,7 +59,7 @@ export const BundleGames = () => {
             </span>
           </div>
           <Link 
-            to="/store" 
+            to="/bundles" 
             className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-white transition-colors group cursor-pointer"
           >
             <span>View All</span>

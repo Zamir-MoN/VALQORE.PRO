@@ -19,6 +19,7 @@ import { AuthModal } from './components/Auth';
 import { PendingPaymentOverlay } from './components/PendingPaymentOverlay';
 
 const BrowseGames = lazy(() => import('./components/BrowseGames').then(m => ({ default: m.BrowseGames })));
+const BundlesPage = lazy(() => import('./components/BundlesPage').then(m => ({ default: m.BundlesPage })));
 const GameDetails = lazy(() => import('./components/GameDetails').then(m => ({ default: m.GameDetails })));
 const Cart = lazy(() => import('./components/Cart').then(m => ({ default: m.Cart })));
 const Profile = lazy(() => import('./components/Profile').then(m => ({ default: m.Profile })));
@@ -152,6 +153,7 @@ function App() {
                               </>
                             } />
                             <Route path="/store" element={<BrowseGames />} />
+                            <Route path="/bundles" element={<BundlesPage />} />
                             <Route path="/game/:id" element={<GameDetails />} />
                             <Route path="/cart" element={<Cart />} />
                             <Route path="/profile" element={<Profile />} />
