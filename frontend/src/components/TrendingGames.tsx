@@ -129,12 +129,12 @@ export const TrendingGames = () => {
                           loading="lazy"
                           className="w-16 h-16 rounded-xl object-cover group-hover:opacity-80 transition-opacity flex-shrink-0"
                         />
-                        <div className="flex flex-col justify-center min-w-0">
+                        <div className="flex flex-col justify-center min-w-0 flex-1">
                           <h4 className="font-bold text-sm text-white truncate group-hover:text-primary transition-colors">{game.title}</h4>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
                             <span className="text-sm font-bold text-primary">{formatPrice(game.price)}</span>
-                            <span className="text-xs text-text-secondary line-through">{formatPrice(game.steamPrice!)}</span>
-                            <span className="text-[10px] font-black text-black bg-primary px-1.5 py-0.5 rounded">
+                            <span className="text-xs text-text-secondary/80 line-through">{formatPrice(game.steamPrice!)}</span>
+                            <span className="text-[10px] font-black text-primary bg-primary/20 border border-primary/30 px-1.5 py-0.5 rounded-md whitespace-nowrap leading-none shadow-[0_0_10px_rgba(220,248,54,0.1)]">
                               SAVE {savingsPercent}%
                             </span>
                           </div>
