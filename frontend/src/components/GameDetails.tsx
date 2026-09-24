@@ -540,114 +540,16 @@ export const GameDetails = () => {
               </h1>
             </div>
 
-            {/* Two Column Layout: Left 68% / Right 32% */}
-            <div className="flex flex-col lg:flex-row gap-8 mt-2">
+            {/* Two Column Layout on Desktop, Mobile-Optimized Flow: Poster -> Buy Box -> Description -> Guarantees */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-2 items-start">
               
-              {/* Left Column: Poster Carousel + Bundle Description */}
-              <div className="w-full lg:w-[68%] flex flex-col gap-8">
-
-                {/* Auto-Switching Included Games Poster */}
+              {/* 1. Auto-Switching Included Games Poster (Desktop: Left top, Mobile: 1st) */}
+              <div className="w-full lg:col-span-8">
                 <BundlePosterCarousel posters={bundlePosters} />
-
-                {/* Bundle Description Section */}
-                <div className="bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
-                  <div className="flex items-center gap-2.5 mb-6 border-b border-white/10 pb-4">
-                    <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-                      <FileText size={20} />
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Bundle Description</h2>
-                  </div>
-
-                  {game.description ? (
-                    <div className="text-sm sm:text-base text-gray-200 leading-relaxed whitespace-pre-line font-normal">
-                      {game.description}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-text-secondary leading-relaxed space-y-2">
-                      <p>
-                        Get the complete collection with the <strong className="text-white">{game.title}</strong> pack. This bundle delivers full digital access to all included games at a major discount.
-                      </p>
-                      <p>
-                        All games are provided with instant digital delivery, verified accounts, and 24/7 dedicated support.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Included Games Breakdown */}
-                  {gamesList.length > 0 && (
-                    <div className="mt-6 pt-5 border-t border-white/10">
-                      <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
-                        Games Included in this Pack:
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {matchedWebsiteGames.length > 0 ? (
-                          matchedWebsiteGames.map((gItem, idx) => (
-                            <Link 
-                              to={`/game/${gItem.slug || gItem.id}`}
-                              key={idx}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/40 hover:bg-white/[0.06] transition-all group/item"
-                            >
-                              <img
-                                src={getImageUrl(gItem.coverImage) || '/images/hero-artwork.png'}
-                                alt={gItem.title}
-                                className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
-                              />
-                              <span className="text-sm font-bold text-white truncate group-hover/item:text-primary transition-colors">
-                                {gItem.title}
-                              </span>
-                            </Link>
-                          ))
-                        ) : (
-                          gamesList.map((gName, idx) => (
-                            <div 
-                              key={idx}
-                              className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
-                            >
-                              <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-black flex-shrink-0">
-                                {idx + 1}
-                              </div>
-                              <span className="text-sm font-bold text-white truncate">{gName}</span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Account Details / Guarantees */}
-                <div className="bg-cards/30 border border-white/5 rounded-2xl p-6 sm:p-8">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm">
-                    <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
-                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Shield size={20} /></div>
-                      <div>
-                        <h4 className="font-bold text-white mb-1">Instant Delivery</h4>
-                        <p className="text-text-secondary text-xs leading-relaxed">All bundle games delivered immediately to your account & email.</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
-                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Globe size={20} /></div>
-                      <div>
-                        <h4 className="font-bold text-white mb-1">Global Region Free</h4>
-                        <p className="text-text-secondary text-xs leading-relaxed">Play seamlessly from any country without VPN restrictions.</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
-                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><CheckCircle2 size={20} /></div>
-                      <div>
-                        <h4 className="font-bold text-white mb-1">Lifetime Guarantee</h4>
-                        <p className="text-text-secondary text-xs leading-relaxed">100% verified working digital copies with permanent ownership.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
               </div>
 
-              {/* Right Column: Buy Box & Specs */}
-              <div className="w-full lg:w-[32%] flex flex-col gap-6">
-
-                {/* Buy Box */}
+              {/* 2. Buy Box & Specs (Desktop: Right column sticky, Mobile: 2nd right after image!) */}
+              <div className="w-full lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:row-span-3">
                 <div className="bg-cards border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col gap-5 sticky top-28">
                   {/* Subtle Background Art */}
                   <div
@@ -818,7 +720,99 @@ export const GameDetails = () => {
 
                   </div>
                 </div>
+              </div>
 
+              {/* 3. Bundle Description Section (Desktop: Left under poster, Mobile: 3rd after Buy Box!) */}
+              <div className="w-full lg:col-span-8 bg-cards/40 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md relative overflow-hidden shadow-xl">
+                <div className="flex items-center gap-2.5 mb-6 border-b border-white/10 pb-4">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                    <FileText size={20} />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-heading font-black text-white">Bundle Description</h2>
+                </div>
+
+                {game.description ? (
+                  <div className="text-sm sm:text-base text-gray-200 leading-relaxed whitespace-pre-line font-normal">
+                    {game.description}
+                  </div>
+                ) : (
+                  <div className="text-sm text-text-secondary leading-relaxed space-y-2">
+                    <p>
+                      Get the complete collection with the <strong className="text-white">{game.title}</strong> pack. This bundle delivers full digital access to all included games at a major discount.
+                    </p>
+                    <p>
+                      All games are provided with instant digital delivery, verified accounts, and 24/7 dedicated support.
+                    </p>
+                  </div>
+                )}
+
+                {/* Included Games Breakdown */}
+                {gamesList.length > 0 && (
+                  <div className="mt-6 pt-5 border-t border-white/10">
+                    <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">
+                      Games Included in this Pack:
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {matchedWebsiteGames.length > 0 ? (
+                        matchedWebsiteGames.map((gItem, idx) => (
+                          <Link 
+                            to={`/game/${gItem.slug || gItem.id}`}
+                            key={idx}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/40 hover:bg-white/[0.06] transition-all group/item"
+                          >
+                            <img
+                              src={getImageUrl(gItem.coverImage) || '/images/hero-artwork.png'}
+                              alt={gItem.title}
+                              className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
+                            />
+                            <span className="text-sm font-bold text-white truncate group-hover/item:text-primary transition-colors">
+                              {gItem.title}
+                            </span>
+                          </Link>
+                        ))
+                      ) : (
+                        gamesList.map((gName, idx) => (
+                          <div 
+                            key={idx}
+                            className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
+                          >
+                            <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-black flex-shrink-0">
+                              {idx + 1}
+                            </div>
+                            <span className="text-sm font-bold text-white truncate">{gName}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Account Details / Guarantees (Desktop: Left under description, Mobile: 4th) */}
+              <div className="w-full lg:col-span-8 bg-cards/30 border border-white/5 rounded-2xl p-6 sm:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm">
+                  <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Shield size={20} /></div>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Instant Delivery</h4>
+                      <p className="text-text-secondary text-xs leading-relaxed">All bundle games delivered immediately to your account & email.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><Globe size={20} /></div>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Global Region Free</h4>
+                      <p className="text-text-secondary text-xs leading-relaxed">Play seamlessly from any country without VPN restrictions.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-xl">
+                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary flex-shrink-0"><CheckCircle2 size={20} /></div>
+                    <div>
+                      <h4 className="font-bold text-white mb-1">Lifetime Guarantee</h4>
+                      <p className="text-text-secondary text-xs leading-relaxed">100% verified working digital copies with permanent ownership.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
             </div>
