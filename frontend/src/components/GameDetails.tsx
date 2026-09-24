@@ -46,36 +46,36 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Poster Image Container */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-video max-h-[480px] overflow-hidden bg-black/60 flex items-center justify-center">
+      <div className="relative w-full aspect-video overflow-hidden bg-black/80 flex items-center justify-center">
         {/* Full Landscape Art Images */}
         {posters.map((poster, idx) => (
-          <img
+          <div
             key={idx}
-            src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
-            alt={poster.title}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${
+            className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out ${
               idx === currentIndex 
                 ? 'opacity-100 scale-100' 
                 : 'opacity-0 scale-105 pointer-events-none'
             }`}
-          />
+          >
+            {/* Ambient Blurred Background (fills borders seamlessly if image is not exactly 16:9) */}
+            <img
+              src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none"
+            />
+
+            {/* Crisp Foreground Artwork - fits properly without cropping any edges or logos */}
+            <img
+              src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
+              alt={poster.title}
+              className="relative w-full h-full object-contain transition-all duration-500"
+            />
+          </div>
         ))}
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none z-[1]" />
-
-        {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 bg-black/80 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[11px] font-black uppercase tracking-wider rounded-lg shadow-lg">
-            <Package size={12} />
-            <span>Game {currentIndex + 1} of {posters.length}</span>
-          </span>
-          {posters.length > 1 && (
-            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md text-[10px] font-bold text-white/70 rounded border border-white/10">
-              {isPaused ? 'Paused' : 'Auto-switching'}
-            </span>
-          )}
-        </div>
+        {/* Subtle Bottom Gradient Overlay for text readability */}
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-[1]" />
 
         {/* Navigation Arrows (visible on hover) */}
         {posters.length > 1 && (
@@ -98,29 +98,28 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
         )}
 
         {/* Bottom Title & Indicators */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-2.5 z-10">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold block mb-0.5">
-                Included Title
-              </span>
-              <h3 className="text-white font-heading font-black text-base sm:text-lg truncate drop-shadow-md">
-                {currentPoster.title}
-              </h3>
-            </div>
-            {currentPoster.slug && (
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-2 z-10">
+          <div className="min-w-0">
+            <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold block mb-0.5">
+              Included Title
+            </span>
+            {currentPoster.slug ? (
               <Link
                 to={`/game/${currentPoster.slug}`}
-                className="flex-shrink-0 px-2.5 py-1 bg-white/10 hover:bg-[#A855F7]/30 text-white hover:text-[#A855F7] border border-white/10 hover:border-[#A855F7]/40 rounded-lg text-xs font-bold transition-all shadow"
+                className="text-white hover:text-[#A855F7] font-heading font-black text-base sm:text-xl truncate drop-shadow-md block transition-colors"
               >
-                View
+                {currentPoster.title}
               </Link>
+            ) : (
+              <h3 className="text-white font-heading font-black text-base sm:text-xl truncate drop-shadow-md">
+                {currentPoster.title}
+              </h3>
             )}
           </div>
 
           {/* Dots Indicator */}
           {posters.length > 1 && (
-            <div className="flex items-center gap-1.5 pt-1">
+            <div className="flex items-center gap-1.5 pt-0.5">
               {posters.map((_, dotIdx) => (
                 <button
                   key={dotIdx}
