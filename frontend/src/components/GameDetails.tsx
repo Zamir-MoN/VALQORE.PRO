@@ -47,29 +47,16 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
     >
       {/* Poster Image Container */}
       <div className="relative w-full aspect-[4/5] sm:aspect-video max-h-[480px] overflow-hidden bg-black/60 flex items-center justify-center">
-        {/* Ambient Blurred Background Glow */}
-        {posters.map((poster, idx) => (
-          <img
-            key={`bg-${idx}`}
-            src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
-            alt=""
-            aria-hidden="true"
-            className={`absolute inset-0 w-full h-full object-cover blur-2xl opacity-35 scale-110 transition-all duration-700 ease-in-out pointer-events-none ${
-              idx === currentIndex ? 'opacity-35' : 'opacity-0'
-            }`}
-          />
-        ))}
-
-        {/* Sharp Foreground Poster */}
+        {/* Full Landscape Art Images */}
         {posters.map((poster, idx) => (
           <img
             key={idx}
             src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
             alt={poster.title}
-            className={`relative z-0 h-full max-h-[480px] w-auto max-w-full object-contain sm:rounded-xl sm:my-2 shadow-2xl transition-all duration-700 ease-in-out ${
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${
               idx === currentIndex 
                 ? 'opacity-100 scale-100' 
-                : 'opacity-0 scale-105 pointer-events-none absolute'
+                : 'opacity-0 scale-105 pointer-events-none'
             }`}
           />
         ))}
@@ -486,12 +473,20 @@ export const GameDetails = () => {
     }).filter(Boolean) as typeof games;
 
     // Build included games posters list for auto-switching carousel
+    // Use the game's No. 2 media image (first landscape screenshot/artwork), falling back to coverImage
     const bundlePosters: { url: string; title: string; slug?: string }[] = matchedWebsiteGames
-      .map(bg => ({
-        url: bg.coverImage,
-        title: bg.title,
-        slug: bg.slug || bg.id
-      }))
+      .map(bg => {
+        const bgScreenshots = bg.screenshots 
+          ? bg.screenshots.split(',').map(s => s.trim()).filter(Boolean) 
+          : [];
+        // No. 2 media image (first landscape artwork/screenshot), fallback to coverImage
+        const heroArt = bgScreenshots[0] || bg.coverImage;
+        return {
+          url: heroArt,
+          title: bg.title,
+          slug: bg.slug || bg.id
+        };
+      })
       .filter(p => !!p.url);
 
     if (bundlePosters.length === 0) {
