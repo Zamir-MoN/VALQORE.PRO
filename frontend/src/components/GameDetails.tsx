@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2, Package, FileText, Gamepad2, X } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2, Package, FileText, Gamepad2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -12,6 +12,133 @@ import { getImageUrl } from '../utils/image';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
+
+const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: string; slug?: string }[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (posters.length <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % posters.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [posters.length, isPaused]);
+
+  if (posters.length === 0) return null;
+
+  const currentPoster = posters[currentIndex];
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + posters.length) % posters.length);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % posters.length);
+  };
+
+  return (
+    <div 
+      className="relative w-full rounded-2xl overflow-hidden bg-cards/60 border border-white/10 shadow-2xl backdrop-blur-md group"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Poster Image Container */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-black/50">
+        {posters.map((poster, idx) => (
+          <img
+            key={idx}
+            src={getImageUrl(poster.url) || '/images/hero-artwork.png'}
+            alt={poster.title}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${
+              idx === currentIndex 
+                ? 'opacity-100 scale-100' 
+                : 'opacity-0 scale-105 pointer-events-none'
+            }`}
+          />
+        ))}
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none" />
+
+        {/* Top Badges */}
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <span className="flex items-center gap-1.5 px-2.5 py-1 bg-black/80 backdrop-blur-md border border-[#A855F7]/40 text-[#A855F7] text-[11px] font-black uppercase tracking-wider rounded-lg shadow-lg">
+            <Package size={12} />
+            <span>Game {currentIndex + 1} of {posters.length}</span>
+          </span>
+          {posters.length > 1 && (
+            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md text-[10px] font-bold text-white/70 rounded border border-white/10">
+              {isPaused ? 'Paused' : 'Auto-switching'}
+            </span>
+          )}
+        </div>
+
+        {/* Navigation Arrows (visible on hover) */}
+        {posters.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white/80 hover:text-white border border-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer"
+              title="Previous poster"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              onClick={handleNext}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white/80 hover:text-white border border-white/10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer"
+              title="Next poster"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </>
+        )}
+
+        {/* Bottom Title & Indicators */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-2.5 z-10">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold block mb-0.5">
+                Included Title
+              </span>
+              <h3 className="text-white font-heading font-black text-base sm:text-lg truncate drop-shadow-md">
+                {currentPoster.title}
+              </h3>
+            </div>
+            {currentPoster.slug && (
+              <Link
+                to={`/game/${currentPoster.slug}`}
+                className="flex-shrink-0 px-2.5 py-1 bg-white/10 hover:bg-[#A855F7]/30 text-white hover:text-[#A855F7] border border-white/10 hover:border-[#A855F7]/40 rounded-lg text-xs font-bold transition-all shadow"
+              >
+                View
+              </Link>
+            )}
+          </div>
+
+          {/* Dots Indicator */}
+          {posters.length > 1 && (
+            <div className="flex items-center gap-1.5 pt-1">
+              {posters.map((_, dotIdx) => (
+                <button
+                  key={dotIdx}
+                  onClick={() => setCurrentIndex(dotIdx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    dotIdx === currentIndex 
+                      ? 'w-6 bg-[#A855F7]' 
+                      : 'w-1.5 bg-white/30 hover:bg-white/60'
+                  }`}
+                  title={`Go to game ${dotIdx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const GameDetails = () => {
   const { games, loading } = useGames();
@@ -344,6 +471,33 @@ export const GameDetails = () => {
       );
     }).filter(Boolean) as typeof games;
 
+    // Build included games posters list for auto-switching carousel
+    const bundlePosters: { url: string; title: string; slug?: string }[] = matchedWebsiteGames
+      .map(bg => ({
+        url: bg.coverImage,
+        title: bg.title,
+        slug: bg.slug || bg.id
+      }))
+      .filter(p => !!p.url);
+
+    if (bundlePosters.length === 0) {
+      if (screenshots.length > 0) {
+        screenshots.forEach((url, idx) => {
+          bundlePosters.push({
+            url,
+            title: gamesList[idx] || `Game #${idx + 1}`,
+            slug: undefined
+          });
+        });
+      } else if (game.coverImage) {
+        bundlePosters.push({
+          url: game.coverImage,
+          title: game.title,
+          slug: undefined
+        });
+      }
+    }
+
     return (
       <div className="pt-32 pb-20 px-4 md:px-6 lg:px-12 relative z-10" id="bundle-details">
         <div className="container mx-auto max-w-[1400px]">
@@ -479,9 +633,12 @@ export const GameDetails = () => {
 
               </div>
 
-              {/* Right Column: Buy Box & Specs */}
+              {/* Right Column: Poster Carousel & Buy Box */}
               <div className="w-full lg:w-[32%] flex flex-col gap-6">
                 
+                {/* Auto-Switching Included Games Poster */}
+                <BundlePosterCarousel posters={bundlePosters} />
+
                 {/* Buy Box */}
                 <div className="bg-cards border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex flex-col gap-5 sticky top-28">
                   {/* Subtle Background Art */}
