@@ -1,5 +1,4 @@
-import { useRef } from 'react';
-import { Layers, ArrowRight, ShoppingCart, Check, Gamepad2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Layers, ArrowRight, ShoppingCart, Check, Gamepad2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGames } from '../context/GameContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -10,20 +9,9 @@ export const BundleGames = () => {
   const { games, loading } = useGames();
   const { formatPrice } = useCurrency();
   const { addToCart, isInCart, isOwned } = useCart();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Filter games marked as bundles
   const bundleGamesData = games.filter(game => game.isBundle && !game.isGiveaway);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = scrollContainerRef.current.clientWidth * 0.9;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
 
   if (loading) {
     return (
@@ -71,42 +59,17 @@ export const BundleGames = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Mobile Left/Right Scroll Arrows */}
-            {bundleGamesData.length > 2 && (
-              <div className="flex sm:hidden items-center gap-1.5">
-                <button
-                  onClick={() => scroll('left')}
-                  className="p-1.5 rounded-lg bg-cards/80 border border-white/10 text-white/80 hover:text-primary active:scale-95 transition-all shadow-sm"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <button
-                  onClick={() => scroll('right')}
-                  className="p-1.5 rounded-lg bg-cards/80 border border-white/10 text-white/80 hover:text-primary active:scale-95 transition-all shadow-sm"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            )}
-
-            <Link 
-              to="/bundles" 
-              className="flex items-center gap-1 text-xs sm:text-sm font-bold text-primary hover:text-white transition-colors group cursor-pointer"
-            >
-              <span>View All</span>
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+          <Link 
+            to="/bundles" 
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-white transition-colors group cursor-pointer"
+          >
+            <span>View All</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
 
         {/* 2-Cards Side-by-Side in One Line with Horizontal Scroll on Mobile */}
-        <div
-          ref={scrollContainerRef}
-          className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory pb-3 sm:pb-0 no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0"
-        >
+        <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory pb-3 sm:pb-0 no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
           {bundleGamesData.map((bundle) => {
             const hasSavings = bundle.steamPrice != null && bundle.steamPrice > bundle.price && bundle.price > 0;
             const savingsPercent = hasSavings ? Math.round(((bundle.steamPrice! - bundle.price) / bundle.steamPrice!) * 100) : 0;
