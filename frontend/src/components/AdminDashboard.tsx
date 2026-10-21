@@ -185,7 +185,7 @@ export const AdminDashboard = () => {
   });
 
   // Giveaway specific form states
-  const [giveawayCategory, setGiveawayCategory] = useState<string>('Subscription');
+  const [giveawayCategory, setGiveawayCategory] = useState<string>('Game Bundle');
   const [giveawayWorth, setGiveawayWorth] = useState<string>('');
   const [giveawayEndDate, setGiveawayEndDate] = useState<string>('');
   const [giveawayWinnersCount, setGiveawayWinnersCount] = useState<number>(1);
@@ -1232,7 +1232,10 @@ export const AdminDashboard = () => {
 
     if (game.isGiveaway) {
       const gConfig = parseGiveawayRules(game.giveawayRules);
-      setGiveawayCategory(gConfig.category || game.genre || 'Subscription');
+      let cat = gConfig.category || game.genre || 'Game Bundle';
+      if (cat === 'Game Key') cat = 'Single Game';
+      if (cat === 'Other') cat = 'Other Reward';
+      setGiveawayCategory(cat);
       setGiveawayWorth(gConfig.worth ? String(gConfig.worth) : (game.price ? String(game.price) : ''));
       setGiveawayEndDate(gConfig.endDate || '');
       setGiveawayWinnersCount(gConfig.winnersCount || 1);
@@ -1532,7 +1535,7 @@ export const AdminDashboard = () => {
     if (tagImageInputRef.current) tagImageInputRef.current.value = '';
     if (screenshotsInputRef.current) screenshotsInputRef.current.value = '';
 
-    setGiveawayCategory('Subscription');
+    setGiveawayCategory('Game Bundle');
     setGiveawayWorth('');
     setGiveawayEndDate('');
     setGiveawayWinnersCount(1);
@@ -1730,12 +1733,10 @@ export const AdminDashboard = () => {
                           onChange={(e) => setGiveawayCategory(e.target.value)}
                           className="bg-cards border border-white/10 rounded-lg p-3 text-white focus:border-[#00F0FF] outline-none cursor-pointer"
                         >
-                          <option value="Subscription">Subscription (Discord Nitro, Spotify, Netflix, Prime, etc.)</option>
-                          <option value="Game Key">Game Key / Digital Game</option>
-                          <option value="Gift Card">Gift Card / Wallet Code</option>
-                          <option value="Gaming Hardware">Gaming Hardware / Gear</option>
-                          <option value="In-Game Item">In-Game Item / Skins</option>
-                          <option value="Other">Other Reward</option>
+                          <option value="Game Bundle">Game Bundle</option>
+                          <option value="Single Game">Single Game</option>
+                          <option value="Subscription">Subscription</option>
+                          <option value="Other Reward">Other Reward</option>
                         </select>
                       </div>
 
