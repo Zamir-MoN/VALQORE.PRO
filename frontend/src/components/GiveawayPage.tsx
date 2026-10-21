@@ -228,6 +228,9 @@ export const GiveawayPage: React.FC = () => {
       return;
     }
 
+    // Open new tab synchronously within user click event so browser popup blocker does NOT block it
+    const dmWindow = window.open('about:blank', '_blank');
+
     try {
       setIsSubmittingEntry(true);
       const activeToken = authToken || localStorage.getItem('valqore_token') || localStorage.getItem('token');
@@ -252,13 +255,23 @@ export const GiveawayPage: React.FC = () => {
           await navigator.clipboard.writeText(code);
         } catch {}
 
-        // Open Instagram DM automatically & show modal with 4-digit code
         setShowDmModal(true);
         const dmUrlWithCode = getInstagramDmUrl(instagramProfileUrl, code);
-        window.open(dmUrlWithCode, '_blank', 'noopener,noreferrer');
+
+        // Direct the opened window to Instagram DM
+        if (dmWindow && !dmWindow.closed) {
+          dmWindow.location.href = dmUrlWithCode;
+        } else {
+          // Fallback if popup blocker was on: redirect current window
+          window.location.href = dmUrlWithCode;
+        }
+
         toast.success(`Code ${code} copied! Press Ctrl+V (Paste) in Instagram DM to send.`, { duration: 7000 });
+      } else {
+        if (dmWindow) dmWindow.close();
       }
     } catch (err: any) {
+      if (dmWindow) dmWindow.close();
       const errorMsg = err.response?.data?.error || 'Failed to enter giveaway. Please try again.';
       toast.error(errorMsg);
       if (errorMsg.includes('already')) {
@@ -799,14 +812,23 @@ export const GiveawayPage: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3 w-full">
-              <button
-                type="button"
-                onClick={handleOpenInstagramDm}
-                className="w-full py-3.5 px-4 rounded-xl font-black text-xs uppercase tracking-wider bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-95 text-white shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              <a
+                href={getInstagramDmUrl(instagramProfileUrl, userEntry?.code)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  if (userEntry?.code) {
+                    try {
+                      navigator.clipboard.writeText(userEntry.code);
+                      toast.success(`Code ${userEntry.code} copied! Press Ctrl+V in the chat.`);
+                    } catch {}
+                  }
+                }}
+                className="w-full py-3.5 px-4 rounded-xl font-black text-xs uppercase tracking-wider bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:opacity-95 text-white shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer no-underline"
               >
                 <Send size={15} />
                 <span>Open Instagram DM with @{instagramHandle}</span>
-              </button>
+              </a>
 
               <button
                 type="button"
