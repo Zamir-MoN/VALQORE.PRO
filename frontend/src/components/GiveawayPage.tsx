@@ -137,13 +137,26 @@ export const GiveawayPage: React.FC = () => {
       }
     };
 
+    const handleEntryRevoked = (data: any) => {
+      if (data && (data.giveawayId === game?.id || data.giveawayId === id)) {
+        if (data.userId === user?.id || (userEntry?.code && data.code === userEntry.code)) {
+          setIsApproved(false);
+          setUserEntry((prev: any) => ({ ...prev, status: 'PENDING' }));
+          toast.error('Your entry approval was revoked. Must remain following on Instagram to qualify!', { duration: 6000 });
+        }
+        setApprovedEntries((prev) => Math.max(0, prev - 1));
+      }
+    };
+
     socket?.on('giveaway_updated', handleGiveawayUpdate);
     socket?.on('giveaway_entry_approved', handleEntryApproved);
+    socket?.on('giveaway_entry_revoked', handleEntryRevoked);
 
     return () => {
       isMounted = false;
       socket?.off('giveaway_updated', handleGiveawayUpdate);
       socket?.off('giveaway_entry_approved', handleEntryApproved);
+      socket?.off('giveaway_entry_revoked', handleEntryRevoked);
     };
   }, [game?.id, id, user?.id, userEntry?.code, socket]);
 

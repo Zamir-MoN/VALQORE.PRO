@@ -551,6 +551,83 @@ router.post('/admin/entries/:entryId/approve', authMiddleware, isAdminMiddleware
   }
 });
 
+// POST /api/giveaways/admin/entries/:entryId/revoke
+// Admin revokes an approved entry back to PENDING (e.g. if user unfollowed on Instagram)
+router.post('/admin/entries/:entryId/revoke', authMiddleware, isAdminMiddleware, async (req, res) => {
+  try {
+    await ensureGiveawayTable();
+    const { entryId } = req.params;
+
+    let entry: any = null;
+    try {
+      entry = await (prisma as any).giveawayEntry.findUnique({
+        where: { id: entryId },
+        include: {
+          user: { select: { id: true, username: true, email: true } }
+        }
+      });
+    } catch {
+      const raw: any = await prisma.$queryRawUnsafe(
+        `SELECT e.id, e."gameId", e."userId", e.code, e.status, u.username, u.email 
+         FROM "GiveawayEntry" e 
+         JOIN "User" u ON e."userId" = u.id 
+         WHERE e.id = $1 LIMIT 1`,
+        entryId
+      );
+      if (raw && raw[0]) {
+        entry = {
+          id: raw[0].id,
+          gameId: raw[0].gameId,
+          userId: raw[0].userId,
+          code: raw[0].code,
+          status: raw[0].status,
+          user: { id: raw[0].userId, username: raw[0].username, email: raw[0].email }
+        };
+      }
+    }
+
+    if (!entry) {
+      return res.status(404).json({ error: 'Entry not found' });
+    }
+
+    // Update status to PENDING
+    try {
+      await (prisma as any).giveawayEntry.update({
+        where: { id: entry.id },
+        data: { status: 'PENDING' }
+      });
+    } catch {
+      await prisma.$executeRawUnsafe(
+        'UPDATE "GiveawayEntry" SET status = \'PENDING\' WHERE id = $1',
+        entry.id
+      );
+    }
+
+    entry.status = 'PENDING';
+
+    getIO()?.emit('giveaway_entry_revoked', {
+      giveawayId: entry.gameId,
+      userId: entry.userId,
+      entryId: entry.id,
+      code: entry.code,
+      username: entry.user?.username
+    });
+
+    getIO()?.emit('giveaway_updated', {
+      giveawayId: entry.gameId
+    });
+
+    res.json({
+      success: true,
+      message: `Revoked entry for @${entry.user?.username || 'User'} back to Pending!`,
+      entry
+    });
+  } catch (error: any) {
+    console.error('Error revoking entry by id:', error);
+    res.status(500).json({ error: error.message || 'Failed to revoke entry' });
+  }
+});
+
 // POST /api/giveaways/admin/:id/draw-winner
 // Admin picks a random winner from APPROVED participants only
 router.post('/admin/:id/draw-winner', authMiddleware, isAdminMiddleware, async (req, res) => {

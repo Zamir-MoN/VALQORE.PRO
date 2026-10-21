@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown, CreditCard, CheckCircle2, Clock, FileText, ChevronDown, Filter, Trophy, Sparkles, ExternalLink, Send } from 'lucide-react';
+import { Edit2, Trash2, LogOut, Search, Loader2, X, Package, Plus, AlertCircle, Gamepad2, Gift, Ticket, Image as ImageIcon, ShoppingCart, Copy, Check, Users, UserCheck, Download, Upload, Eye, GripVertical, ArrowUpDown, CreditCard, CheckCircle2, Clock, FileText, ChevronDown, Filter, Trophy, Sparkles, ExternalLink, Send, RotateCcw } from 'lucide-react';
 import { FaDiscord, FaInstagram } from 'react-icons/fa';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
@@ -205,6 +205,7 @@ export const AdminDashboard = () => {
   const [giveawayApproveCode, setGiveawayApproveCode] = useState<string>('');
   const [approvingGiveawayCode, setApprovingGiveawayCode] = useState<boolean>(false);
   const [approvingGiveawayEntryId, setApprovingGiveawayEntryId] = useState<string | null>(null);
+  const [revokingGiveawayEntryId, setRevokingGiveawayEntryId] = useState<string | null>(null);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tagImageFile, setTagImageFile] = useState<File | null>(null);
@@ -1424,6 +1425,32 @@ export const AdminDashboard = () => {
       toast.error(err.response?.data?.error || 'Failed to approve entry');
     } finally {
       setApprovingGiveawayEntryId(null);
+    }
+  };
+
+  // Admin revokes an approved participant back to Pending (e.g. if user unfollowed on Instagram)
+  const handleRevokeGiveawayEntryDirectly = async (entryId: string) => {
+    if (!window.confirm('Are you sure you want to revoke this participant approval? They will be moved back to Pending DM.')) {
+      return;
+    }
+
+    setRevokingGiveawayEntryId(entryId);
+    try {
+      const res = await axios.post(
+        `${API_URL}/giveaways/admin/entries/${entryId}/revoke`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || 'Approval revoked to Pending');
+      if (participantsModalGame) {
+        openGiveawayParticipants(participantsModalGame);
+      }
+      fetchGames();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to revoke approval');
+    } finally {
+      setRevokingGiveawayEntryId(null);
     }
   };
 
@@ -4935,9 +4962,25 @@ export const AdminDashboard = () => {
                         {/* Approval Status & Action Button */}
                         <div className="flex items-center gap-2 shrink-0">
                           {isEntryApproved ? (
-                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm">
-                              <CheckCircle2 size={12} /> Approved
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm">
+                                <CheckCircle2 size={12} /> Approved
+                              </span>
+                              <button
+                                type="button"
+                                disabled={revokingGiveawayEntryId === entry.id}
+                                onClick={() => handleRevokeGiveawayEntryDirectly(entry.id)}
+                                className="px-2.5 py-1 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 hover:border-red-500/50 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 shadow-sm"
+                                title="Revoke approval if user unfollowed on Instagram"
+                              >
+                                {revokingGiveawayEntryId === entry.id ? (
+                                  <Loader2 size={12} className="animate-spin text-red-400" />
+                                ) : (
+                                  <RotateCcw size={11} />
+                                )}
+                                <span>Revoke</span>
+                              </button>
+                            </div>
                           ) : (
                             <div className="flex items-center gap-1.5">
                               <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
