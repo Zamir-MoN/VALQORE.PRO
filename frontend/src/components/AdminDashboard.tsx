@@ -1148,7 +1148,8 @@ export const AdminDashboard = () => {
         dataToSubmit.developer = giveawayCategory || 'Valqore Giveaway';
         dataToSubmit.genre = giveawayCategory || 'Subscription';
         dataToSubmit.platforms = 'All Platforms';
-        dataToSubmit.price = parseFloat(giveawayWorth) || 0;
+        dataToSubmit.price = 0;
+        dataToSubmit.isBundle = false;
         dataToSubmit.rating = 5.0;
         dataToSubmit.releaseDate = giveawayEndDate ? giveawayEndDate.split('T')[0] : (formData.releaseDate || new Date().toISOString().split('T')[0]);
       }
@@ -1221,7 +1222,7 @@ export const AdminDashboard = () => {
       tagImage: game.tagImage || '',
       steamAppId: game.steamAppId || '',
       creatorAccess: game.creatorAccess || false,
-      isBundle: game.isBundle || false,
+      isBundle: game.isGiveaway ? false : (game.isBundle || false),
       bundleGames: game.bundleGames || '',
       description: game.description || '',
       slug: game.slug || '',
@@ -1288,13 +1289,13 @@ export const AdminDashboard = () => {
   const togglePublishedStatus = async (gameId: string, currentStatus: boolean, gamePrice: number | string) => {
     if (processingPublish) return;
 
-    if (!currentStatus) {
+    const targetGame = games.find(g => g.id === gameId);
+    if (!currentStatus && !targetGame?.isGiveaway) {
       const priceVal = typeof gamePrice === 'string' ? parseFloat(gamePrice) : gamePrice;
       if (!priceVal || priceVal <= 0) {
         toast.error('Add selling price to publish game.');
-        const gameToEdit = games.find(g => g.id === gameId);
-        if (gameToEdit) {
-          editGame(gameToEdit);
+        if (targetGame) {
+          editGame(targetGame);
           setTimeout(() => {
             document.getElementById('game-price-input')?.focus();
           }, 100);
@@ -2473,7 +2474,7 @@ export const AdminDashboard = () => {
               )}
 
               <div className="flex gap-4 mt-4">
-                <button type="submit" disabled={isSaving} className={`flex-1 font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${formData.isBundle ? 'bg-[#A855F7] text-white hover:bg-[#A855F7]/90' : 'bg-primary text-background hover:bg-primary/90'} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                <button type="submit" disabled={isSaving} className={`flex-1 font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${formData.isBundle ? 'bg-[#A855F7] text-white hover:bg-[#A855F7]/90' : formData.isGiveaway ? 'bg-[#00F0FF] text-black hover:bg-[#00F0FF]/90 font-black shadow-[0_0_15px_rgba(0,240,255,0.35)]' : 'bg-primary text-background hover:bg-primary/90'} disabled:opacity-50 disabled:cursor-not-allowed`}>
                   {isSaving && <Loader2 size={16} className="animate-spin" />}
                   <span>{isEditing ? (formData.isBundle ? 'Update Bundle' : formData.isGiveaway ? 'Update Giveaway' : 'Update Game') : (formData.isBundle ? 'Add Bundle' : formData.isGiveaway ? 'Add Giveaway' : 'Add Game')}</span>
                 </button>

@@ -371,7 +371,11 @@ router.post('/', authMiddleware, isAdminMiddleware, async (req, res) => {
       gameData.steamPrice = totalSteamPrice > 0 ? totalSteamPrice : null;
     }
 
-    if (gameData.isPublished) {
+    if (gameData.isGiveaway && (gameData.price === undefined || gameData.price === null || isNaN(gameData.price))) {
+      gameData.price = 0;
+    }
+
+    if (gameData.isPublished && !gameData.isGiveaway) {
       if (typeof gameData.price !== 'number' || !Number.isFinite(gameData.price) || gameData.price <= 0) {
         res.status(400).json({ error: 'Add selling price to publish game.' });
         return;
@@ -552,8 +556,13 @@ router.put('/:id', authMiddleware, isAdminMiddleware, async (req, res) => {
     }
     console.timeEnd(`[UPDATE GAME/BUNDLE ${reqId}] steam price calc`);
 
+    const isGiveaway = gameData.isGiveaway !== undefined ? gameData.isGiveaway : existingGame.isGiveaway;
+    if (isGiveaway && (gameData.price === undefined || gameData.price === null || isNaN(gameData.price))) {
+      gameData.price = 0;
+    }
+
     const finalIsPublished = gameData.isPublished !== undefined ? gameData.isPublished : existingGame.isPublished;
-    if (finalIsPublished) {
+    if (finalIsPublished && !isGiveaway) {
       const finalPrice = gameData.price !== undefined ? gameData.price : existingGame.price;
       if (typeof finalPrice !== 'number' || !Number.isFinite(finalPrice) || finalPrice <= 0) {
         res.status(400).json({ error: 'Add selling price to publish game.' });
