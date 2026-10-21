@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { 
@@ -30,7 +30,8 @@ import { getImageUrl } from '../utils/image';
 
 export const GiveawayPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { games, getImageUrl } = useGames();
+  const navigate = useNavigate();
+  const { games } = useGames();
   const socket = useSocket();
   const { user, token: authToken } = useAuth();
   const { formatPrice } = useCurrency();
@@ -351,23 +352,35 @@ export const GiveawayPage: React.FC = () => {
   const categoryName = giveawayConfig.category || game?.genre || 'Subscription';
   const displayWorth = giveawayConfig.worth || game?.price || 0;
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
       {/* Background ambient neon glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
       
-      <div className="container mx-auto max-w-[1300px]">
+      <div className="container mx-auto max-w-[1300px] relative z-20">
         {/* Breadcrumb & Navigation */}
         <div className="flex items-center justify-between gap-4 mb-6">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg border border-white/5"
+          <button 
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg border border-white/5 cursor-pointer active:scale-95 select-none"
           >
             <ArrowLeft size={14} /> Back to Store
-          </Link>
+          </button>
           <button 
+            type="button"
             onClick={handleShare}
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00F0FF] hover:text-white transition-colors bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 px-4 py-2 rounded-lg border border-[#00F0FF]/30 cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#00F0FF] hover:text-white transition-colors bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 px-4 py-2 rounded-lg border border-[#00F0FF]/30 cursor-pointer active:scale-95 select-none"
           >
             <Share2 size={14} /> Share Giveaway
           </button>
