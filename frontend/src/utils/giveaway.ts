@@ -33,9 +33,10 @@ export function getInstagramHandle(url: string = DEFAULT_INSTAGRAM_URL): string 
   }
 }
 
-export function getInstagramDmUrl(url: string = DEFAULT_INSTAGRAM_URL): string {
+export function getInstagramDmUrl(url: string = DEFAULT_INSTAGRAM_URL, prefillCode?: string): string {
   const handle = getInstagramHandle(url);
-  return `https://ig.me/m/${handle}`;
+  const base = `https://ig.me/m/${handle}`;
+  return prefillCode ? `${base}?text=${encodeURIComponent(prefillCode)}` : base;
 }
 
 export function parseGiveawayRules(rules?: string | null): GiveawayConfig {

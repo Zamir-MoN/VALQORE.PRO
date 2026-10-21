@@ -234,10 +234,16 @@ export const GiveawayPage: React.FC = () => {
         setUserEntry(entry);
         setTotalEntries(res.data.totalEntries || totalEntries + 1);
 
+        // Auto-copy code to clipboard immediately
+        try {
+          await navigator.clipboard.writeText(code);
+        } catch {}
+
         // Open Instagram DM automatically & show modal with 4-digit code
         setShowDmModal(true);
-        window.open(instagramDmUrl, '_blank', 'noopener,noreferrer');
-        toast.success(`Your 4-Digit Code is ${code}! Send it to our Instagram DM to get approved.`, { duration: 6000 });
+        const dmUrlWithCode = getInstagramDmUrl(instagramProfileUrl, code);
+        window.open(dmUrlWithCode, '_blank', 'noopener,noreferrer');
+        toast.success(`Code ${code} copied! Press Ctrl+V (Paste) in Instagram DM to send.`, { duration: 7000 });
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || 'Failed to enter giveaway. Please try again.';
@@ -256,17 +262,20 @@ export const GiveawayPage: React.FC = () => {
     if (!code) return;
     navigator.clipboard.writeText(code);
     setCopiedCode(true);
-    toast.success(`Code ${code} copied! Paste it in Instagram DM. 📋`);
+    toast.success(`Code ${code} copied! Paste (Ctrl+V) in Instagram DM. 📋`);
     setTimeout(() => setCopiedCode(false), 2500);
   };
 
   // Open Instagram DM
   const handleOpenInstagramDm = () => {
     if (userEntry?.code) {
-      navigator.clipboard.writeText(userEntry.code);
-      toast.success(`Code ${userEntry.code} copied! Opening Instagram DM...`);
+      try {
+        navigator.clipboard.writeText(userEntry.code);
+        toast.success(`Code ${userEntry.code} copied! Press Ctrl+V in the chat.`);
+      } catch {}
     }
-    window.open(instagramDmUrl, '_blank', 'noopener,noreferrer');
+    const dmUrl = getInstagramDmUrl(instagramProfileUrl, userEntry?.code);
+    window.open(dmUrl, '_blank', 'noopener,noreferrer');
   };
 
   // Handle share giveaway
@@ -746,7 +755,7 @@ export const GiveawayPage: React.FC = () => {
             </p>
 
             {/* Glowing 4-Digit Code Display */}
-            <div className="bg-black/80 border border-pink-500/40 rounded-2xl p-4 w-full flex items-center justify-between gap-4 mb-5 shadow-inner">
+            <div className="bg-black/80 border border-pink-500/40 rounded-2xl p-4 w-full flex items-center justify-between gap-4 mb-3 shadow-inner">
               <span className="text-3xl font-black font-mono tracking-[0.35em] text-[#00F0FF] pl-2 drop-shadow-[0_0_12px_rgba(0,240,255,0.7)]">
                 {userEntry.code}
               </span>
@@ -767,6 +776,13 @@ export const GiveawayPage: React.FC = () => {
                   </>
                 )}
               </button>
+            </div>
+
+            <div className="bg-pink-500/10 border border-pink-500/25 rounded-xl p-3 w-full mb-5 text-left flex items-start gap-2.5">
+              <span className="text-pink-400 font-bold text-sm leading-none mt-0.5">👉</span>
+              <p className="text-xs text-pink-200/90 leading-relaxed">
+                <strong>Code is copied to your clipboard!</strong> Simply click the Instagram message bar and press <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-white text-[10px] font-bold">Ctrl + V</kbd> (or right-click &gt; Paste) to send it to us.
+              </p>
             </div>
 
             <div className="flex flex-col gap-3 w-full">
