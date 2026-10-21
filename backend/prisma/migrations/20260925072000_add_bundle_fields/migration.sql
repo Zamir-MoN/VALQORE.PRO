@@ -1,0 +1,3 @@
+ALTER TABLE "Game" ADD COLUMN "isBundle" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Game" ADD COLUMN "bundleGames" TEXT;
+ALTER TABLE "Game" ADD COLUMN "description" TEXT;

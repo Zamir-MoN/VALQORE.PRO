@@ -120,20 +120,69 @@ This document records all features, architectural updates, payment automation sy
 
 ---
 
-## 🛠️ 9. VPS Deployment Instructions
+## 🎁 9. Universal Giveaway System & Social Verification
+
+### 🌐 Universal Giveaways (Subscriptions, Game Keys, Hardware, Gift Cards)
+- **Multi-Category Architecture**:
+  - Removed video-game limitations from giveaways. Giveaways now support all digital and physical items: **Subscriptions** (Discord Nitro, Spotify, Netflix, Xbox Game Pass), **Gift Cards** (Steam Wallet, Amazon), **Game Keys**, **Hardware/Gear**, and **In-Game Items**.
+  - Structured metadata safely stored as JSON inside `Game.giveawayRules` ensuring 100% backward compatibility with existing Prisma schemas.
+- **Dedicated Giveaway Landing Page (`/giveaway/:id`)**:
+  - High-impact cybernetic UI with ambient neon glow, prize category pill badges, estimated worth (₹), and live countdown timer.
+  - Automatic routing from homepage cards and automatic redirect from `/game/:id` if `game.isGiveaway === true`.
+- **Click-to-Verify Social Task Verification**:
+  - Social task cards for official **Discord** (`https://discord.gg/WKWqt7DGAd`) and **Instagram** (`https://www.instagram.com/valqore.pro/`).
+  - Clicking a task launches the official link in a new tab, triggers an animated 3-second verification countdown, and unlocks verified checkmark status without forcing users to type their handles.
+  - Verification state persisted in `localStorage` per user/giveaway.
+  - **"Participate in Giveaway"** button remains locked with a live task counter (`0/2 Completed`) until all required social tasks are verified.
+  - One-click authenticated entry with duplicate protection, real-time entry count broadcast via WebSockets, and celebratory entry confirmation.
+- **Winner Display & Celebration**:
+  - Highlights drawn winners with radiant golden trophy card on the giveaway landing page.
+- **Admin Dashboard Integration**:
+  - **Custom Giveaway Form**: When adding/editing a giveaway, irrelevant game fields (Developer, Genre, Platforms, Steam App ID, autofill) are hidden and replaced with: Prize Title, Category dropdown, Estimated Worth (₹), Draw Date/Countdown, Winners Count, Instagram URL config, and Prize Details/Rules.
+  - Selling price requirement is bypassed for free giveaways.
+  - **Participants Modal**: View full list of entrants with username, email, 4-digit code, and approval status.
+  - **Winner Selection**: Admin can draw a random winner with 1 click from approved participants only, celebrate with a confetti modal, copy the winner's email, and broadcast updates to all active clients.
+
+---
+
+## 📸 10. Instagram-Only 4-Digit DM Verification System
+
+### 🔐 User Flow:
+1. **Follow on Instagram**: User visits the giveaway page and clicks **Follow @valqore.pro** on Instagram.
+2. **Generate 4-Digit Code**: User clicks **"Participate & Get 4-Digit Code"**. The backend generates a cryptographically random 4-digit code (e.g. `4829`) and registers their entry with `status: PENDING`.
+3. **Instagram DM Redirect**: The user is directly prompted to send their 4-digit code to `@valqore.pro` via Instagram Direct (`https://ig.me/m/valqore.pro`).
+4. **Live Verification Status**:
+   - While `PENDING`: Shows an amber banner displaying their 4-digit code with a copy button and a button to open Instagram DMs.
+   - Once `APPROVED`: Automatically transitions to a radiant emerald celebration state in real-time via WebSockets (`giveaway_entry_approved`) without refreshing the page!
+
+### 👑 Admin Verification & Approval Flow:
+1. Admin opens Instagram DMs on phone or browser to see the user's message with their 4-digit code.
+2. Admin verifies whether that user is following the Instagram page.
+3. If following, Admin opens the **Participants Modal** for that giveaway in the Admin Dashboard:
+   - **Quick Code Input**: Paste the 4-digit code in the **"Verify & Approve by 4-Digit Code"** box and click **Approve Code**.
+   - **Direct Row Approval**: Or simply find the user's row in the list and click **Approve** directly.
+4. **Winner Draw Protection**: Only verified, **APPROVED** participants are eligible to be drawn as winners!
+
+---
+
+## 🛠️ 11. VPS Deployment Instructions
 
 To apply all updates on your live production server:
 
 ```bash
-# 1. Navigate to project root
-cd /root/VALQORE_PRO/VALQORE_PRO
+# 1. Navigate to project root on VPS
+cd /home/ubuntu/VALQORE_PRO
 
-# 2. Pull latest codebase from main
+# 2. Pull latest codebase from GitHub
 git pull origin main
 
-# 3. Build optimized frontend production bundle
-cd frontend && npm run build
+# 3. Synchronize database schema and generate Prisma client
+cd backend
+npx prisma db push
+npx prisma generate
+pm2 restart valqore-backend
 
-# 4. Restart services with PM2
-pm2 restart all
+# 4. Build optimized frontend production bundle
+cd ../frontend
+npm run build
 ```

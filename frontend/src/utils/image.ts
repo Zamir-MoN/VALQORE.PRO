@@ -23,3 +23,12 @@ export const getImageUrl = (url: string | null | undefined): string => {
   
   return finalUrl;
 };
+
+export const getThumbnailUrl = (url: string | null | undefined): string => {
+  const fullUrl = getImageUrl(url);
+  if (!fullUrl) return '';
+  if (fullUrl.includes('/uploads/optimized/')) {
+    return fullUrl.replace('/uploads/optimized/', '/uploads/thumbnails/');
+  }
+  return fullUrl;
+};

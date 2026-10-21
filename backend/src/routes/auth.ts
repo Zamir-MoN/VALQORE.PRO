@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { prisma } from '../prismaClient';
 import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 import rateLimit from 'express-rate-limit';
@@ -12,6 +13,18 @@ const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID as string;
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+const parseCookies = (req: Request) => {
+  const list: Record<string, string> = {};
+  const rc = req.headers.cookie;
+  if (rc) {
+    rc.split(';').forEach(cookie => {
+      const parts = cookie.split('=');
+      list[parts.shift()?.trim() || ''] = decodeURI(parts.join('='));
+    });
+  }
+  return list;
+};
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -142,7 +155,7 @@ router.post('/send-register-otp', authLimiter, async (req: Request, res: Respons
     }
 
     // Generate 6 digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Delete any old OTPs for this email to keep table clean
@@ -162,7 +175,8 @@ router.post('/send-register-otp', authLimiter, async (req: Request, res: Respons
     // Send email
     const emailSent = await sendOtpEmail(trimmedEmail, otp, trimmedUsername);
     if (!emailSent) {
-      console.warn('[SEND REGISTER OTP] Email service returned false, but OTP created.');
+      res.status(500).json({ error: 'Failed to send verification email. Please try again later.' });
+      return;
     }
 
     res.json({ message: 'Verification code sent to your email' });
@@ -176,7 +190,7 @@ router.post('/send-register-otp', authLimiter, async (req: Request, res: Respons
 // ----------------------------------------------------
 // Verify Registration OTP & Create User
 // ----------------------------------------------------
-router.post('/verify-register-otp', async (req: Request, res: Response): Promise<void> => {
+router.post('/verify-register-otp', authLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password, otp } = req.body;
 
@@ -194,6 +208,7 @@ router.post('/verify-register-otp', async (req: Request, res: Response): Promise
       where: {
         email: trimmedEmail,
         otp: trimmedOtp,
+        purpose: 'general',
         expiresAt: { gt: new Date() }
       },
       orderBy: { createdAt: 'desc' }
@@ -243,45 +258,6 @@ router.post('/verify-register-otp', async (req: Request, res: Response): Promise
   }
 });
 
-// Register a new user (Direct fallback)
-router.post('/register', authLimiter, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-      res.status(400).json({ error: 'Username, email, and password are required' });
-      return;
-    }
-
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ username }, { email }]
-      }
-    });
-
-    if (existingUser) {
-      res.status(400).json({ error: 'Username or email already exists' });
-      return;
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-      }
-    });
-
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
-    
-    res.status(201).json({ token, user: { id: user.id, username: user.username, email: user.email } });
-  } catch (error) {
-    console.error('[REGISTER ERROR]', error);
-    res.status(500).json({ error: 'Failed to register user' });
-  }
-});
 
 
 // Login user
@@ -289,7 +265,6 @@ router.post('/login', authLimiter, async (req: Request, res: Response): Promise<
   try {
     const { username, password } = req.body;
 
-    // Check for explicit admin auth
     const ADMIN_USERNAME = process.env.ADMIN_USERNAME as string;
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD as string;
 
@@ -299,32 +274,129 @@ router.post('/login', authLimiter, async (req: Request, res: Response): Promise<
       return;
     }
 
-    // Check DB for user (allow login by username or email)
     const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { username },
-          { email: username } // if they typed an email in the username field
-        ]
-      }
+      where: { OR: [{ username }, { email: username }] }
     });
     
-    if (!user) {
-      res.status(401).json({ error: 'Wrong credentials' });
+    if (!user) { res.status(401).json({ error: 'Wrong credentials' }); return; }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password || '');
+    if (!isPasswordValid) { res.status(401).json({ error: 'Wrong credentials' }); return; }
+
+    const cookies = parseCookies(req);
+    const trustedToken = cookies['trusted_device'];
+    let isTrusted = false;
+
+    if (trustedToken) {
+      const tokenHash = crypto.createHash('sha256').update(trustedToken).digest('hex');
+      const device = await prisma.trustedDevice.findUnique({ where: { tokenHash } });
+      if (device && device.userId === user.id && device.expiresAt > new Date()) {
+        isTrusted = true;
+        await prisma.trustedDevice.update({
+          where: { id: device.id },
+          data: { lastUsedAt: new Date(), userAgent: req.headers['user-agent'] || null, ipAddress: req.ip || null }
+        });
+      }
+    }
+
+    if (isTrusted) {
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+      res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
       return;
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      res.status(401).json({ error: 'Wrong credentials' });
+    // Not trusted -> Require OTP
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    
+    await prisma.otpVerification.deleteMany({ where: { email: user.email } });
+    await prisma.otpVerification.create({ data: { email: user.email, otp, expiresAt } });
+
+    const emailSent = await sendOtpEmail(user.email, otp, user.username);
+    if (!emailSent) {
+      res.status(500).json({ error: 'Failed to send login verification email.' });
       return;
+    }
+
+    res.json({ requiresOtp: true, email: user.email, message: 'Verification code sent to your email' });
+  } catch (error) {
+    console.error('[LOGIN ERROR]', error);
+    res.status(500).json({ error: 'Failed to login' });
+  }
+});
+
+// Verify Login OTP
+router.post('/login-verify-otp', authLimiter, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, password, otp, rememberMe } = req.body;
+
+    if (!username || !password || !otp) { res.status(400).json({ error: 'Credentials and OTP are required' }); return; }
+
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ username }, { email: username }] }
+    });
+    
+    if (!user) { res.status(401).json({ error: 'Wrong credentials' }); return; }
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password || '');
+    if (!isPasswordValid) { res.status(401).json({ error: 'Wrong credentials' }); return; }
+
+    const trimmedOtp = otp.toString().trim();
+    const otpRecord = await prisma.otpVerification.findFirst({
+      where: { email: user.email, otp: trimmedOtp, purpose: 'general', expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!otpRecord) { res.status(400).json({ error: 'Invalid or expired verification code' }); return; }
+
+    await prisma.otpVerification.deleteMany({ where: { email: user.email } });
+
+    if (rememberMe) {
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      await prisma.trustedDevice.create({
+        data: { userId: user.id, tokenHash, expiresAt, userAgent: req.headers['user-agent'] || null, ipAddress: req.ip || null }
+      });
+
+      res.cookie('trusted_device', rawToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        domain: process.env.NODE_ENV === 'production' ? '.valqore.pro' : undefined
+      });
     }
 
     const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
   } catch (error) {
-    console.error('[LOGIN ERROR]', error);
-    res.status(500).json({ error: 'Failed to login' });
+    console.error('[LOGIN OTP ERROR]', error);
+    res.status(500).json({ error: 'Failed to verify login' });
+  }
+});
+
+// Logout (clear trusted device cookie)
+router.post('/logout', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const cookies = parseCookies(req);
+    const trustedToken = cookies['trusted_device'];
+    
+    if (trustedToken) {
+      const tokenHash = crypto.createHash('sha256').update(trustedToken).digest('hex');
+      await prisma.trustedDevice.deleteMany({ where: { tokenHash } });
+    }
+    
+    res.clearCookie('trusted_device', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        domain: process.env.NODE_ENV === 'production' ? '.valqore.pro' : undefined
+    });
+    res.json({ message: 'Logged out' });
+  } catch(e) {
+    res.status(500).json({error: 'Logout failed'});
   }
 });
 
@@ -378,7 +450,7 @@ router.post('/password/send-otp', authMiddleware, authLimiter, async (req: Reque
     }
 
     // Generate 6 digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Delete existing OTPs
@@ -436,6 +508,7 @@ router.put('/password', authMiddleware, authLimiter, async (req: Request, res: R
       where: {
         email: user.email,
         otp: trimmedOtp,
+        purpose: 'general',
         expiresAt: { gt: new Date() }
       },
       orderBy: { createdAt: 'desc' }
@@ -464,6 +537,11 @@ router.put('/password', authMiddleware, authLimiter, async (req: Request, res: R
     // Delete used OTP
     await prisma.otpVerification.deleteMany({
       where: { email: user.email }
+    });
+
+    // Invalidate all trusted devices
+    await prisma.trustedDevice.deleteMany({
+      where: { userId: user.id }
     });
 
     res.json({ message: 'Password updated successfully!' });
@@ -540,7 +618,7 @@ router.delete('/admin/users/:id', authMiddleware, async (req: Request, res: Resp
       return;
     }
 
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Delete associated CartItems, WishlistItems, Orders and CreatorApplications
     await prisma.user.delete({
@@ -556,3 +634,120 @@ router.delete('/admin/users/:id', authMiddleware, async (req: Request, res: Resp
 
 export default router;
 
+// ----------------------------------------------------
+// Request Forgot Password OTP
+// ----------------------------------------------------
+router.post('/forgot-password/send-otp', authLimiter, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ error: 'Email is required' });
+      return;
+    }
+
+    const trimmedEmail = email.toLowerCase().trim();
+    
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email: trimmedEmail }
+    });
+
+    if (user) {
+      // Generate 6 digit OTP using crypto
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      // Delete old forgot-password OTPs
+      await prisma.otpVerification.deleteMany({
+        where: { email: trimmedEmail, purpose: 'forgot-password' }
+      });
+
+      // Save new OTP
+      await prisma.otpVerification.create({
+        data: {
+          email: trimmedEmail,
+          otp,
+          purpose: 'forgot-password',
+          expiresAt
+        }
+      });
+
+      // Send email (fire and forget or await safely)
+      await sendOtpEmail(trimmedEmail, otp, user.username).catch(err => {
+        console.error('[FORGOT PASSWORD EMAIL SEND ERROR]', err);
+      });
+    }
+
+    // Always return generic success to prevent enumeration
+    res.json({ message: 'If this email is registered, a password reset OTP has been sent.' });
+  } catch (error: any) {
+    console.error('[FORGOT PASSWORD OTP ERROR]', error);
+    // Return generic error
+    res.status(500).json({ error: 'Failed to process request. Please try again later.' });
+  }
+});
+
+// ----------------------------------------------------
+// Verify Forgot Password OTP & Reset Password
+// ----------------------------------------------------
+router.post('/forgot-password/reset', authLimiter, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      res.status(400).json({ error: 'Email, OTP, and new password are required' });
+      return;
+    }
+
+    const trimmedEmail = email.toLowerCase().trim();
+    const trimmedOtp = otp.toString().trim();
+
+    // Verify OTP for this specific purpose
+    const otpRecord = await prisma.otpVerification.findFirst({
+      where: {
+        email: trimmedEmail,
+        otp: trimmedOtp,
+        purpose: 'forgot-password',
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!otpRecord) {
+      res.status(400).json({ error: 'Invalid or expired OTP' });
+      return;
+    }
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { email: trimmedEmail }
+    });
+
+    if (!user) {
+      // Should logically not happen if OTP existed, but check to be safe
+      res.status(400).json({ error: 'Invalid request' });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Use transaction to ensure atomicity
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword }
+      }),
+      prisma.otpVerification.deleteMany({
+        where: { email: trimmedEmail, purpose: 'forgot-password' }
+      }),
+      prisma.trustedDevice.deleteMany({
+        where: { userId: user.id }
+      })
+    ]);
+
+    res.json({ message: 'Password has been reset successfully. All other devices have been logged out.' });
+  } catch (error: any) {
+    console.error('[FORGOT PASSWORD RESET ERROR]', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});

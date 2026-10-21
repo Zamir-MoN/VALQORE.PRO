@@ -11,12 +11,21 @@ const router = Router();
 router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
-    const { couponCode } = req.body;
+    const { couponCode, termsAccepted, policyVersion } = req.body;
     
     if (!userPayload.userId) {
       res.status(403).json({ error: 'Admins cannot place orders' });
       return;
     }
+
+    if (termsAccepted !== true) {
+      res.status(400).json({ error: 'You must read and agree to the Terms of Service, including the Account Usage, Warranty & Support Policy, to proceed with checkout.' });
+      return;
+    }
+
+    const currentPolicyVersion = policyVersion && typeof policyVersion === 'string' && policyVersion.trim().length > 0 
+      ? policyVersion.trim() 
+      : '2026-09-v1';
 
     // 1. Get all cart items for this user
     const cartItems = await prisma.cartItem.findMany({
@@ -46,10 +55,7 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
         return;
       }
       
-      if (validCoupon.usageLimit !== null && validCoupon.usageCount >= validCoupon.usageLimit) {
-        res.status(400).json({ error: 'Coupon usage limit reached' });
-        return;
-      }
+      // Usage limit is now atomically validated inside the transaction
       
       totalAmount -= validCoupon.discount;
       if (totalAmount < 0) totalAmount = 0;
@@ -75,6 +81,9 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
               userId: userPayload.userId,
               totalAmount,
               status: 'PENDING',
+              termsAccepted: true,
+              termsAcceptedAt: new Date(),
+              termsVersion: currentPolicyVersion,
               couponCode: validCoupon ? validCoupon.code : null,
               couponDiscount: validCoupon ? validCoupon.discount : null,
               commissionEarned: commissionEarned,
@@ -93,12 +102,22 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
             where: { userId: userPayload.userId }
           });
           
-          // Increment coupon usage count
+          // Increment coupon usage count atomically
           if (validCoupon) {
-            await tx.coupon.update({
-              where: { id: validCoupon.id },
+            const result = await tx.coupon.updateMany({
+              where: {
+                id: validCoupon.id,
+                isActive: true,
+                OR: [
+                  { usageLimit: null },
+                  { usageCount: { lt: validCoupon.usageLimit } }
+                ]
+              },
               data: { usageCount: { increment: 1 } }
             });
+            if (result.count === 0) {
+              throw new Error('COUPON_LIMIT_REACHED');
+            }
           }
 
           return newOrder;
@@ -156,7 +175,11 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
     }
 
     res.status(201).json(order);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message === 'COUPON_LIMIT_REACHED') {
+      res.status(400).json({ error: 'Coupon usage limit reached or coupon deactivated' });
+      return;
+    }
     console.error('[CREATE ORDER ERROR]', error);
     res.status(500).json({ error: 'Failed to create order' });
   }

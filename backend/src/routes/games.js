@@ -1,0 +1,604 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const prismaClient_1 = require("../prismaClient");
+const auth_1 = require("../middleware/auth");
+const socket_1 = require("../socket");
+const router = (0, express_1.Router)();
+const generateSlug = async (title, excludeId) => {
+    const baseSlug = (title || 'untitled').toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+    const safeSlug = baseSlug || 'game';
+    let slug = safeSlug;
+    let counter = 1;
+    while (await prismaClient_1.prisma.game.findFirst({ where: { slug, id: { not: excludeId } } })) {
+        slug = `${safeSlug}-${counter}`;
+        counter++;
+    }
+    return slug;
+};
+// Get all games (ordered by custom position first, then createdAt)
+router.get('/', async (req, res) => {
+    try {
+        const games = await prismaClient_1.prisma.game.findMany({
+            orderBy: [
+                { position: 'asc' },
+                { createdAt: 'desc' }
+            ]
+        });
+        // Sanitize: remove internalCost
+        const publicGames = games.map(g => {
+            const { internalCost, ...rest } = g;
+            return rest;
+        });
+        res.json(publicGames);
+    }
+    catch (error) {
+        console.error('[GET /api/games] ERROR:', error);
+        res.status(500).json({ error: 'Failed to fetch games' });
+    }
+});
+// Get all games for Admin (includes internalCost)
+router.get('/admin', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const games = await prismaClient_1.prisma.game.findMany({
+            orderBy: [
+                { position: 'asc' },
+                { createdAt: 'desc' }
+            ]
+        });
+        res.json(games);
+    }
+    catch (error) {
+        console.error('[GET /api/games/admin] ERROR:', error);
+        res.status(500).json({ error: 'Failed to fetch games for admin' });
+    }
+});
+// Reorder games (Admin only)
+router.put('/reorder', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const { gameIds } = req.body; // Array of IDs in new order: ["id1", "id2", ...]
+        if (!Array.isArray(gameIds)) {
+            res.status(400).json({ error: 'gameIds array is required' });
+            return;
+        }
+        // Update position of each game in batch transaction
+        const updatePromises = gameIds.map((id, index) => prismaClient_1.prisma.game.update({
+            where: { id },
+            data: { position: index }
+        }));
+        await prismaClient_1.prisma.$transaction(updatePromises);
+        (0, socket_1.getIO)()?.emit('games_updated');
+        res.json({ success: true, message: 'Games order updated successfully' });
+    }
+    catch (error) {
+        console.error('[REORDER GAMES ERROR]:', error);
+        res.status(500).json({ error: error.message || 'Failed to reorder games' });
+    }
+});
+// Stable pseudo-random base counts between 10-250 for each game ID
+const getBaseReactions = (gameId) => {
+    let hash = 0;
+    for (let i = 0; i < gameId.length; i++) {
+        hash = (hash * 31 + gameId.charCodeAt(i)) & 0xffffffff;
+    }
+    const positiveHash = Math.abs(hash);
+    // Base likes between 40 and 245
+    const baseLikes = 40 + (positiveHash % 206);
+    // Base dislikes between 10 and 65
+    const baseDislikes = 10 + ((positiveHash >> 3) % 56);
+    return { baseLikes, baseDislikes };
+};
+// Get a single game (including base + real like/dislike counts and user reaction)
+router.get('/:id', async (req, res) => {
+    try {
+        const game = await prismaClient_1.prisma.game.findFirst({
+            where: {
+                OR: [
+                    { id: req.params.id },
+                    { slug: req.params.id }
+                ]
+            }
+        });
+        if (!game) {
+            res.status(404).json({ error: 'Game not found' });
+            return;
+        }
+        const [likesCount, dislikesCount] = await Promise.all([
+            prismaClient_1.prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'LIKE' } }),
+            prismaClient_1.prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
+        ]);
+        const { baseLikes, baseDislikes } = getBaseReactions(game.id);
+        // Sanitize: remove internalCost
+        const { internalCost, ...publicGame } = game;
+        res.json({
+            ...publicGame,
+            likesCount: baseLikes + likesCount,
+            dislikesCount: baseDislikes + dislikesCount
+        });
+    }
+    catch (error) {
+        console.error('[GET /:id ERROR]:', error);
+        res.status(500).json({ error: 'Failed to fetch game' });
+    }
+});
+// Get user reaction for a game
+router.get('/:id/reaction', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        const { baseLikes, baseDislikes } = getBaseReactions(req.params.id);
+        if (!userPayload.userId) {
+            res.json({ reaction: null, likesCount: baseLikes, dislikesCount: baseDislikes });
+            return;
+        }
+        const userReaction = await prismaClient_1.prisma.gameReaction.findUnique({
+            where: {
+                userId_gameId: {
+                    userId: userPayload.userId,
+                    gameId: req.params.id
+                }
+            }
+        });
+        const [likesCount, dislikesCount] = await Promise.all([
+            prismaClient_1.prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'LIKE' } }),
+            prismaClient_1.prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
+        ]);
+        res.json({
+            userReaction: userReaction ? userReaction.type : null,
+            likesCount: baseLikes + likesCount,
+            dislikesCount: baseDislikes + dislikesCount
+        });
+    }
+    catch (error) {
+        console.error('[GET REACTION ERROR]', error);
+        res.status(500).json({ error: 'Failed to fetch reaction' });
+    }
+});
+// Toggle Like / Dislike reaction on a game
+router.post('/:id/react', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        if (!userPayload.userId) {
+            res.status(401).json({ error: 'Only logged-in users can like or dislike games' });
+            return;
+        }
+        const { type } = req.body; // "LIKE" or "DISLIKE"
+        if (!['LIKE', 'DISLIKE'].includes(type)) {
+            res.status(400).json({ error: 'Reaction type must be LIKE or DISLIKE' });
+            return;
+        }
+        const existing = await prismaClient_1.prisma.gameReaction.findUnique({
+            where: {
+                userId_gameId: {
+                    userId: userPayload.userId,
+                    gameId: req.params.id
+                }
+            }
+        });
+        if (existing) {
+            if (existing.type === type) {
+                // Clicking same button again removes reaction (toggle off)
+                await prismaClient_1.prisma.gameReaction.delete({
+                    where: { id: existing.id }
+                });
+            }
+            else {
+                // Switch between LIKE and DISLIKE
+                await prismaClient_1.prisma.gameReaction.update({
+                    where: { id: existing.id },
+                    data: { type }
+                });
+            }
+        }
+        else {
+            // Create new reaction
+            await prismaClient_1.prisma.gameReaction.create({
+                data: {
+                    userId: userPayload.userId,
+                    gameId: req.params.id,
+                    type
+                }
+            });
+        }
+        const [likesCount, dislikesCount, currentReaction] = await Promise.all([
+            prismaClient_1.prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'LIKE' } }),
+            prismaClient_1.prisma.gameReaction.count({ where: { gameId: req.params.id, type: 'DISLIKE' } }),
+            prismaClient_1.prisma.gameReaction.findUnique({
+                where: {
+                    userId_gameId: {
+                        userId: userPayload.userId,
+                        gameId: req.params.id
+                    }
+                }
+            })
+        ]);
+        const { baseLikes, baseDislikes } = getBaseReactions(req.params.id);
+        (0, socket_1.getIO)()?.emit('games_updated');
+        res.json({
+            success: true,
+            userReaction: currentReaction ? currentReaction.type : null,
+            likesCount: baseLikes + likesCount,
+            dislikesCount: baseDislikes + dislikesCount
+        });
+    }
+    catch (error) {
+        console.error('[REACT GAME ERROR]', error);
+        res.status(500).json({ error: error.message || 'Failed to react to game' });
+    }
+});
+// Create a new game
+router.post('/', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const allowedFields = [
+            'title', 'developer', 'rating', 'genre', 'price', 'coverImage', 'releaseDate',
+            'platforms', 'isRentable', 'outOfStock', 'isGiveaway', 'giveawayRules',
+            'isBundle', 'bundleGames', 'description', 'rentPrice', 'rentDurationDays',
+            'rentRules', 'minRequirements', 'recRequirements', 'trailerUrl', 'screenshots',
+            'tagImage', 'steamAppId', 'steamPrice', 'internalCost', 'creatorAccess'
+        ];
+        const gameData = {};
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                gameData[field] = req.body[field];
+            }
+        }
+        // ensure numeric fields are numbers
+        gameData.rating = parseFloat(gameData.rating) || 0;
+        gameData.price = parseFloat(gameData.price) || 0;
+        gameData.discount = 0;
+        if (gameData.steamPrice !== undefined) {
+            if (gameData.steamPrice === null || gameData.steamPrice === '') {
+                gameData.steamPrice = null;
+            }
+            else {
+                gameData.steamPrice = parseFloat(gameData.steamPrice);
+            }
+        }
+        if (gameData.internalCost !== undefined) {
+            const userPayload = req.user;
+            if (!userPayload.userId) {
+                if (gameData.internalCost === null || gameData.internalCost === '') {
+                    gameData.internalCost = null;
+                }
+                else {
+                    gameData.internalCost = parseFloat(gameData.internalCost);
+                }
+            }
+            else {
+                delete gameData.internalCost;
+            }
+        }
+        gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
+        if (gameData.giveawayRules === undefined || gameData.giveawayRules === null) {
+            gameData.giveawayRules = null;
+        }
+        gameData.isBundle = gameData.isBundle === true || gameData.isBundle === 'true';
+        if (gameData.bundleGames !== undefined) {
+            gameData.bundleGames = gameData.bundleGames || null;
+        }
+        if (gameData.description !== undefined) {
+            gameData.description = gameData.description || null;
+        }
+        gameData.creatorAccess = gameData.creatorAccess === true || gameData.creatorAccess === 'true';
+        // Slug generation
+        gameData.slug = await generateSlug(gameData.title);
+        gameData.isRentable = gameData.isRentable === true || gameData.isRentable === 'true';
+        if (gameData.rentPrice !== undefined && gameData.rentPrice !== null && gameData.rentPrice !== '') {
+            gameData.rentPrice = parseFloat(gameData.rentPrice);
+        }
+        else {
+            gameData.rentPrice = null;
+        }
+        if (gameData.rentDurationDays !== undefined && gameData.rentDurationDays !== null && gameData.rentDurationDays !== '') {
+            gameData.rentDurationDays = parseInt(gameData.rentDurationDays, 10) || 7;
+        }
+        else {
+            gameData.rentDurationDays = null;
+        }
+        if (Array.isArray(gameData.platforms)) {
+            gameData.platforms = gameData.platforms.join(', ');
+        }
+        const game = await prismaClient_1.prisma.game.create({
+            data: gameData,
+        });
+        (0, socket_1.getIO)()?.emit('games_updated');
+        res.status(201).json(game);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to create game' });
+    }
+});
+// Update a game
+router.put('/:id', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const allowedFields = [
+            'title', 'developer', 'rating', 'genre', 'price', 'coverImage', 'releaseDate',
+            'platforms', 'isRentable', 'outOfStock', 'isGiveaway', 'giveawayRules',
+            'isBundle', 'bundleGames', 'description', 'rentPrice', 'rentDurationDays',
+            'rentRules', 'minRequirements', 'recRequirements', 'trailerUrl', 'screenshots',
+            'tagImage', 'steamAppId', 'steamPrice', 'internalCost', 'creatorAccess'
+        ];
+        const gameData = {};
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                gameData[field] = req.body[field];
+            }
+        }
+        if (gameData.rating !== undefined)
+            gameData.rating = parseFloat(gameData.rating) || 0;
+        if (gameData.price !== undefined)
+            gameData.price = parseFloat(gameData.price) || 0;
+        gameData.discount = 0;
+        if (gameData.steamPrice !== undefined) {
+            if (gameData.steamPrice === null || gameData.steamPrice === '') {
+                gameData.steamPrice = null;
+            }
+            else {
+                gameData.steamPrice = parseFloat(gameData.steamPrice);
+            }
+        }
+        if (gameData.internalCost !== undefined) {
+            const userPayload = req.user;
+            if (!userPayload.userId) {
+                if (gameData.internalCost === null || gameData.internalCost === '') {
+                    gameData.internalCost = null;
+                }
+                else {
+                    gameData.internalCost = parseFloat(gameData.internalCost);
+                }
+            }
+            else {
+                delete gameData.internalCost;
+            }
+        }
+        if (gameData.isGiveaway !== undefined) {
+            gameData.isGiveaway = gameData.isGiveaway === true || gameData.isGiveaway === 'true';
+        }
+        if (gameData.isBundle !== undefined) {
+            gameData.isBundle = gameData.isBundle === true || gameData.isBundle === 'true';
+        }
+        if (gameData.bundleGames !== undefined) {
+            gameData.bundleGames = gameData.bundleGames || null;
+        }
+        if (gameData.description !== undefined) {
+            gameData.description = gameData.description || null;
+        }
+        if (gameData.giveawayRules !== undefined && gameData.giveawayRules === '') {
+            gameData.giveawayRules = null;
+        }
+        if (gameData.creatorAccess !== undefined) {
+            gameData.creatorAccess = gameData.creatorAccess === true || gameData.creatorAccess === 'true';
+        }
+        // Never automatically change an existing slug, but populate it if missing
+        const existingGame = await prismaClient_1.prisma.game.findUnique({ where: { id: req.params.id } });
+        if (!existingGame) {
+            res.status(404).json({ error: 'Game not found' });
+            return;
+        }
+        if (!existingGame.slug && gameData.title) {
+            gameData.slug = await generateSlug(gameData.title, existingGame.id);
+        }
+        if (gameData.isRentable !== undefined) {
+            gameData.isRentable = gameData.isRentable === true || gameData.isRentable === 'true';
+        }
+        if (gameData.rentPrice !== undefined) {
+            if (gameData.rentPrice === null || gameData.rentPrice === '') {
+                gameData.rentPrice = null;
+            }
+            else {
+                gameData.rentPrice = parseFloat(gameData.rentPrice);
+            }
+        }
+        if (gameData.rentDurationDays !== undefined) {
+            if (gameData.rentDurationDays === null || gameData.rentDurationDays === '') {
+                gameData.rentDurationDays = null;
+            }
+            else {
+                gameData.rentDurationDays = parseInt(gameData.rentDurationDays, 10) || 7;
+            }
+        }
+        if (Array.isArray(gameData.platforms)) {
+            gameData.platforms = gameData.platforms.join(', ');
+        }
+        const game = await prismaClient_1.prisma.game.update({
+            where: { id: req.params.id },
+            data: gameData,
+        });
+        (0, socket_1.getIO)()?.emit('games_updated');
+        res.json(game);
+    }
+    catch (error) {
+        console.error('[PUT /:id ERROR]:', error);
+        res.status(500).json({ error: 'Failed to update game' });
+    }
+});
+// Delete a game
+router.delete('/:id', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const gameId = req.params.id;
+        // Manually delete related items first to avoid foreign key constraint errors
+        await prismaClient_1.prisma.cartItem.deleteMany({ where: { gameId } });
+        await prismaClient_1.prisma.wishlistItem.deleteMany({ where: { gameId } });
+        await prismaClient_1.prisma.orderItem.deleteMany({ where: { gameId } });
+        // Now delete the game itself
+        await prismaClient_1.prisma.game.delete({
+            where: { id: gameId }
+        });
+        (0, socket_1.getIO)()?.emit('games_updated');
+        res.json({ message: 'Game deleted' });
+    }
+    catch (error) {
+        console.error('[DELETE GAME ERROR]', error);
+        res.status(500).json({ error: 'Failed to delete game: ' + (error.message || String(error)) });
+    }
+});
+// Export all games backup (JSON)
+router.get('/backup/export', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        if (userPayload.userId) {
+            res.status(403).json({ error: 'Access denied. Admins only.' });
+            return;
+        }
+        const games = await prismaClient_1.prisma.game.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename=valqore_games_backup_${new Date().toISOString().slice(0, 10)}.json`);
+        res.json({
+            exportedAt: new Date().toISOString(),
+            totalGames: games.length,
+            games: games
+        });
+    }
+    catch (error) {
+        console.error('[EXPORT GAMES ERROR]', error);
+        res.status(500).json({ error: 'Failed to export games backup' });
+    }
+});
+// Import games backup (JSON)
+router.post('/backup/import', auth_1.authMiddleware, auth_1.isAdminMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        if (userPayload.userId) {
+            res.status(403).json({ error: 'Access denied. Admins only.' });
+            return;
+        }
+        const { games } = req.body;
+        if (!Array.isArray(games) || games.length === 0) {
+            res.status(400).json({ error: 'Invalid backup format. Expected a "games" array.' });
+            return;
+        }
+        let importedCount = 0;
+        for (const g of games) {
+            // Clean up relations and fields for insertion/upsertion
+            const gameData = {
+                title: g.title || 'Untitled Game',
+                developer: g.developer || 'Unknown',
+                rating: typeof g.rating === 'number' ? g.rating : parseFloat(g.rating) || 0,
+                genre: g.genre || 'Action',
+                price: typeof g.price === 'number' ? g.price : parseFloat(g.price) || 0,
+                discount: 0,
+                coverImage: g.coverImage || '',
+                releaseDate: g.releaseDate || new Date().toISOString().slice(0, 10),
+                platforms: g.platforms || 'PC',
+                isRentable: Boolean(g.isRentable),
+                outOfStock: Boolean(g.outOfStock),
+                isGiveaway: Boolean(g.isGiveaway),
+                giveawayRules: g.giveawayRules || null,
+                isBundle: Boolean(g.isBundle),
+                bundleGames: g.bundleGames || null,
+                description: g.description || null,
+                rentPrice: g.rentPrice !== undefined && g.rentPrice !== null ? parseFloat(g.rentPrice) : null,
+                rentDurationDays: g.rentDurationDays ? parseInt(g.rentDurationDays, 10) : 7,
+                rentRules: g.rentRules || null,
+                minRequirements: g.minRequirements || null,
+                recRequirements: g.recRequirements || null,
+                trailerUrl: g.trailerUrl || null,
+                screenshots: g.screenshots || null,
+                tagImage: g.tagImage || null,
+                steamAppId: g.steamAppId || null,
+                steamPrice: g.steamPrice !== undefined && g.steamPrice !== null ? parseFloat(g.steamPrice) : null,
+                internalCost: g.internalCost !== undefined && g.internalCost !== null ? parseFloat(g.internalCost) : null,
+            };
+            if (g.id) {
+                await prismaClient_1.prisma.game.upsert({
+                    where: { id: g.id },
+                    update: gameData,
+                    create: { id: g.id, ...gameData }
+                });
+            }
+            else {
+                await prismaClient_1.prisma.game.create({
+                    data: gameData
+                });
+            }
+            importedCount++;
+        }
+        (0, socket_1.getIO)()?.emit('games_updated');
+        res.json({ message: `Successfully imported ${importedCount} games!`, count: importedCount });
+    }
+    catch (error) {
+        console.error('[IMPORT GAMES ERROR]', error);
+        res.status(500).json({ error: 'Failed to import games: ' + (error.message || String(error)) });
+    }
+});
+const escapeHtml = (unsafe) => {
+    return (unsafe || '').toString().replace(/[&<"'>]/g, (match) => {
+        const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return escapeMap[match];
+    });
+};
+// Server-side meta tag endpoint for social preview crawlers (WhatsApp, Instagram, Twitter, Discord, Facebook)
+router.get('/share-meta/:identifier', async (req, res) => {
+    try {
+        const identifier = req.params.identifier;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
+        if (!uuidRegex.test(identifier) && !slugRegex.test(identifier)) {
+            res.status(400).send('Invalid Game Identifier');
+            return;
+        }
+        const game = await prismaClient_1.prisma.game.findFirst({
+            where: {
+                OR: [
+                    { id: identifier },
+                    { slug: identifier }
+                ]
+            }
+        });
+        const fallbackImage = 'https://valqore.pro/images/hero-artwork.png';
+        let posterImage = fallbackImage;
+        if (game?.coverImage) {
+            if (game.coverImage.startsWith('http://') || game.coverImage.startsWith('https://')) {
+                posterImage = game.coverImage;
+            }
+            else {
+                posterImage = `https://valqore.pro${game.coverImage.startsWith('/') ? '' : '/'}${game.coverImage}`;
+            }
+        }
+        const title = escapeHtml(game ? `${game.title} | VALQORE` : 'VALQORE');
+        const description = escapeHtml('Discover top digital PC & console games, exclusive giveaways, verified game accounts, and instant delivery on VALQORE.');
+        const gameUrl = `https://valqore.pro/game/${escapeHtml(game?.slug || identifier)}`;
+        const safePosterImage = escapeHtml(posterImage);
+        const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${title}</title>
+  <meta name="description" content="${description}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="VALQORE" />
+  <meta property="og:title" content="${title}" />
+  <meta property="og:description" content="${description}" />
+  <meta property="og:image" content="${safePosterImage}" />
+  <meta property="og:image:secure_url" content="${safePosterImage}" />
+  <meta property="og:image:alt" content="${escapeHtml(game ? game.title : 'VALQORE')}" />
+  <meta property="og:url" content="${gameUrl}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title}" />
+  <meta name="twitter:description" content="${description}" />
+  <meta name="twitter:image" content="${safePosterImage}" />
+  <meta http-equiv="refresh" content="0;url=${gameUrl}" />
+  <script>window.location.replace("${gameUrl}");</script>
+</head>
+<body style="background:#050505;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+  <p>Redirecting to <a href="${gameUrl}" style="color:#DCF836;">${title}</a>...</p>
+</body>
+</html>`;
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
+    }
+    catch (error) {
+        console.error('[SHARE META ERROR]:', error);
+        res.redirect(`https://valqore.pro/game/${escapeHtml(req.params.identifier)}`);
+    }
+});
+exports.default = router;
+//# sourceMappingURL=games.js.map

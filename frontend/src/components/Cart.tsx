@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight, Loader2, ShoppingCart } from 'lucide-react';
+import { Trash2, ArrowLeft, Shield, CreditCard, ChevronRight, Loader2, ShoppingCart, Check } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { PaymentModal } from './PaymentModal';
@@ -20,6 +20,7 @@ export const Cart = () => {
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponDiscountAmount, setCouponDiscountAmount] = useState(0);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   
   // Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -38,14 +39,26 @@ export const Cart = () => {
     }
   }, [user, authLoading, navigate, openAuthModal]);
 
+  // Keep checkbox unchecked by default whenever cart items change or new attempt starts
+  useEffect(() => {
+    setTermsAccepted(false);
+  }, [cartItems.length]);
+
   const handleCheckout = async () => {
     if (!user) return;
     if (cartItems.length === 0) return;
     
+    if (!termsAccepted) {
+      toast.error('Please accept the Terms of Service to proceed with checkout.');
+      return;
+    }
+    
     setIsCheckingOut(true);
     try {
       const res = await axios.post(`${API_URL}/payments/create-session`, {
-        couponCode: couponApplied ? couponCode : undefined
+        couponCode: couponApplied ? couponCode : undefined,
+        termsAccepted: true,
+        policyVersion: '2026-09-v1'
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -268,16 +281,74 @@ export const Cart = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* Terms of Service Consent Checkbox */}
+                <div className="mb-6">
+                  <label 
+                    htmlFor="terms-consent-checkbox"
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-300 cursor-pointer select-none bg-white/[0.02] ${
+                      termsAccepted 
+                        ? 'border-primary/50 shadow-[0_0_15px_rgba(230,255,0,0.08)] bg-primary/[0.03]' 
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="relative flex items-center justify-center mt-0.5 flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        id="terms-consent-checkbox"
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="peer sr-only"
+                        aria-label="Agree to Terms of Service"
+                      />
+                      <div 
+                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${
+                          termsAccepted
+                            ? 'bg-primary border-primary text-black shadow-[0_0_10px_rgba(230,255,0,0.5)]'
+                            : 'border-white/25 bg-background/80 group-hover:border-primary/60'
+                        }`}
+                      >
+                        {termsAccepted && <Check size={14} className="stroke-[3]" />}
+                      </div>
+                    </div>
+                    <span className="text-xs sm:text-sm text-text-secondary leading-relaxed break-words">
+                      I have read and agree to the{' '}
+                      <Link
+                        to="/terms-of-service"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-primary hover:underline font-bold"
+                      >
+                        Terms of Service
+                      </Link>
+                      , including the Account Usage, Warranty & Support Policy.
+                    </span>
+                  </label>
+                  {!termsAccepted && (
+                    <p className="text-[11px] text-amber-400/90 mt-1.5 px-1 font-medium flex items-center gap-1">
+                      <span>*</span> Please accept the Terms of Service to enable checkout
+                    </p>
+                  )}
+                </div>
                 
                 <button 
                   onClick={handleCheckout}
-                  disabled={isCheckingOut || cartItems.length === 0}
-                  className="w-full bg-primary hover:bg-white text-background font-black text-lg px-6 py-4 rounded-xl shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all uppercase tracking-wide hover:scale-105 active:scale-95 duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:hover:scale-100"
+                  disabled={isCheckingOut || cartItems.length === 0 || !termsAccepted}
+                  title={!termsAccepted ? 'Please accept the Terms of Service to proceed' : 'Proceed to Secure Checkout'}
+                  className={`w-full font-black text-lg px-6 py-4 rounded-xl transition-all uppercase tracking-wide duration-300 flex items-center justify-center gap-2 group ${
+                    !termsAccepted || cartItems.length === 0 || isCheckingOut
+                      ? 'bg-primary/25 text-white/40 cursor-not-allowed border border-white/10 shadow-none hover:scale-100'
+                      : 'bg-primary hover:bg-white text-background shadow-[0_0_15px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] hover:scale-105 active:scale-95 cursor-pointer'
+                  }`}
                 >
                   {isCheckingOut ? (
                     <><Loader2 size={20} className="animate-spin" /> Processing...</>
                   ) : (
-                    <>Secure Checkout <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" /></>
+                    <>
+                      <span>Secure Checkout</span>
+                      <ChevronRight size={20} className={termsAccepted ? 'group-hover:translate-x-1 transition-transform' : 'opacity-40'} />
+                    </>
                   )}
                 </button>
                 
@@ -318,11 +389,13 @@ export const Cart = () => {
         isOpen={isPaymentModalOpen}
         onClose={async () => {
           setIsPaymentModalOpen(false);
+          setTermsAccepted(false);
           await refreshCart();
         }}
         orderData={paymentOrderData}
         onSuccess={async () => {
           setIsPaymentModalOpen(false);
+          setTermsAccepted(false);
           await refreshCart();
           navigate('/library');
         }}

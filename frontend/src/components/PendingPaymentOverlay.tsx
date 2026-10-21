@@ -142,8 +142,8 @@ export const PendingPaymentOverlay: React.FC = () => {
   }
 
   // Cover image / details fallback
-  const firstItem = pendingOrder.items?.[0];
-  const itemCount = pendingOrder.items?.length || 1;
+  const firstItem = pendingOrder?.items?.[0];
+  const itemCount = pendingOrder?.items?.length || 1;
   const gameTitle = firstItem?.game?.title || 'Game Purchase';
   const gameCover = firstItem?.game?.coverImage || '/images/card-cyberpunk.jpg';
 
@@ -209,7 +209,7 @@ export const PendingPaymentOverlay: React.FC = () => {
               <AlertCircle size={28} className="text-red-400 mb-2" />
               <h4 className="text-sm font-heading font-black text-white mb-1">Cancel this order?</h4>
               <p className="text-[11px] text-text-secondary mb-3 leading-tight max-w-[220px]">
-                This will cancel order #{formatOrderId(pendingOrder.id)}. You can purchase again anytime.
+                This will cancel order #{pendingOrder ? formatOrderId(pendingOrder.id) : ''}. You can purchase again anytime.
               </p>
               <div className="flex gap-2 w-full max-w-[200px]">
                 <button
@@ -239,7 +239,7 @@ export const PendingPaymentOverlay: React.FC = () => {
                 Payment Pending
               </span>
               <span className="font-mono text-xs font-bold text-text-secondary">
-                {formatOrderId(pendingOrder.id)}
+                {pendingOrder ? formatOrderId(pendingOrder.id) : ''}
               </span>
             </div>
 
@@ -274,7 +274,7 @@ export const PendingPaymentOverlay: React.FC = () => {
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[10px] uppercase font-bold text-text-secondary tracking-wider">Due:</span>
                 <span className="text-sm sm:text-base font-heading font-black text-primary drop-shadow-[0_0_8px_rgba(220,248,54,0.3)]">
-                  {formatPrice(pendingOrder.totalAmount)}
+                  {pendingOrder ? formatPrice(pendingOrder.totalAmount) : ''}
                 </span>
               </div>
             </div>

@@ -1,12 +1,46 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  FileText, Shield, Scale, AlertCircle, 
-  Gamepad2, UserCheck, RefreshCw, Lock, 
-  HelpCircle, ChevronRight, Ban, Award
+  FileText, Shield, Scale, 
+  Gamepad2, RefreshCw, Lock, 
+  ChevronRight, Ban, ShieldAlert,
+  Laptop, WifiOff, AlertTriangle, CheckCircle2,
+  HelpCircle, LogOut
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const TermsOfService = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const originalTitle = document.title;
+    document.title = 'Terms of Service & Warranty Policy | VALQORE.PRO';
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const originalMeta = metaDescription ? metaDescription.getAttribute('content') : null;
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        'content',
+        'VALQORE.PRO Terms of Service and Warranty Policy. Learn about account usage rules, offline gameplay requirements, payment verification, and warranty coverage.'
+      );
+    }
+
+    const canonicalLink = document.querySelector('link[rel="canonical"]');
+    const originalCanonical = canonicalLink ? canonicalLink.getAttribute('href') : null;
+    if (canonicalLink) {
+      canonicalLink.setAttribute('href', 'https://valqore.pro/terms-of-service');
+    }
+
+    return () => {
+      document.title = originalTitle;
+      if (metaDescription && originalMeta) {
+        metaDescription.setAttribute('content', originalMeta);
+      }
+      if (canonicalLink && originalCanonical) {
+        canonicalLink.setAttribute('href', originalCanonical);
+      }
+    };
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -17,7 +51,7 @@ export const TermsOfService = () => {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } }
   };
 
   return (
@@ -44,8 +78,15 @@ export const TermsOfService = () => {
           </h1>
 
           <p className="text-text-secondary text-xs sm:text-base max-w-2xl mx-auto font-medium leading-relaxed px-2">
-            Last updated: <strong className="text-white">September 2026</strong>. Please read these terms carefully before accessing or purchasing from VALQORE.PRO.
+            Last updated: <strong className="text-white">September 2026</strong>. Please read these terms and warranty conditions carefully before accessing or purchasing from VALQORE.PRO.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-text-secondary">
+            <span>Related:</span>
+            <Link to="/privacy" className="text-primary hover:underline font-semibold inline-flex items-center gap-1">
+              Privacy Policy <ChevronRight size={12} />
+            </Link>
+          </div>
         </motion.div>
 
         {/* Content Sections */}
@@ -87,17 +128,156 @@ export const TermsOfService = () => {
               <li><strong className="text-white">Fulfillment Architecture:</strong> Games purchased through Valqore are delivered digitally via the STe-MoN desktop launcher system.</li>
               <li><strong className="text-white">License & Access:</strong> Access credentials provided are strictly for personal use by the purchasing account holder. Sharing, renting, reselling, or redistributing account credentials without express written permission is strictly prohibited.</li>
               <li><strong className="text-white">Rental Titles:</strong> Rental game access is granted for the specific period purchased. Upon expiration, access automatically concludes unless renewed.</li>
+              <li><strong className="text-white">Account Usage & Warranty Integration:</strong> Detailed account operation guidelines, offline requirements, and warranty coverage terms are set out in Section 3 below.</li>
             </ul>
           </motion.div>
 
-          {/* 3. Payments, UPI & Order Verification */}
+          {/* 3. Account Usage, Warranty & Support Policy */}
+          <motion.div variants={itemVariants} id="warranty-policy" className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-primary/30 transition-all duration-500">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+            
+            <div className="flex items-center gap-3 sm:gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <ShieldAlert size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">3. Account Usage, Warranty & Support Policy</h2>
+                <p className="text-xs text-text-secondary">Mandatory operational rules for Steam accounts, warranty limitations, and customer responsibilities</p>
+              </div>
+            </div>
+
+            <p className="text-text-secondary text-sm sm:text-base leading-relaxed mb-6">
+              Please read the following usage rules, offline requirements, and warranty terms carefully before purchasing or accessing a game through VALQORE.PRO:
+            </p>
+
+            {/* Subsection A: Account Usage Rules */}
+            <div className="mb-8">
+              <h3 className="text-base sm:text-lg font-heading font-bold text-white mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
+                <span>Account Usage Rules</span>
+              </h3>
+              <div className="space-y-3.5">
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <LogOut size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">Do Not Log Out:</strong>
+                    Do not manually log out of the provided Steam account, as this may interrupt your access to the game. If you need to use your personal Steam account, use Steam’s Change Account option instead of removing or resetting the provided account setup.
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Laptop size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">Do Not Reset Your PC:</strong>
+                    Do not reset your PC, perform a factory reset, or reinstall Windows while using the provided account unless explicitly instructed by our support team.
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <WifiOff size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">Stay Offline:</strong>
+                    After downloading the game, keep Steam in Offline Mode. Do not switch to Online Mode.
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <AlertTriangle size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">No Online Play:</strong>
+                    Online gameplay and online-only features are not supported. These products are intended for offline, single-player gameplay.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Subsection B: Warranty & Support Policy */}
+            <div className="mb-8">
+              <h3 className="text-base sm:text-lg font-heading font-bold text-white mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
+                <span>Warranty & Support Policy</span>
+              </h3>
+              <div className="space-y-3.5">
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ShieldAlert size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">No Warranty for Accidental Logout:</strong>
+                    VALQORE.PRO does not provide warranty coverage or guarantee account recovery if you accidentally log out of the provided account.
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ShieldAlert size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">No Warranty for PC Reset:</strong>
+                    VALQORE.PRO does not provide warranty coverage or guarantee access restoration if you reset your PC, reinstall Windows, or remove the provided account setup.
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <FileText size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">Customer Responsibility:</strong>
+                    Customers are responsible for following the provided setup instructions and maintaining the required account and offline configuration.
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 hover:border-white/15 transition-all">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <HelpCircle size={16} />
+                  </div>
+                  <div className="text-sm sm:text-base leading-relaxed text-text-secondary">
+                    <strong className="text-white font-semibold block sm:inline sm:mr-1">Support:</strong>
+                    If you encounter a problem, contact VALQORE.PRO support. We will review the issue and determine what assistance is available under the applicable product terms.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Subsection C: Customer Acknowledgment */}
+            <div className="pt-2">
+              <h3 className="text-base sm:text-lg font-heading font-bold text-white mb-3 flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-primary" />
+                <span>Customer Acknowledgment</span>
+              </h3>
+              <p className="text-text-secondary text-sm sm:text-base leading-relaxed mb-5">
+                By purchasing or accessing a game through VALQORE.PRO, you acknowledge that you have read and understood these usage rules and warranty limitations.
+              </p>
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 flex items-center justify-center text-center">
+                <span className="font-heading font-black tracking-wider text-primary text-sm sm:text-base md:text-lg drop-shadow-[0_0_15px_rgba(220,248,54,0.3)]">
+                  VALQORE.PRO — PLAY MORE. EXPLORE MORE.
+                </span>
+              </div>
+            </div>
+
+            {/* Statutory Consumer Rights Footnote */}
+            <p className="text-xs text-text-secondary/70 text-center max-w-2xl mx-auto mt-6 px-2 leading-relaxed">
+              Nothing in this policy limits, excludes, or purports to override any mandatory statutory rights or consumer protections that cannot be waived or limited under applicable law.
+            </p>
+          </motion.div>
+
+          {/* 4. Payments, UPI & Order Verification */}
           <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
             <div className="flex items-center gap-3 sm:gap-4 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <Shield size={24} />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">3. Payments, UPI Verification & Order IDs</h2>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">4. Payments, UPI Verification & Order IDs</h2>
                 <p className="text-xs text-text-secondary">Transaction integrity and automated verification</p>
               </div>
             </div>
@@ -113,14 +293,14 @@ export const TermsOfService = () => {
             </div>
           </motion.div>
 
-          {/* 4. Refunds & Replacement Policy */}
+          {/* 5. Refunds & Replacement Policy */}
           <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
             <div className="flex items-center gap-3 sm:gap-4 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <RefreshCw size={24} />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">4. Refund & Replacement Policy</h2>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">5. Refund & Replacement Policy</h2>
                 <p className="text-xs text-text-secondary">Digital goods delivery guarantees</p>
               </div>
             </div>
@@ -136,14 +316,14 @@ export const TermsOfService = () => {
             </div>
           </motion.div>
 
-          {/* 5. User Conduct & Security */}
+          {/* 6. User Conduct & Security */}
           <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
             <div className="flex items-center gap-3 sm:gap-4 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <Ban size={24} />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">5. Prohibited Activities</h2>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">6. Prohibited Activities</h2>
                 <p className="text-xs text-text-secondary">Community protection and account safety</p>
               </div>
             </div>
@@ -155,14 +335,14 @@ export const TermsOfService = () => {
             </ul>
           </motion.div>
 
-          {/* 6. Limitation of Liability */}
+          {/* 7. Limitation of Liability */}
           <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
             <div className="flex items-center gap-3 sm:gap-4 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <Lock size={24} />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">6. Limitation of Liability</h2>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">7. Limitation of Liability</h2>
                 <p className="text-xs text-text-secondary">Service availability and third-party platforms</p>
               </div>
             </div>
@@ -181,10 +361,10 @@ export const TermsOfService = () => {
           className="bg-gradient-to-r from-primary/20 via-cards/60 to-primary/5 backdrop-blur-xl border border-primary/30 rounded-3xl p-6 sm:p-10 text-center shadow-[0_0_30px_rgba(220,248,54,0.1)]"
         >
           <h2 className="text-2xl sm:text-3xl font-heading font-black text-white mb-2">
-            Questions About Our Terms?
+            Questions About Our Terms or Warranty?
           </h2>
           <p className="text-text-secondary text-xs sm:text-sm max-w-xl mx-auto mb-6">
-            If you have questions regarding legal compliance, payment disputes, or order terms, reach out to our dedicated support team on Discord or Telegram.
+            If you have questions regarding legal compliance, payment disputes, account setup, or warranty terms, reach out to our dedicated support team on Discord or Telegram.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Gamepad2, X, KeyRound, RotateCw, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Gamepad2, X, KeyRound, RotateCw, CheckCircle2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
@@ -14,11 +14,14 @@ export const AuthModal = () => {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // OTP State
-  const [step, setStep] = useState<'form' | 'otp'>('form');
+  const [step, setStep] = useState<'form' | 'otp' | 'forgot_email' | 'forgot_otp' | 'forgot_reset' | 'forgot_success'>('form');
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [rememberMe, setRememberMe] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const { isAuthModalOpen, closeAuthModal, login } = useAuth();
@@ -39,6 +42,8 @@ export const AuthModal = () => {
     setSuccessMsg('');
     setStep('form');
     setOtpDigits(['', '', '', '', '', '']);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const resetModal = () => {
@@ -50,6 +55,9 @@ export const AuthModal = () => {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setRememberMe(false);
     closeAuthModal();
   };
 
@@ -90,8 +98,15 @@ export const AuthModal = () => {
       setLoading(true);
       try {
         const res = await axios.post(`${API_URL}/auth/login`, { username, password });
-        login(res.data.token, res.data.user);
-        resetModal();
+        if (res.data.requiresOtp) {
+          if (res.data.email) setEmail(res.data.email);
+          setSuccessMsg(res.data.message || 'Verification code sent to your email');
+          setStep('otp');
+          setResendCooldown(60);
+        } else {
+          login(res.data.token, res.data.user);
+          resetModal();
+        }
       } catch (err: any) {
         setError(err.response?.data?.error || 'Authentication failed');
       } finally {
@@ -110,14 +125,66 @@ export const AuthModal = () => {
 
       setLoading(true);
       try {
-        const res = await axios.post(`${API_URL}/auth/register`, { username, email, password });
-        login(res.data.token, res.data.user);
-        resetModal();
+        const res = await axios.post(`${API_URL}/auth/send-register-otp`, { username, email });
+        setSuccessMsg(res.data.message || 'Verification code sent to your email');
+        setStep('otp');
+        setResendCooldown(60);
       } catch (err: any) {
         setError(err.response?.data?.error || 'Registration failed');
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  // --------------------------------------------------
+  // Forgot Password
+  // --------------------------------------------------
+  const handleForgotEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    try {
+      const res = await axios.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
+      setSuccessMsg(res.data.message || 'If this email is registered, a password reset OTP has been sent.');
+      setStep('forgot_otp');
+      setResendCooldown(60);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to request password reset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    const otp = otpDigits.join('');
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/auth/forgot-password/reset`, {
+        email,
+        otp,
+        newPassword: password
+      });
+      setSuccessMsg(res.data.message || 'Password has been reset successfully. All other devices have been logged out.');
+      setStep('forgot_success');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to reset password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -129,8 +196,17 @@ export const AuthModal = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post(`${API_URL}/auth/send-register-otp`, { username, email });
-      setSuccessMsg(res.data.message || 'New verification code sent!');
+      if (step === 'forgot_otp') {
+        const res = await axios.post(`${API_URL}/auth/forgot-password/send-otp`, { email });
+        setSuccessMsg(res.data.message || 'New verification code sent!');
+      } else if (isLogin) {
+         // Login flow resend triggers the same login endpoint since it generates a new OTP
+         const res = await axios.post(`${API_URL}/auth/login`, { username, password });
+         setSuccessMsg(res.data.message || 'New verification code sent!');
+      } else {
+         const res = await axios.post(`${API_URL}/auth/send-register-otp`, { username, email });
+         setSuccessMsg(res.data.message || 'New verification code sent!');
+      }
       setResendCooldown(60);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to resend code');
@@ -189,12 +265,22 @@ export const AuthModal = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post(`${API_URL}/auth/verify-register-otp`, {
-        username,
-        email,
-        password,
-        otp,
-      });
+      let res;
+      if (isLogin) {
+        res = await axios.post(`${API_URL}/auth/login-verify-otp`, {
+          username,
+          password,
+          otp,
+          rememberMe
+        }, { withCredentials: true });
+      } else {
+        res = await axios.post(`${API_URL}/auth/verify-register-otp`, {
+          username,
+          email,
+          password,
+          otp,
+        });
+      }
       login(res.data.token, res.data.user);
       resetModal();
     } catch (err: any) {
@@ -238,20 +324,33 @@ export const AuthModal = () => {
           {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex justify-center mb-3">
-              {step === 'otp' ? (
+              {step === 'otp' || step === 'forgot_otp' ? (
                 <div className="p-3 bg-primary/10 rounded-2xl border border-primary/30">
                   <ShieldCheck size={36} className="text-primary drop-shadow-[0_0_15px_rgba(220,248,54,0.5)]" />
+                </div>
+              ) : step === 'forgot_success' ? (
+                <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/30">
+                  <CheckCircle2 size={36} className="text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
                 </div>
               ) : (
                 <Gamepad2 size={40} className="text-primary drop-shadow-[0_0_15px_rgba(220,248,54,0.5)]" />
               )}
             </div>
             <h2 className="text-2xl font-heading font-black tracking-wider text-white">
-              {step === 'otp' ? 'VERIFY YOUR EMAIL' : (isLogin ? 'WELCOME BACK' : 'JOIN VALQORE')}
+              {step === 'otp' ? (isLogin ? 'VERIFY YOUR LOGIN' : 'VERIFY YOUR EMAIL') : 
+               step === 'forgot_email' ? 'RECOVER PASSWORD' :
+               step === 'forgot_otp' ? 'VERIFY RESET CODE' :
+               step === 'forgot_reset' ? 'NEW PASSWORD' :
+               step === 'forgot_success' ? 'PASSWORD RESET' :
+               (isLogin ? 'WELCOME BACK' : 'JOIN VALQORE')}
             </h2>
             <p className="text-text-secondary mt-1 text-xs">
               {step === 'otp' 
                 ? `Enter the 6-digit code sent to ${email}`
+                : step === 'forgot_email' ? 'Enter your account email to receive a reset code.'
+                : step === 'forgot_otp' ? `Enter the 6-digit code sent to ${email}`
+                : step === 'forgot_reset' ? 'Create a strong new password.'
+                : step === 'forgot_success' ? 'Your password has been changed successfully.'
                 : (isLogin ? 'Log in to access your digital library.' : 'Create an account to start your journey.')}
             </p>
           </div>
@@ -279,7 +378,7 @@ export const AuthModal = () => {
           )}
 
           {/* STEP 1: Main Form (Login / Register) */}
-          {step === 'form' ? (
+          {step === 'form' && (
             <>
               {/* Google Sign In Button */}
               <div className="mb-6">
@@ -343,13 +442,21 @@ export const AuthModal = () => {
                 <div className="relative">
                   <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
                   <input 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password" 
                     required
-                    className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-4 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
+                    className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-12 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg text-[#111111] bg-white/10 hover:bg-primary hover:text-black transition-all focus:outline-none cursor-pointer"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={22} strokeWidth={2.5} /> : <Eye size={22} strokeWidth={2.5} />}
+                  </button>
                 </div>
 
                 <AnimatePresence mode="popLayout" initial={false}>
@@ -363,17 +470,52 @@ export const AuthModal = () => {
                     >
                       <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
                       <input 
-                        type="password" 
+                        type={showConfirmPassword ? "text" : "password"} 
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm Password" 
                         required={!isLogin}
-                        className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-4 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
+                        className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-12 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg text-[#111111] bg-white/10 hover:bg-primary hover:text-black transition-all focus:outline-none cursor-pointer"
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? <EyeOff size={22} strokeWidth={2.5} /> : <Eye size={22} strokeWidth={2.5} />}
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
+                {isLogin && (
+                  <div className="flex items-center justify-between mt-1 mb-2 px-1">
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        id="rememberMe" 
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                      />
+                      <label htmlFor="rememberMe" className="text-sm text-text-secondary cursor-pointer select-none">
+                        Remember this device
+                      </label>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setStep('forgot_email');
+                        setError('');
+                        setSuccessMsg('');
+                      }}
+                      className="text-xs text-primary font-bold hover:text-white transition-colors cursor-pointer"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -396,8 +538,10 @@ export const AuthModal = () => {
                 </button>
               </div>
             </>
-          ) : (
-            /* STEP 2: OTP Input Screen */
+          )}
+
+          {/* STEP 2: OTP Input Screen */}
+          {step === 'otp' && (
             <form onSubmit={handleVerifyOtp} className="flex flex-col gap-5">
               <div className="flex justify-center gap-2.5 my-2">
                 {otpDigits.map((digit, idx) => (
@@ -423,7 +567,7 @@ export const AuthModal = () => {
                 disabled={loading || otpDigits.join('').length !== 6}
                 className="w-full bg-primary text-background font-bold uppercase tracking-wider py-3.5 rounded-xl flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(220,248,54,0.5)] transition-all disabled:opacity-50 text-sm cursor-pointer"
               >
-                {loading ? 'Verifying...' : 'Verify & Create Account'}
+                {loading ? 'Verifying...' : (isLogin ? 'Verify & Login' : 'Verify & Create Account')}
                 <KeyRound size={18} />
               </motion.button>
 
@@ -447,6 +591,180 @@ export const AuthModal = () => {
                 </button>
               </div>
             </form>
+          )}
+
+          {/* FORGOT PASSWORD: Email Screen */}
+          {step === 'forgot_email' && (
+            <form onSubmit={handleForgotEmailSubmit} className="flex flex-col gap-3.5">
+              <div className="relative">
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address" 
+                  required
+                  className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-4 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
+                />
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-background font-bold uppercase tracking-wider py-3.5 rounded-xl mt-2 flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(220,248,54,0.5)] transition-all disabled:opacity-50 text-sm cursor-pointer"
+              >
+                {loading ? 'Sending...' : 'Send Reset Code'}
+                <ArrowRight size={18} />
+              </motion.button>
+              
+              <div className="mt-4 text-center text-xs">
+                <button type="button" onClick={() => { setStep('form'); setError(''); setSuccessMsg(''); }} className="text-text-secondary hover:text-white transition-colors cursor-pointer font-bold uppercase tracking-wider">
+                  ← Back to Login
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* FORGOT PASSWORD: OTP Screen */}
+          {step === 'forgot_otp' && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const otp = otpDigits.join('');
+              if (otp.length !== 6) { setError('Please enter the full 6-digit code'); return; }
+              setStep('forgot_reset');
+              setError('');
+              setSuccessMsg('');
+            }} className="flex flex-col gap-5">
+              <div className="flex justify-center gap-2.5 my-2">
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => { inputRefs.current[idx] = el; }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(idx, e)}
+                    className="w-12 h-14 bg-black/50 border border-white/15 focus:border-primary focus:bg-primary/5 rounded-xl text-center text-2xl font-bold text-primary outline-none transition-all focus:shadow-[0_0_20px_rgba(220,248,54,0.3)]"
+                    autoFocus={idx === 0}
+                  />
+                ))}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={otpDigits.join('').length !== 6}
+                className="w-full bg-primary text-background font-bold uppercase tracking-wider py-3.5 rounded-xl flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(220,248,54,0.5)] transition-all disabled:opacity-50 text-sm cursor-pointer"
+              >
+                Continue <ArrowRight size={18} />
+              </motion.button>
+
+              <div className="flex items-center justify-between text-xs text-text-secondary mt-1">
+                <button
+                  type="button"
+                  onClick={() => { setStep('forgot_email'); setOtpDigits(['','','','','','']); setError(''); }}
+                  className="text-text-secondary hover:text-white transition-colors cursor-pointer"
+                >
+                  ← Edit Email
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendCooldown > 0 || loading}
+                  className="text-primary hover:text-white transition-colors disabled:opacity-40 disabled:hover:text-primary flex items-center gap-1 cursor-pointer font-bold"
+                >
+                  <RotateCw size={14} className={resendCooldown > 0 ? '' : 'animate-spin-once'} />
+                  {resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend Code'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* FORGOT PASSWORD: Reset Password Screen */}
+          {step === 'forgot_reset' && (
+            <form onSubmit={handleForgotResetSubmit} className="flex flex-col gap-3.5">
+              <div className="relative">
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="New Password" 
+                  required
+                  className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-12 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg text-[#111111] bg-white/10 hover:bg-primary hover:text-black transition-all focus:outline-none cursor-pointer"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={22} strokeWidth={2.5} /> : <Eye size={22} strokeWidth={2.5} />}
+                </button>
+              </div>
+              <div className="relative">
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <input 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm New Password" 
+                  required
+                  className="w-full bg-black/40 border border-white/10 focus:border-primary rounded-xl py-3 pl-11 pr-12 text-white outline-none transition-all focus:shadow-[0_0_15px_rgba(220,248,54,0.2)] text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-lg text-[#111111] bg-white/10 hover:bg-primary hover:text-black transition-all focus:outline-none cursor-pointer"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff size={22} strokeWidth={2.5} /> : <Eye size={22} strokeWidth={2.5} />}
+                </button>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-background font-bold uppercase tracking-wider py-3.5 rounded-xl mt-2 flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(220,248,54,0.5)] transition-all disabled:opacity-50 text-sm cursor-pointer"
+              >
+                {loading ? 'Resetting...' : 'Reset Password'}
+                <KeyRound size={18} />
+              </motion.button>
+              
+              <div className="mt-4 text-center text-xs">
+                <button type="button" onClick={() => setStep('forgot_otp')} className="text-text-secondary hover:text-white transition-colors cursor-pointer">
+                  ← Back to verification code
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* FORGOT PASSWORD: Success Screen */}
+          {step === 'forgot_success' && (
+            <div className="flex flex-col items-center">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setStep('form');
+                  setPassword('');
+                  setConfirmPassword('');
+                  setOtpDigits(['','','','','','']);
+                  setError('');
+                  setSuccessMsg('');
+                }}
+                className="w-full bg-primary text-background font-bold uppercase tracking-wider py-3.5 rounded-xl mt-4 flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(220,248,54,0.5)] transition-all cursor-pointer"
+              >
+                Return to Login <ArrowRight size={18} />
+              </motion.button>
+            </div>
           )}
         </motion.div>
       </div>

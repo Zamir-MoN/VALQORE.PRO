@@ -35,6 +35,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [copiedUpi, setCopiedUpi] = useState(false);
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [submitUtrMode, setSubmitUtrMode] = useState(false);
+  const [utrInputValue, setUtrInputValue] = useState('');
+  const [isSubmittingUtr, setIsSubmittingUtr] = useState(false);
   const pollingRef = useRef<any>(null);
 
   useEffect(() => {
@@ -147,6 +150,32 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setTimeout(() => setCopiedUpi(false), 2500);
   };
 
+  const handleSubmitUtr = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!utrInputValue || utrInputValue.trim().length !== 12) {
+      toast.error('Please enter a valid 12-digit UTR number');
+      return;
+    }
+
+    setIsSubmittingUtr(true);
+    try {
+      const res = await axios.post(
+        `${API_URL}/payments/${orderData.orderId}/submit-utr`,
+        { utr: utrInputValue.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(res.data.message);
+      if (res.data.message.includes('instantly')) {
+        setStatus('COMPLETED');
+      }
+      setSubmitUtrMode(false);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to submit UTR');
+    } finally {
+      setIsSubmittingUtr(false);
+    }
+  };
+
   return createPortal(
     <div 
       className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-2xl animate-in fade-in duration-300 overflow-y-auto"
@@ -155,7 +184,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }}
     >
       <div 
-        className="relative w-full max-w-2xl bg-[#0E0E10] border border-white/10 rounded-3xl p-5 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden my-auto"
+        className={`relative w-full ${submitUtrMode ? 'max-w-[900px]' : 'max-w-2xl'} bg-[#0E0E10] border border-white/10 rounded-3xl p-5 sm:p-8 shadow-[0_0_80px_rgba(0,0,0,0.95)] overflow-hidden my-auto transition-all duration-300`}
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -231,12 +260,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         </div>
 
-        {/* PENDING: 2-Column Responsive Layout */}
+        {/* PENDING: Responsive Layout */}
         {status === 'PENDING' && (
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             
             {/* Left Column: Payable Info & Automated Radar */}
-            <div className="md:col-span-6 flex flex-col justify-between h-full space-y-4">
+            <div className={`${submitUtrMode ? 'md:col-span-6 lg:col-span-4 hidden lg:flex' : 'md:col-span-6 flex'} flex-col justify-center gap-4`}>
               
               {/* Amount Showcase Card */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 relative overflow-hidden">
@@ -287,16 +316,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </div>
               </div>
 
-              {/* Verified Banking Name Action Pill */}
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <span className="text-[10px] uppercase font-bold text-text-secondary block mb-0.5">Banking Name</span>
-                  <span className="text-sm font-bold text-white block">Sagar Paul</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                  Verified Merchant
-                </span>
-              </div>
 
               {/* Live WebSocket Verification Radar */}
               <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/25 relative overflow-hidden flex items-center gap-3">
@@ -319,7 +338,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
 
             {/* Right Column: High-Res QR Card */}
-            <div className="md:col-span-6 flex flex-col items-center">
+            <div className={`${submitUtrMode ? 'md:col-span-6 lg:col-span-4' : 'md:col-span-6'} flex flex-col items-center`}>
               <div className="w-full max-w-[260px] p-4 bg-gradient-to-b from-[#18181C] to-[#121214] border border-white/15 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.8)] relative group text-center">
                 
                 {/* Floating Scan Header Pill */}
@@ -339,11 +358,67 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   </div>
                 </div>
 
-                <p className="text-[11px] text-text-secondary font-medium px-2">
-                  Open GPay / PhonePe / Paytm to complete checkout.
-                </p>
+                {!submitUtrMode ? (
+                  <>
+                    <p className="text-[11px] text-text-secondary font-medium px-2 mb-3">
+                      Open GPay / PhonePe / Paytm to complete checkout.
+                    </p>
+                    <button
+                      onClick={() => setSubmitUtrMode(true)}
+                      className="text-[10px] text-primary/70 hover:text-primary underline decoration-primary/30 hover:decoration-primary transition-colors cursor-pointer"
+                    >
+                      Already paid but waiting? Submit UTR
+                    </button>
+                  </>
+                ) : (
+                  <form onSubmit={handleSubmitUtr} className="px-2 mt-2">
+                    <p className="text-[10px] text-text-secondary mb-2 text-left leading-tight">
+                      Find the 12-digit UTR/Reference No. in your UPI app receipt and enter it below to instantly verify.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={utrInputValue}
+                        onChange={(e) => setUtrInputValue(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                        placeholder="e.g. 204374160843"
+                        className="flex-1 bg-black/50 border border-white/20 rounded-lg px-3 py-1.5 text-xs text-white placeholder-text-secondary/50 focus:outline-none focus:border-primary transition-colors font-mono"
+                        maxLength={12}
+                        disabled={isSubmittingUtr}
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSubmittingUtr || utrInputValue.length !== 12}
+                        className="bg-primary hover:bg-primary/90 text-black px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50 transition-colors flex items-center justify-center cursor-pointer"
+                      >
+                        {isSubmittingUtr ? <Loader2 size={14} className="animate-spin" /> : 'Verify'}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
+
+            {/* Third Column: UTR Guide Graphic (Only in submitUtrMode) */}
+            {submitUtrMode && (
+              <div className="md:col-span-6 lg:col-span-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="w-full bg-[#1A1A1E] rounded-2xl border border-white/10 overflow-hidden flex flex-col shadow-2xl p-2 relative group">
+                  <div className="relative w-full rounded-xl overflow-hidden border border-white/5">
+                    <img 
+                      src="/utr-screenshot.png" 
+                      alt="PhonePe UTR Screenshot" 
+                      className="w-full h-auto object-cover"
+                    />
+                    
+                    {/* Glowing highlight box over the UTR area on the screenshot */}
+                    <div className="absolute bottom-[36.5%] left-[20%] right-[10%] h-[4.5%] bg-primary/20 border-2 border-primary rounded-md animate-pulse shadow-[0_0_15px_rgba(220,248,54,0.6)]"></div>
+                  </div>
+                  
+                  <p className="text-[11px] text-primary/80 mt-3 mb-1 leading-relaxed text-center px-1 font-medium bg-primary/5 p-2 rounded-lg border border-primary/10">
+                    Check the "Transfer Details" or "Debited from" section in your UPI app receipt to find the 12-digit UTR.
+                  </p>
+                </div>
+              </div>
+            )}
 
           </div>
         )}

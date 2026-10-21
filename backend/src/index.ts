@@ -32,6 +32,7 @@ import couponsRouter from './routes/coupons';
 import postersRouter from './routes/posters';
 import creatorsRouter from './routes/creators';
 import paymentsRouter from './routes/payments';
+import giveawaysRouter from './routes/giveaways';
 import { sitemapRouter } from './routes/sitemap';
 import { startGmailCron } from './services/gmail.service';
 import http from 'http';
@@ -40,6 +41,7 @@ import { initSocket } from './socket';
 import rateLimit from 'express-rate-limit';
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Nginx) for correct IP in express-rate-limit
 const server = http.createServer(app);
 initSocket(server);
 
@@ -69,10 +71,11 @@ app.use('/api/coupons', couponsRouter);
 app.use('/api/posters', postersRouter);
 app.use('/api/creators', creatorsRouter);
 app.use('/api/payments', paymentsRouter);
+app.use('/api/giveaways', giveawaysRouter);
 app.use('/api/sitemap.xml', sitemapRouter);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT as string, 10) : 5000;
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server is running on 127.0.0.1:${PORT}`);
 });

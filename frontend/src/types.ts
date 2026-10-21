@@ -34,6 +34,9 @@ export interface Game {
   isBundle?: boolean;
   bundleGames?: string | null;
   description?: string;
+  isPublished?: boolean;
+  internalCost?: number | string | null;
+  updatedAt?: string;
 }
 
 
@@ -48,4 +51,24 @@ export interface Testimonial {
 export interface FAQ {
   question: string;
   answer: string;
+}
+
+export interface GiveawayConfig {
+  category?: string;
+  worth?: number;
+  endDate?: string;
+  winnersCount?: number;
+  tasks?: {
+    discord?: { required: boolean; url: string };
+    instagram?: { required: boolean; url: string };
+    youtube?: { required?: boolean; url?: string };
+  };
+  rules?: string;
+  winner?: {
+    id?: string;
+    userId?: string;
+    username: string;
+    email?: string;
+    wonAt: string;
+  } | null;
 }

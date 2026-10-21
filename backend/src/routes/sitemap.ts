@@ -6,6 +6,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const games = await prisma.game.findMany({
+      where: { isPublished: true },
       select: {
         id: true,
         slug: true,

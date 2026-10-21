@@ -1,11 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, ChevronDown, ArrowLeft } from 'lucide-react';
+import { Search, Filter, ChevronDown, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { GameCard } from './GameCard';
 
 const GENRES = ['All', 'Exclusives', 'Deals', 'Rentals', 'Action', 'Action RPG', 'Adventure', 'RPG', 'Horror', 'Fighting', 'Racing'];
 const SORT_OPTIONS = ['Relevance', 'Price: Low to High', 'Price: High to Low', 'Highest Rated', 'Newest'];
+const GAMES_PER_PAGE = 24;
+
+const getPaginationRange = (current: number, total: number): (number | string)[] => {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total];
+  }
+
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  }
+
+  return [1, '...', current - 1, current, current + 1, '...', total];
+};
 
 export const BrowseGames = () => {
   const { games, loading } = useGames();
@@ -33,6 +50,7 @@ export const BrowseGames = () => {
   const [isDrmOpen, setIsDrmOpen] = useState(true);
   const [isGenreOpen, setIsGenreOpen] = useState(false);
   const [activeDrms, setActiveDrms] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
@@ -41,6 +59,11 @@ export const BrowseGames = () => {
   useEffect(() => {
     document.title = 'VALQORE';
   }, [searchQuery, activeGenre]);
+
+  // Reset pagination when search, genre, DRM, or sort filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeGenre, activeDrms, sortBy]);
 
 
   // Close dropdowns when clicking outside
@@ -109,7 +132,30 @@ export const BrowseGames = () => {
     }
   });
 
-  const displayGames = sortedGames.slice(0, 50); // Show up to 50 games when filtering
+  const totalPages = Math.ceil(sortedGames.length / GAMES_PER_PAGE);
+
+  // If a filter change reduces total pages, ensure current page never exceeds totalPages
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * GAMES_PER_PAGE;
+  const displayGames = sortedGames.slice(startIndex, startIndex + GAMES_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    setCurrentPage(page);
+    if (containerRef.current) {
+      const win = window as any;
+      if (win.lenis) {
+        win.lenis.scrollTo(containerRef.current, { offset: -30, duration: 0.8 });
+      } else {
+        containerRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <section ref={containerRef} className="pt-32 pb-20 px-6 lg:px-12 relative z-10" id="store">
@@ -274,6 +320,73 @@ export const BrowseGames = () => {
                 </div>
               )}
             </div>
+
+            {/* Numbered Pagination */}
+            {totalPages > 1 && !loading && (
+              <nav 
+                aria-label="Store pagination"
+                className="mt-12 sm:mt-16 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 select-none"
+              >
+                {/* Previous Button */}
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-white/10 bg-cards/70 hover:bg-cards text-xs sm:text-sm font-semibold text-white/80 hover:text-white hover:border-primary/50 transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 mr-1 sm:mr-2"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={16} />
+                  <span>Previous</span>
+                </button>
+
+                {/* Page Numbers and Ellipses */}
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                  {getPaginationRange(currentPage, totalPages).map((item, index) => {
+                    if (typeof item === 'string') {
+                      return (
+                        <span
+                          key={`ellipsis-${index}`}
+                          className="w-7 sm:w-8 h-9 sm:h-10 flex items-center justify-center text-white/40 text-xs sm:text-sm font-bold"
+                          aria-hidden="true"
+                        >
+                          {item}
+                        </span>
+                      );
+                    }
+
+                    const isCurrent = item === currentPage;
+
+                    return (
+                      <button
+                        key={`page-${item}`}
+                        type="button"
+                        onClick={() => handlePageChange(item)}
+                        aria-current={isCurrent ? 'page' : undefined}
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+                          isCurrent
+                            ? 'bg-primary text-black border border-primary shadow-[0_0_15px_rgba(220,248,54,0.4)] scale-105'
+                            : 'bg-cards/60 hover:bg-cards text-white/80 hover:text-white border border-white/10 hover:border-white/30 hover:scale-105'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-white/10 bg-cards/70 hover:bg-cards text-xs sm:text-sm font-semibold text-white/80 hover:text-white hover:border-primary/50 transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ml-1 sm:ml-2"
+                  aria-label="Next page"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={16} />
+                </button>
+              </nav>
+            )}
           </div>
         </div>
         

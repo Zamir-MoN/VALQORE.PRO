@@ -1,0 +1,190 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const prismaClient_1 = require("../prismaClient");
+const auth_1 = require("../middleware/auth");
+const email_1 = require("../utils/email");
+const router = (0, express_1.Router)();
+// Get the current user's application status
+router.get('/status', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        if (!userPayload.userId) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+        // Fetch the most recent application (highest createdAt)
+        const application = await prismaClient_1.prisma.creatorApplication.findFirst({
+            where: { userId: userPayload.userId },
+            orderBy: { createdAt: 'desc' }
+        });
+        if (!application) {
+            res.json({ status: null });
+            return;
+        }
+        res.json({ status: application.status, applicationId: application.id });
+    }
+    catch (error) {
+        console.error('[CREATOR STATUS ERROR]', error);
+        res.status(500).json({ error: 'An error occurred while fetching application status' });
+    }
+});
+// Get creator stats (for approved creators)
+router.get('/stats', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        if (!userPayload.userId) {
+            res.status(403).json({ error: 'Unauthorized' });
+            return;
+        }
+        // Find the coupon assigned to this creator
+        const coupon = await prismaClient_1.prisma.coupon.findFirst({
+            where: { creatorId: userPayload.userId }
+        });
+        if (!coupon) {
+            res.json({ couponCode: null, totalUses: 0, totalVCredit: 0 });
+            return;
+        }
+        // Fetch all completed orders that used this coupon
+        const completedOrders = await prismaClient_1.prisma.order.findMany({
+            where: {
+                couponCode: coupon.code,
+                status: 'COMPLETED'
+            }
+        });
+        const totalUses = completedOrders.length;
+        const totalVCredit = completedOrders.reduce((sum, order) => sum + (order.commissionEarned || 0), 0);
+        res.json({
+            couponCode: coupon.code,
+            totalUses,
+            totalVCredit,
+            commissionRate: coupon.commissionRate
+        });
+    }
+    catch (error) {
+        console.error('[CREATOR STATS ERROR]', error);
+        res.status(500).json({ error: 'An error occurred while fetching creator stats' });
+    }
+});
+// Submit a new creator application
+router.post('/apply', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        if (!userPayload.userId) {
+            res.status(403).json({ error: 'Admins cannot submit creator applications' });
+            return;
+        }
+        const { name, youtubeLink, instagramLink, facebookLink, otherLink, intent, contactPlatforms, creatorEmail, agreedToGuidelines } = req.body;
+        // Basic Validation
+        if (!name || !intent || !creatorEmail) {
+            res.status(400).json({ error: 'Name, intent, and email are required.' });
+            return;
+        }
+        if (!agreedToGuidelines) {
+            res.status(400).json({ error: 'You must agree to the guidelines.' });
+            return;
+        }
+        if (!youtubeLink && !instagramLink && !facebookLink && !otherLink) {
+            res.status(400).json({ error: 'At least one social media link is required.' });
+            return;
+        }
+        if (!contactPlatforms || Object.keys(contactPlatforms).length === 0) {
+            res.status(400).json({ error: 'At least one contact method is required.' });
+            return;
+        }
+        // Check if user already has a pending or approved application
+        const existingApplication = await prismaClient_1.prisma.creatorApplication.findFirst({
+            where: {
+                userId: userPayload.userId,
+                status: { in: ['PENDING', 'APPROVED'] }
+            }
+        });
+        if (existingApplication) {
+            res.status(400).json({ error: 'You already have an active application.' });
+            return;
+        }
+        // Save the application
+        const application = await prismaClient_1.prisma.creatorApplication.create({
+            data: {
+                userId: userPayload.userId,
+                name,
+                youtubeLink,
+                instagramLink,
+                facebookLink,
+                otherLink,
+                intent,
+                contactPlatforms: JSON.stringify(contactPlatforms),
+                creatorEmail,
+                agreedToGuidelines: true,
+                status: 'PENDING'
+            }
+        });
+        res.status(201).json({ success: true, applicationId: application.id });
+    }
+    catch (error) {
+        console.error('[CREATOR APPLY ERROR]', error);
+        res.status(500).json({ error: 'An error occurred while submitting your application' });
+    }
+});
+// Get all applications (Admin only)
+router.get('/admin/applications', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        // Check if user is admin (admin does not have a userId in the payload, only username)
+        if (userPayload.userId) {
+            res.status(403).json({ error: 'Access denied. Admins only.' });
+            return;
+        }
+        const applications = await prismaClient_1.prisma.creatorApplication.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: { email: true }
+                }
+            }
+        });
+        res.json(applications);
+    }
+    catch (error) {
+        console.error('[GET ADMIN CREATOR APPLICATIONS ERROR]', error);
+        res.status(500).json({ error: 'Failed to fetch applications' });
+    }
+});
+// Update application status (Admin only)
+router.put('/admin/:id/status', auth_1.authMiddleware, async (req, res) => {
+    try {
+        const userPayload = req.user;
+        // Check if user is admin
+        if (userPayload.userId) {
+            res.status(403).json({ error: 'Access denied. Admins only.' });
+            return;
+        }
+        const { id } = req.params;
+        const { status } = req.body;
+        if (!['APPROVED', 'REJECTED'].includes(status)) {
+            res.status(400).json({ error: 'Invalid status. Must be APPROVED or REJECTED.' });
+            return;
+        }
+        const application = await prismaClient_1.prisma.creatorApplication.findUnique({
+            where: { id }
+        });
+        if (!application) {
+            res.status(404).json({ error: 'Application not found.' });
+            return;
+        }
+        const updatedApplication = await prismaClient_1.prisma.creatorApplication.update({
+            where: { id },
+            data: { status }
+        });
+        if (status === 'APPROVED') {
+            await (0, email_1.sendApprovalEmail)(application.creatorEmail, application.name);
+        }
+        res.json({ success: true, application: updatedApplication });
+    }
+    catch (error) {
+        console.error('[CREATOR STATUS UPDATE ERROR]', error);
+        res.status(500).json({ error: 'An error occurred while updating application status' });
+    }
+});
+exports.default = router;
+//# sourceMappingURL=creators.js.map

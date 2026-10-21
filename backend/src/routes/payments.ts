@@ -14,12 +14,22 @@ const router = Router();
 router.post('/create-session', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const userPayload = (req as any).user;
-    const { couponCode } = req.body;
+    const { couponCode, termsAccepted, policyVersion } = req.body;
 
     if (!userPayload.userId) {
       res.status(403).json({ error: 'Admins cannot place orders' });
       return;
     }
+
+    // Mandatory Terms of Service consent verification
+    if (termsAccepted !== true) {
+      res.status(400).json({ error: 'You must read and agree to the Terms of Service, including the Account Usage, Warranty & Support Policy, to proceed with checkout.' });
+      return;
+    }
+
+    const currentPolicyVersion = policyVersion && typeof policyVersion === 'string' && policyVersion.trim().length > 0 
+      ? policyVersion.trim() 
+      : '2026-09-v1';
 
     // Get user cart items
     const cartItems = await prisma.cartItem.findMany({
@@ -79,10 +89,7 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
         return;
       }
 
-      if (validCoupon.usageLimit !== null && validCoupon.usageCount >= validCoupon.usageLimit) {
-        res.status(400).json({ error: 'Coupon usage limit reached' });
-        return;
-      }
+      // Usage limit is now atomically validated inside the transaction
 
       totalAmount -= validCoupon.discount;
       if (totalAmount < 0) totalAmount = 0;
@@ -111,6 +118,9 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
               totalAmount,
               status: 'PENDING',
               paymentMethod: 'DELTA_PAY',
+              termsAccepted: true,
+              termsAcceptedAt: new Date(),
+              termsVersion: currentPolicyVersion,
               expiresAt,
               couponCode: validCoupon ? validCoupon.code : null,
               couponDiscount: validCoupon ? validCoupon.discount : null,
@@ -131,10 +141,20 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
           });
 
           if (validCoupon) {
-            await tx.coupon.update({
-              where: { id: validCoupon.id },
+            const result = await tx.coupon.updateMany({
+              where: {
+                id: validCoupon.id,
+                isActive: true,
+                OR: [
+                  { usageLimit: null },
+                  { usageCount: { lt: validCoupon.usageLimit } }
+                ]
+              },
               data: { usageCount: { increment: 1 } }
             });
+            if (result.count === 0) {
+              throw new Error('COUPON_LIMIT_REACHED');
+            }
           }
 
           return newOrder;
@@ -173,7 +193,11 @@ router.post('/create-session', authMiddleware, async (req: Request, res: Respons
       qrCode,
       expiresAt: order.expiresAt
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message === 'COUPON_LIMIT_REACHED') {
+      res.status(400).json({ error: 'Coupon usage limit reached or coupon deactivated' });
+      return;
+    }
     console.error('[DELTA PAY CREATE SESSION ERROR]', error);
     res.status(500).json({ error: 'Failed to create payment session' });
   }
@@ -230,6 +254,91 @@ router.get('/:orderId', authMiddleware, async (req: Request, res: Response): Pro
     res.status(500).json({ error: 'Failed to fetch payment details' });
   }
 });
+
+// 3. Submit UTR Manually
+router.post('/:orderId/submit-utr', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userPayload = (req as any).user;
+    const orderId = String(req.params.orderId);
+    const { utr } = req.body;
+
+    if (!utr || typeof utr !== 'string' || utr.trim().length !== 12) {
+      res.status(400).json({ error: 'Please enter a valid 12-digit UTR number' });
+      return;
+    }
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.status !== 'PENDING') {
+      res.status(400).json({ error: 'Invalid or already processed order' });
+      return;
+    }
+
+    if (order.userId !== userPayload.userId) {
+      res.status(403).json({ error: 'Unauthorized access to this order' });
+      return;
+    }
+
+    // 1. Check if ANY order (pending or completed) has already claimed this UTR
+    const existingClaim = await prisma.order.findFirst({
+      where: { submittedUtr: utr }
+    });
+    if (existingClaim && existingClaim.id !== order.id) {
+      res.status(400).json({ error: 'This UTR has already been claimed by another order' });
+      return;
+    }
+
+    // Check if the transaction with this UTR and exact amount already exists
+    const transaction = await prisma.transaction.findUnique({
+      where: { utr }
+    });
+
+    if (transaction) {
+      // 2. Check if transaction is already linked to an order
+      if (transaction.orderId && transaction.orderId !== order.id) {
+        res.status(400).json({ error: 'This UTR has already been processed and linked to another order' });
+        return;
+      }
+      if (Math.abs(transaction.amount - order.totalAmount) <= 0.01) {
+        // Amount matches! Process it immediately
+        await prisma.$transaction(async (tx) => {
+          await tx.transaction.update({
+            where: { id: transaction.id },
+            data: { orderId: order.id }
+          });
+
+          await tx.order.update({
+            where: { id: order.id },
+            data: { status: 'COMPLETED', submittedUtr: utr }
+          });
+        });
+
+        await fulfillOrderSteamAccess(order.id);
+
+        try {
+          getIO()?.emit(`payment_status_${order.id}`, { status: 'COMPLETED' });
+        } catch (e) {}
+
+        res.json({ success: true, message: 'Payment verified instantly!' });
+        return;
+      } else {
+        res.status(400).json({ error: `UTR found but amount mismatch. Expected ₹${order.totalAmount}, found ₹${transaction.amount}` });
+        return;
+      }
+    }
+
+    // Transaction not found yet. Save UTR to order so cron can find it later
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { submittedUtr: utr }
+    });
+
+    res.json({ success: true, message: 'UTR submitted successfully. Waiting for bank sync...' });
+  } catch (error) {
+    console.error('[SUBMIT UTR ERROR]', error);
+    res.status(500).json({ error: 'Failed to submit UTR' });
+  }
+});
+
 
 // 4. Cancel Pending Payment
 router.post('/:orderId/cancel', authMiddleware, async (req: Request, res: Response): Promise<void> => {

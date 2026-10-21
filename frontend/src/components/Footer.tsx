@@ -103,10 +103,11 @@ export const Footer = () => {
           
           {/* Links: Legal */}
           <div>
-            <h4 className="font-heading font-bold text-white mb-6 uppercase tracking-wider text-sm">Legal</h4>
+            <h4 className="font-heading font-bold text-white mb-6 uppercase tracking-wider text-sm">Company & Legal</h4>
             <ul className="space-y-4">
               {[
-                { name: 'Terms of Service', url: '/terms' },
+                { name: 'About Us', url: '/about' },
+                { name: 'Terms of Service', url: '/terms-of-service' },
                 { name: 'Privacy Policy', url: '/privacy' },
                 { name: 'Creator Guidelines', url: '/creator/guidelines' }
               ].map((link) => (

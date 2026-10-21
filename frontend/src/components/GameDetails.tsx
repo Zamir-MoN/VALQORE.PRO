@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ThumbsUp, ThumbsDown, Share2, Shield, Globe, Clock, ArrowLeft, Play, ShoppingCart, Gift, CheckCircle2, Package, FileText, Gamepad2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useGames } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,7 @@ import { useCart } from '../context/CartContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getYouTubeVideoId } from '../utils/youtube';
-import { getImageUrl } from '../utils/image';
+import { getImageUrl, getThumbnailUrl } from '../utils/image';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
@@ -140,6 +140,146 @@ const BundlePosterCarousel = ({ posters }: { posters: { url: string; title: stri
   );
 };
 
+const ThumbnailGallery = ({ screenshots, trailerUrl, activeMedia, setActiveMedia }: { screenshots: string[], trailerUrl?: string | null, activeMedia: number, setActiveMedia: (idx: number) => void }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [dragMoved, setDragMoved] = useState(false);
+  const hasTrailer = !!(trailerUrl && getYouTubeVideoId(trailerUrl));
+
+  useEffect(() => {
+    const activeIndex = hasTrailer ? activeMedia + 1 : activeMedia;
+    const activeEl = itemRefs.current[activeIndex];
+    const container = scrollRef.current;
+    
+    if (activeEl && container) {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      
+      const isVisible = (
+        elRect.left >= containerRect.left &&
+        elRect.right <= containerRect.right
+      );
+      
+      if (!isVisible) {
+         const scrollOffset = elRect.left - containerRect.left;
+         
+         if (scrollOffset < 0) {
+            container.scrollBy({ left: scrollOffset - 12, behavior: 'smooth' });
+         } else {
+            container.scrollBy({ left: scrollOffset + elRect.width - containerRect.width + 12, behavior: 'smooth' });
+         }
+      }
+    }
+  }, [activeMedia, hasTrailer]);
+
+  useEffect(() => {
+    const ref = scrollRef.current;
+    
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        ref.scrollLeft += e.deltaY;
+      }
+    };
+
+    if (ref) {
+      ref.addEventListener('wheel', onWheel, { passive: false });
+    }
+    return () => {
+      if (ref) {
+        ref.removeEventListener('wheel', onWheel);
+      }
+    };
+  }, [screenshots.length, trailerUrl]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setDragMoved(false);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    if (Math.abs(walk) > 5) setDragMoved(true);
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  return (
+    <div className="relative group w-full">
+      <div 
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-4 scroll-smooth cursor-grab active:cursor-grabbing select-none custom-scrollbar"
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        style={{ scrollbarWidth: 'thin' }}
+      >
+        {hasTrailer && (
+          <div 
+            ref={(el) => { itemRefs.current[0] = el; }}
+            onClick={() => { if (!dragMoved) setActiveMedia(-1); }}
+            className={`relative w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] ${activeMedia === -1 ? 'border-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' : 'border-transparent hover:border-white/30'} bg-black`}
+          >
+            <img 
+              src={`https://i.ytimg.com/vi/${getYouTubeVideoId(trailerUrl!)}/hqdefault.jpg`} 
+              alt="Trailer Thumbnail" 
+              className="w-full h-full object-cover opacity-70 pointer-events-none" 
+            />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm border border-white/20">
+                <Play size={18} className="text-white ml-0.5" />
+              </div>
+            </div>
+          </div>
+        )}
+        {screenshots.map((url, i) => (
+          <div 
+            key={i} 
+            ref={(el) => { itemRefs.current[hasTrailer ? i + 1 : i] = el; }}
+            onClick={() => { if (!dragMoved) setActiveMedia(i); }}
+            className={`relative w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] ${activeMedia === i ? 'border-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' : 'border-transparent hover:border-white/30'} bg-white/5`}
+          >
+            <img 
+              src={getThumbnailUrl(url)} 
+              alt={`Screenshot ${i + 1}`} 
+              className="w-full h-full object-cover pointer-events-none" 
+              loading="lazy" 
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== getImageUrl(url)) {
+                  target.src = getImageUrl(url);
+                } else {
+                  target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23222"/><text x="50%" y="50%" fill="%23666" dominant-baseline="middle" text-anchor="middle">Error</text></svg>';
+                }
+              }}
+            />
+          </div>
+        ))}
+        {!hasTrailer && screenshots.length === 0 && (
+          <div className="text-white/30 text-sm px-4 py-2">No screenshots available.</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const GameDetails = () => {
   const { games, loading } = useGames();
   const { formatPrice } = useCurrency();
@@ -178,6 +318,28 @@ export const GameDetails = () => {
     }
   }, [user, token]);
 
+  // If this item is a giveaway, redirect to dedicated /giveaway page
+  useEffect(() => {
+    if (game?.isGiveaway) {
+      navigate(`/giveaway/${game.slug || game.id}`, { replace: true });
+    }
+  }, [game, navigate]);
+
+  // If a legacy slug was navigated directly, check the API and seamlessly redirect to the current slug
+  useEffect(() => {
+    if (!game && !loading && id) {
+      axios.get(`${API_URL}/games/${id}`)
+        .then(res => {
+          if (res.data?.isGiveaway) {
+            navigate(`/giveaway/${res.data.slug || res.data.id}`, { replace: true });
+          } else if (res.data?.slug && res.data.slug !== id) {
+            navigate(`/game/${res.data.slug}`, { replace: true });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [game, loading, id, navigate, API_URL]);
+
   useEffect(() => {
     const createdElements: HTMLElement[] = [];
 
@@ -186,7 +348,9 @@ export const GameDetails = () => {
       document.title = `${game.title} | VALQORE`;
 
       const gameImage = game.coverImage ? getImageUrl(game.coverImage) : 'https://valqore.pro/images/hero-artwork.png';
-      const gameDesc = `Check out ${game.title} on VALQORE!`;
+      const gameDesc = game.description && game.description.trim()
+        ? game.description.replace(/<[^>]*>?/gm, '').replace(/\s+/g, ' ').trim().slice(0, 200)
+        : `Check out ${game.title} on VALQORE!`;
       const canonicalUrl = `https://valqore.pro/game/${game.slug || game.id}`;
 
       const setMetaTag = (selector: string, attribute: string, value: string) => {
@@ -346,7 +510,10 @@ export const GameDetails = () => {
 
     // Use the backend share-meta endpoint which guarantees Instagram, WhatsApp, Discord, iMessage crawlers get the exact poster image
     const apiUrl = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
-    const shareUrl = `${apiUrl}/games/share-meta/${game.slug || game.id}`;
+    const version = game.updatedAt ? new Date(game.updatedAt).getTime() : '';
+    const shareUrl = version
+      ? `${apiUrl}/games/share-meta/${game.slug || game.id}?v=${version}`
+      : `${apiUrl}/games/share-meta/${game.slug || game.id}`;
 
     const shareData = {
       title: game.title,
@@ -473,7 +640,7 @@ export const GameDetails = () => {
 
     // Build included games posters list for auto-switching carousel
     // Use the game's No. 2 media image (first landscape screenshot/artwork), falling back to coverImage
-    const bundlePosters: { url: string; title: string; slug?: string }[] = matchedWebsiteGames
+    const derivedPosters: { url: string; title: string; slug?: string }[] = matchedWebsiteGames
       .map(bg => {
         const bgScreenshots = bg.screenshots 
           ? bg.screenshots.split(',').map(s => s.trim()).filter(Boolean) 
@@ -488,22 +655,29 @@ export const GameDetails = () => {
       })
       .filter(p => !!p.url);
 
-    if (bundlePosters.length === 0) {
-      if (screenshots.length > 0) {
-        screenshots.forEach((url, idx) => {
-          bundlePosters.push({
-            url,
-            title: gamesList[idx] || `Game #${idx + 1}`,
-            slug: undefined
-          });
-        });
-      } else if (game.coverImage) {
-        bundlePosters.push({
-          url: game.coverImage,
-          title: game.title,
-          slug: undefined
-        });
-      }
+    const manualPosters = screenshots.map((url, idx) => ({
+      url,
+      title: `${game.title} - Artwork ${idx + 1}`,
+      slug: undefined
+    }));
+
+    // Combine them: manual first, then derived, as requested to preserve manual order
+    const combinedPosters = [...manualPosters, ...derivedPosters];
+
+    // Deduplicate exact duplicate URLs while preserving first occurrence order
+    const seenUrls = new Set<string>();
+    const bundlePosters = combinedPosters.filter(p => {
+      if (seenUrls.has(p.url)) return false;
+      seenUrls.add(p.url);
+      return true;
+    });
+
+    if (bundlePosters.length === 0 && game.coverImage) {
+      bundlePosters.push({
+        url: game.coverImage,
+        title: game.title,
+        slug: undefined
+      });
     }
 
     return (
@@ -753,36 +927,47 @@ export const GameDetails = () => {
                       Games Included in this Pack:
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {matchedWebsiteGames.length > 0 ? (
-                        matchedWebsiteGames.map((gItem, idx) => (
-                          <Link 
-                            to={`/game/${gItem.slug || gItem.id}`}
-                            key={idx}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/40 hover:bg-white/[0.06] transition-all group/item"
-                          >
-                            <img
-                              src={getImageUrl(gItem.coverImage) || '/images/hero-artwork.png'}
-                              alt={gItem.title}
-                              className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
-                            />
-                            <span className="text-sm font-bold text-white truncate group-hover/item:text-primary transition-colors">
-                              {gItem.title}
-                            </span>
-                          </Link>
-                        ))
-                      ) : (
-                        gamesList.map((gName, idx) => (
-                          <div 
-                            key={idx}
-                            className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
-                          >
-                            <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-black flex-shrink-0">
-                              {idx + 1}
+                      {gamesList.map((gName, idx) => {
+                        const matched = matchedWebsiteGames.find(g => 
+                          g.id === gName || 
+                          g.title.toLowerCase() === gName.toLowerCase() ||
+                          (g.slug && g.slug.toLowerCase() === gName.toLowerCase())
+                        );
+
+                        if (matched) {
+                          return (
+                            <Link 
+                              to={`/game/${matched.slug || matched.id}`}
+                              key={idx}
+                              className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-primary/40 hover:bg-white/[0.06] transition-all group/item"
+                            >
+                              <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-black flex-shrink-0">
+                                {idx + 1}
+                              </div>
+                              <img
+                                src={getImageUrl(matched.coverImage) || '/images/hero-artwork.png'}
+                                alt={matched.title}
+                                className="w-10 h-12 object-cover rounded-lg flex-shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform"
+                              />
+                              <span className="text-sm font-bold text-white truncate group-hover/item:text-primary transition-colors">
+                                {matched.title}
+                              </span>
+                            </Link>
+                          );
+                        } else {
+                          return (
+                            <div 
+                              key={idx}
+                              className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5"
+                            >
+                              <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center text-xs font-black flex-shrink-0">
+                                {idx + 1}
+                              </div>
+                              <span className="text-sm font-bold text-white truncate">{gName}</span>
                             </div>
-                            <span className="text-sm font-bold text-white truncate">{gName}</span>
-                          </div>
-                        ))
-                      )}
+                          );
+                        }
+                      })}
                     </div>
                   </div>
                 )}
@@ -911,7 +1096,7 @@ export const GameDetails = () => {
                 {activeMedia === -1 && hasTrailer ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${getYouTubeVideoId(game.trailerUrl!)}?autoplay=1&mute=1`}
-                    className="w-full h-full border-0"
+                    className="w-full h-full border-0 relative z-10"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowFullScreen
                   ></iframe>
@@ -919,47 +1104,49 @@ export const GameDetails = () => {
                   <img 
                     src={getImageUrl(screenshots[activeMedia])} 
                     alt="Gameplay Screenshot" 
-                    className="w-full h-full object-contain bg-black/90" 
+                    className="w-full h-full object-contain bg-black/90 relative z-10" 
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes('svg+xml')) {
+                        target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect width="1920" height="1080" fill="%23111"/><text x="50%" y="50%" fill="%23666" dominant-baseline="middle" text-anchor="middle" font-size="48">Image not found</text></svg>';
+                      }
+                    }}
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center flex-col gap-4 text-white/30 bg-cards">
+                  <div className="absolute inset-0 flex items-center justify-center flex-col gap-4 text-white/30 bg-cards z-10">
                     <span className="text-xl font-bold">No Media Available</span>
                   </div>
+                )}
+
+                {/* Media Navigation Arrows */}
+                {activeMedia > (hasTrailer ? -1 : 0) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setActiveMedia(curr => curr - 1); }}
+                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 bg-black/60 hover:bg-black/80 text-white border border-white/10 hover:border-primary/40 rounded-full flex items-center justify-center z-20 transition-colors backdrop-blur-sm cursor-pointer"
+                    title="Previous Media"
+                  >
+                    <ChevronLeft size={20} strokeWidth={1.5} className="mr-0.5" />
+                  </button>
+                )}
+
+                {activeMedia < screenshots.length - 1 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setActiveMedia(curr => curr + 1); }}
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 bg-black/60 hover:bg-black/80 text-white border border-white/10 hover:border-primary/40 rounded-full flex items-center justify-center z-20 transition-colors backdrop-blur-sm cursor-pointer"
+                    title="Next Media"
+                  >
+                    <ChevronRight size={20} strokeWidth={1.5} className="ml-0.5" />
+                  </button>
                 )}
               </div>
 
               {/* Thumbnails Row */}
-              <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
-                {hasTrailer && (
-                  <div 
-                    onClick={() => setActiveMedia(-1)}
-                    className={`relative w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] ${activeMedia === -1 ? 'border-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' : 'border-transparent hover:border-white/30'} bg-black`}
-                  >
-                    <img 
-                      src={`https://i.ytimg.com/vi/${getYouTubeVideoId(game.trailerUrl!)}/hqdefault.jpg`} 
-                      alt="Trailer Thumbnail" 
-                      className="w-full h-full object-cover opacity-70" 
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm border border-white/20">
-                        <Play size={18} className="text-white ml-0.5" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {screenshots.map((url, i) => (
-                  <div 
-                    key={i} 
-                    onClick={() => setActiveMedia(i)}
-                    className={`w-32 sm:w-40 aspect-video rounded-lg overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all duration-300 hover:scale-[1.02] ${activeMedia === i ? 'border-primary shadow-[0_0_15px_rgba(220,248,54,0.3)]' : 'border-transparent hover:border-white/30'} bg-white/5`}
-                  >
-                    <img src={getImageUrl(url)} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-                {!hasTrailer && screenshots.length === 0 && (
-                  <div className="text-white/30 text-sm px-4">No screenshots available.</div>
-                )}
-              </div>
+              <ThumbnailGallery 
+                screenshots={screenshots}
+                trailerUrl={game.trailerUrl}
+                activeMedia={activeMedia}
+                setActiveMedia={setActiveMedia}
+              />
             </div>
 
             {/* Right Column (30%): Box Art & Buy Box */}
@@ -1071,26 +1258,83 @@ export const GameDetails = () => {
                           OUT OF STOCK
                         </button>
                       ) : game.isRentable ? (
-                        <div className="flex flex-col sm:flex-row lg:flex-col gap-3 mt-2">
+                        <div className="flex flex-col gap-2.5 mt-2">
                           <button 
-                            onClick={handleAddToCart}
-                            className="w-full bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
+                            onClick={() => {
+                              if (!inCart) addToCart(game.id);
+                              navigate('/cart');
+                            }}
+                            className="w-full bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] cursor-pointer active:scale-95"
                           >
-                            {inCart ? 'Go to Cart' : 'Buy Now'}
-                            <ShoppingCart size={16} className={inCart ? 'hidden' : ''} />
+                            <ShoppingCart size={16} />
+                            <span>Buy Now</span>
                           </button>
-                          <button className="w-full bg-white/10 border border-white/20 hover:bg-white/20 text-white font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-2">
+
+                          <button 
+                            onClick={() => {
+                              if (!inCart) addToCart(game.id);
+                              else navigate('/cart');
+                            }}
+                            className={`w-full font-bold text-xs py-2.5 px-4 rounded-xl border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                              inCart
+                                ? 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                                : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
+                            }`}
+                          >
+                            {inCart ? (
+                              <>
+                                <CheckCircle2 size={14} className="text-primary" />
+                                <span>In Cart</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart size={14} />
+                                <span>Add to Cart</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button className="w-full bg-white/10 border border-white/20 hover:bg-white/20 text-white font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
                             Rent ({game.rentDurationDays} Days) <span className="text-primary font-bold normal-case text-xs">{formatPrice(game.rentPrice || 0)}</span>
                           </button>
                         </div>
                       ) : (
-                        <button 
-                          onClick={handleAddToCart}
-                          className="w-full mt-2 bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2"
-                        >
-                          {inCart ? 'Go to Cart' : 'Buy Now'}
-                          <ShoppingCart size={16} className={inCart ? 'hidden' : ''} />
-                        </button>
+                        <div className="flex flex-col gap-2.5 mt-2">
+                          <button 
+                            onClick={() => {
+                              if (!inCart) addToCart(game.id);
+                              navigate('/cart');
+                            }}
+                            className="w-full bg-primary hover:bg-white text-background font-black text-sm px-4 py-3.5 rounded-xl transition-all uppercase tracking-wider flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(220,248,54,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] cursor-pointer active:scale-95"
+                          >
+                            <ShoppingCart size={16} />
+                            <span>Buy Now</span>
+                          </button>
+
+                          <button 
+                            onClick={() => {
+                              if (!inCart) addToCart(game.id);
+                              else navigate('/cart');
+                            }}
+                            className={`w-full font-bold text-xs py-2.5 px-4 rounded-xl border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                              inCart
+                                ? 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                                : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
+                            }`}
+                          >
+                            {inCart ? (
+                              <>
+                                <CheckCircle2 size={14} className="text-primary" />
+                                <span>In Cart</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart size={14} />
+                                <span>Add to Cart</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       )}
 
                       <div className="mt-3 pt-4 border-t border-white/10 flex items-center justify-between">

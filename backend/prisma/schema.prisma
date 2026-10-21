@@ -43,6 +43,7 @@ model Game {
   internalCost     Float?
   creatorAccess    Boolean  @default(false)
   position         Int      @default(0)
+  isPublished      Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -52,6 +53,7 @@ model Game {
   wishlistItems    WishlistItem[]
   orderItems       OrderItem[]
   reactions        GameReaction[]
+  giveawayEntries  GiveawayEntry[]
 }
 
 model User {
@@ -70,6 +72,8 @@ model User {
   reactions     GameReaction[]
   creatorApplications CreatorApplication[]
   creatorCoupons      Coupon[]             @relation("CreatorCoupons")
+  trustedDevices      TrustedDevice[]
+  giveawayEntries     GiveawayEntry[]
 }
 
 model GameReaction {
@@ -122,6 +126,9 @@ model Order {
   purpose          String?     @unique // e.g. DX-K8M2P5R1Q7 for Delta APay UPI
   submittedUtr     String?
   paymentMethod    String      @default("DELTA_PAY")
+  termsAccepted    Boolean     @default(false)
+  termsAcceptedAt  DateTime?
+  termsVersion     String?
   expiresAt        DateTime?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
@@ -209,8 +216,38 @@ model OtpVerification {
   id        String   @id @default(uuid())
   email     String
   otp       String
+  purpose   String   @default("general")
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+model TrustedDevice {
+  id           String   @id @default(uuid())
+  userId       String
+  tokenHash    String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  lastUsedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model GiveawayEntry {
+  id              String   @id @default(uuid())
+  gameId          String
+  userId          String
+  code            String?
+  status          String   @default("PENDING") // PENDING, APPROVED
+  createdAt       DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
 }

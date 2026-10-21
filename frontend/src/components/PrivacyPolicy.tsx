@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { 
-  ShieldCheck, Lock, Eye, Database, 
-  Server, UserCheck, Bell, ChevronRight,
-  FileCheck, KeyRound, Smartphone, HeartHandshake
+  ShieldCheck, Lock, Database, 
+  UserCheck, ChevronRight,
+  FileCheck, HeartHandshake
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -114,38 +114,14 @@ export const PrivacyPolicy = () => {
             </div>
           </motion.div>
 
-          {/* 4. Data Security & Storage */}
-          <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
-            <div className="flex items-center gap-3 sm:gap-4 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                <KeyRound size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">4. Encryption & Data Security</h2>
-                <p className="text-xs text-text-secondary">Enterprise-grade security standards</p>
-              </div>
-            </div>
-            <div className="space-y-3 text-text-secondary text-sm sm:text-base leading-relaxed">
-              <p>
-                We implement robust security measures to safeguard your personal information:
-              </p>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm list-none pt-2">
-                <li className="flex items-start gap-2.5"><span className="text-primary mt-0.5">✦</span> <span><strong className="text-white">Bcrypt Hashing:</strong> Passwords are one-way hashed with salted bcrypt rounds.</span></li>
-                <li className="flex items-start gap-2.5"><span className="text-primary mt-0.5">✦</span> <span><strong className="text-white">SSL / TLS Encryption:</strong> All client-server traffic is encrypted using HTTPS.</span></li>
-                <li className="flex items-start gap-2.5"><span className="text-primary mt-0.5">✦</span> <span><strong className="text-white">Isolated Database:</strong> PostgreSQL runs in a firewalled environment on private VPS networks.</span></li>
-                <li className="flex items-start gap-2.5"><span className="text-primary mt-0.5">✦</span> <span><strong className="text-white">Stateless JWTs:</strong> Secure JSON Web Tokens with strict expiration limits.</span></li>
-              </ul>
-            </div>
-          </motion.div>
-
-          {/* 5. Third-Party Sharing & Cookies */}
+          {/* 4. Third-Party Sharing & Cookies */}
           <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
             <div className="flex items-center gap-3 sm:gap-4 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <HeartHandshake size={24} />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">5. Third-Party Services & No Selling Policy</h2>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">4. Third-Party Services & No Selling Policy</h2>
                 <p className="text-xs text-text-secondary">We never sell your personal information</p>
               </div>
             </div>
@@ -154,14 +130,14 @@ export const PrivacyPolicy = () => {
             </p>
           </motion.div>
 
-          {/* 6. User Rights & Account Deletion */}
+          {/* 5. User Rights & Account Deletion */}
           <motion.div variants={itemVariants} className="bg-cards/40 backdrop-blur-xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-xl relative overflow-hidden group hover:border-white/20 transition-all duration-500">
             <div className="flex items-center gap-3 sm:gap-4 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                 <UserCheck size={24} />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">6. Your Rights & Data Requests</h2>
+                <h2 className="text-xl sm:text-2xl font-heading font-black text-white">5. Your Rights & Data Requests</h2>
                 <p className="text-xs text-text-secondary">Full control over your personal data</p>
               </div>
             </div>

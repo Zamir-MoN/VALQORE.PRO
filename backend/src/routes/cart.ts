@@ -14,7 +14,10 @@ router.get('/', authMiddleware, async (req: Request, res: Response): Promise<voi
     }
 
     const cartItems = await prisma.cartItem.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        game: { isPublished: true }
+      },
       include: { game: true }
     });
 
@@ -40,6 +43,15 @@ router.post('/', authMiddleware, async (req: Request, res: Response): Promise<vo
     const { gameId } = req.body;
     if (!gameId) {
       res.status(400).json({ error: 'gameId is required' });
+      return;
+    }
+
+    // Check if game exists and is published
+    const gameCheck = await prisma.game.findFirst({
+      where: { id: gameId, isPublished: true }
+    });
+    if (!gameCheck) {
+      res.status(404).json({ error: 'Game not found or unavailable' });
       return;
     }
 
