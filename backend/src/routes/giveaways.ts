@@ -2,6 +2,7 @@ import express from 'express';
 import { prisma } from '../prismaClient';
 import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 import { getIO } from '../socket';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
@@ -47,7 +48,20 @@ const optionalAuthMiddleware = (req: express.Request, res: express.Response, nex
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return next();
   }
-  return authMiddleware(req, res, next);
+  const token = authHeader.split(' ')[1];
+  const JWT_SECRET = process.env.JWT_SECRET as string;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { username: string, userId?: string };
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME as string;
+    let isAdmin = false;
+    if (!decoded.userId && decoded.username === ADMIN_USERNAME) {
+      isAdmin = true;
+    }
+    req.user = { ...decoded, isAdmin };
+  } catch (err) {
+    // Expired or invalid token for optional auth - proceed safely as guest
+  }
+  return next();
 };
 
 // GET /api/giveaways/:id/status

@@ -32,7 +32,7 @@ export const GiveawayPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { games, getImageUrl } = useGames();
   const socket = useSocket();
-  const { user } = useAuth();
+  const { user, token: authToken } = useAuth();
   const { formatPrice } = useCurrency();
 
   // Find game/giveaway from GameContext
@@ -87,8 +87,11 @@ export const GiveawayPage: React.FC = () => {
     let isMounted = true;
     const fetchStatus = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const activeToken = authToken || localStorage.getItem('valqore_token') || localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        if (activeToken) {
+          headers['Authorization'] = `Bearer ${activeToken}`;
+        }
         const targetId = game?.id || id;
         
         const res = await axios.get(`/api/giveaways/${targetId}/status`, { headers });
@@ -214,13 +217,13 @@ export const GiveawayPage: React.FC = () => {
 
     try {
       setIsSubmittingEntry(true);
-      const token = localStorage.getItem('token');
+      const activeToken = authToken || localStorage.getItem('valqore_token') || localStorage.getItem('token');
       const targetId = game?.id || id;
 
       const res = await axios.post(
         `/api/giveaways/${targetId}/enter`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : {} }
       );
 
       if (res.data.success) {
