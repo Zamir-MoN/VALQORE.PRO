@@ -53,22 +53,4 @@ export interface FAQ {
   answer: string;
 }
 
-export interface GiveawayConfig {
-  category?: string;
-  worth?: number;
-  endDate?: string;
-  winnersCount?: number;
-  tasks?: {
-    discord?: { required: boolean; url: string };
-    instagram?: { required: boolean; url: string };
-    youtube?: { required?: boolean; url?: string };
-  };
-  rules?: string;
-  winner?: {
-    id?: string;
-    userId?: string;
-    username: string;
-    email?: string;
-    wonAt: string;
-  } | null;
-}
+export type { GiveawayConfig } from './utils/giveaway';

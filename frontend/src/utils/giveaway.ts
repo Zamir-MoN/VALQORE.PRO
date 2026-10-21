@@ -1,4 +1,23 @@
-import { GiveawayConfig } from '../types';
+export interface GiveawayConfig {
+  category?: string;
+  worth?: number;
+  endDate?: string;
+  winnersCount?: number;
+  tasks?: {
+    discord?: { required?: boolean; url?: string };
+    instagram?: { required: boolean; url: string };
+    youtube?: { required?: boolean; url?: string };
+  };
+  rules?: string;
+  winner?: {
+    id?: string;
+    userId?: string;
+    username: string;
+    email?: string;
+    code?: string;
+    wonAt: string;
+  } | null;
+}
 
 export const DEFAULT_INSTAGRAM_URL = 'https://www.instagram.com/valqore.pro/';
 export const DEFAULT_INSTAGRAM_DM = 'https://ig.me/m/valqore.pro';
