@@ -377,27 +377,7 @@ export const GiveawayPage: React.FC = () => {
         <div className="glass p-6 sm:p-10 rounded-3xl border border-pink-500/20 bg-gradient-to-r from-cards/80 via-black/60 to-cards/80 shadow-[0_0_30px_rgba(236,72,153,0.08)] mb-8 relative overflow-hidden">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div className="flex flex-col gap-3 max-w-2xl">
-              {/* Category & Status Badges */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="px-3 py-1 bg-pink-500/20 text-pink-400 border border-pink-500/40 rounded-full text-xs font-black uppercase tracking-wider shadow-[0_0_12px_rgba(236,72,153,0.25)] flex items-center gap-1.5">
-                  <Sparkles size={12} /> {categoryName}
-                </span>
 
-                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  100% Free Entry
-                </span>
-
-                <span className="px-3 py-1 bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 border border-pink-500/30 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                  <FaInstagram size={12} className="text-pink-400" /> Instagram Exclusive
-                </span>
-
-                {winner && (
-                  <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
-                    <Trophy size={12} /> Winner Chosen
-                  </span>
-                )}
-              </div>
 
               {/* Title */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black font-heading text-white tracking-tight drop-shadow-md">
