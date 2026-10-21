@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import type { Game } from '../types';
+import { getImageUrl } from '../utils/image';
 
 interface GameContextType {
   games: Game[];
@@ -10,6 +11,7 @@ interface GameContextType {
   error: string | null;
   refreshGames: () => Promise<void>;
   socket: any;
+  getImageUrl: (url: string | null | undefined) => string;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -71,7 +73,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   }, [API_URL]);
 
   return (
-    <GameContext.Provider value={{ games, loading, error, refreshGames: fetchGames, socket: socketInstance }}>
+    <GameContext.Provider value={{ games, loading, error, refreshGames: fetchGames, socket: socketInstance, getImageUrl }}>
       {children}
     </GameContext.Provider>
   );

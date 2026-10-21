@@ -2,9 +2,10 @@ import { Gift, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGames } from '../context/GameContext';
 import { parseGiveawayRules } from '../utils/giveaway';
+import { getImageUrl } from '../utils/image';
 
 export const GiveawayGames = () => {
-  const { games, loading, getImageUrl } = useGames();
+  const { games, loading } = useGames();
   
   // Filter items that are marked as giveaways
   const giveawayGamesData = games.filter(game => game.isGiveaway);

@@ -26,6 +26,7 @@ import { useGames, useSocket } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { parseGiveawayRules, getInstagramDmUrl, getInstagramHandle, DEFAULT_INSTAGRAM_URL } from '../utils/giveaway';
+import { getImageUrl } from '../utils/image';
 
 export const GiveawayPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
