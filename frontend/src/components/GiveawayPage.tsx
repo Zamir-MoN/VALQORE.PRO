@@ -22,15 +22,15 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import { FaInstagram } from 'react-icons/fa';
-import { useGames } from '../context/GameContext';
+import { useGames, useSocket } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { parseGiveawayRules, getInstagramDmUrl, getInstagramHandle, DEFAULT_INSTAGRAM_URL } from '../utils/giveaway';
-import { socket } from '../socket';
 
 export const GiveawayPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { games, getImageUrl } = useGames();
+  const socket = useSocket();
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
 
@@ -141,7 +141,7 @@ export const GiveawayPage: React.FC = () => {
       socket?.off('giveaway_updated', handleGiveawayUpdate);
       socket?.off('giveaway_entry_approved', handleEntryApproved);
     };
-  }, [game?.id, id, user?.id, userEntry?.code]);
+  }, [game?.id, id, user?.id, userEntry?.code, socket]);
 
   // Sync winner from game model if present
   useEffect(() => {
