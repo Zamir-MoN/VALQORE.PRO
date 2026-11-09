@@ -1,10 +1,40 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { prisma } from '../prismaClient';
 import { authMiddleware, isAdminMiddleware } from '../middleware/auth';
 import { getIO } from '../socket';
 import jwt from 'jsonwebtoken';
 
 const router = express.Router();
+
+// Middleware that allows either Admin OR Approved Creator
+const isCreatorOrAdminMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized: Authentication required' });
+      return;
+    }
+
+    // 1. Check if user is Admin
+    if ((req.user as any).isAdmin) {
+      return next();
+    }
+
+    // 2. Check if user is an Approved Creator
+    const userId = req.user.userId;
+    if (userId) {
+      const application = await prisma.creatorApplication.findFirst({
+        where: { userId, status: 'APPROVED' }
+      });
+      if (application) {
+        return next();
+      }
+    }
+
+    res.status(403).json({ error: 'Forbidden: Admin or Approved Creator access required' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to verify creator permissions' });
+  }
+};
 
 let tableEnsured = false;
 async function ensureGiveawayTable() {
@@ -299,8 +329,8 @@ router.post('/:id/enter', authMiddleware, async (req, res) => {
 });
 
 // GET /api/giveaways/admin/:id/entries
-// Admin endpoint to view all participants for a giveaway (including 4-digit codes & approval status)
-router.get('/admin/:id/entries', authMiddleware, isAdminMiddleware, async (req, res) => {
+// Admin & Creator endpoint to view all participants for a giveaway (including 4-digit codes & approval status)
+router.get('/admin/:id/entries', authMiddleware, isCreatorOrAdminMiddleware, async (req, res) => {
   try {
     await ensureGiveawayTable();
     const { id } = req.params;
@@ -629,8 +659,8 @@ router.post('/admin/entries/:entryId/revoke', authMiddleware, isAdminMiddleware,
 });
 
 // POST /api/giveaways/admin/:id/draw-winner
-// Admin picks a random winner from APPROVED participants only
-router.post('/admin/:id/draw-winner', authMiddleware, isAdminMiddleware, async (req, res) => {
+// Admin & Creator picks a random winner from APPROVED participants only
+router.post('/admin/:id/draw-winner', authMiddleware, isCreatorOrAdminMiddleware, async (req, res) => {
   try {
     await ensureGiveawayTable();
     const { id } = req.params;

@@ -8,11 +8,14 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { PaymentModal } from './PaymentModal';
 import { formatOrderId } from '../utils/order';
+import { GiveawaySpinWheel } from './GiveawaySpinWheel';
+import { useGames } from '../context/GameContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
 export const Profile = () => {
   const { user, token, logout, loading: authLoading, openAuthModal } = useAuth();
+  const { games } = useGames();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
@@ -686,6 +689,13 @@ export const Profile = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* CREATOR EXCLUSIVE GIVEAWAY SPIN WHEEL */}
+                <GiveawaySpinWheel
+                  token={token}
+                  apiUrl={API_URL}
+                  games={games as any}
+                />
               </div>
             )}
 
