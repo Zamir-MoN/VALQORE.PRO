@@ -278,6 +278,21 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
     };
   }, []);
 
+  // Lock background body/html scroll when winner modal is open
+  useEffect(() => {
+    if (showWinnerModal) {
+      const originalOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+      };
+    }
+  }, [showWinnerModal]);
+
   const selectedGame = giveawayGames.find(g => g.id === selectedGiveawayId);
 
   return (
@@ -471,7 +486,10 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
 
       {/* WINNER CELEBRATION MODAL */}
       {showWinnerModal && winner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+        <div
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-300 overscroll-contain"
+        >
           <div className="relative w-full max-w-md bg-[#0D0D11] border-2 border-primary/50 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(220,248,54,0.35)] text-center animate-in zoom-in-95 duration-300">
             {/* Ambient burst */}
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/30 rounded-full blur-[40px] pointer-events-none" />
