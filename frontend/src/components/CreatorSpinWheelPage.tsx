@@ -49,7 +49,7 @@ export const CreatorSpinWheelPage: React.FC = () => {
 
       <div className="container mx-auto max-w-[1200px]">
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <button
             onClick={() => navigate('/profile')}
             className="flex items-center gap-2.5 text-text-secondary hover:text-white transition-colors group px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer"
@@ -57,22 +57,6 @@ export const CreatorSpinWheelPage: React.FC = () => {
             <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             <span className="font-bold tracking-wider uppercase text-xs">Back to Profile</span>
           </button>
-
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/15 text-primary text-xs font-black uppercase tracking-widest border border-primary/30">
-            <Sparkles size={13} className="animate-pulse" /> Dedicated Creator Arena
-          </div>
-        </div>
-
-        {/* Page Title Header */}
-        <div className="mb-10 text-center md:text-left">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-black tracking-wide uppercase text-white flex items-center justify-center md:justify-start gap-4 mb-3">
-            <span className="w-2.5 h-10 bg-primary rounded-full hidden md:block"></span>
-            <Trophy className="text-primary" size={38} />
-            <span>Giveaway Winner Selection</span>
-          </h1>
-          <p className="text-text-secondary font-medium text-sm md:text-base max-w-2xl ml-0 md:ml-6">
-            Spin the official live wheel to draw verified giveaway winners from Instagram 4-digit code participants.
-          </p>
         </div>
 
         {/* Permission Guard */}
