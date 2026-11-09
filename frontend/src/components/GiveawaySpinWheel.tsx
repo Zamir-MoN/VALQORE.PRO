@@ -281,13 +281,12 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
   const selectedGame = giveawayGames.find(g => g.id === selectedGiveawayId);
 
   return (
-    <div className="bg-cards/40 rounded-3xl p-6 md:p-8 relative overflow-hidden group shadow-2xl mt-4">
-      {/* Background cyber ambient glow */}
-      <div className="absolute -top-24 -left-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
+    <div className="bg-transparent border-0 shadow-none p-2 sm:p-4 md:p-6 relative overflow-hidden group mt-2">
+      {/* Background subtle atmospheric depth */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Header (Clean, tag removed) */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/5">
+      {/* Header (Clean, tag removed, seamless blending) */}
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
         <div>
           <h3 className="text-2xl md:text-3xl font-heading font-black tracking-wide uppercase text-white flex items-center gap-3">
             <Trophy className="text-primary" size={26} /> Giveaway Spin Wheel
@@ -304,7 +303,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
             type="button"
             onClick={() => setSoundEnabled(!soundEnabled)}
             title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
-            className="p-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl border border-white/10 transition-all cursor-pointer"
+            className="p-3 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-2xl border border-white/[0.08] transition-all cursor-pointer backdrop-blur-sm"
           >
             {soundEnabled ? <Volume2 size={18} className="text-primary" /> : <VolumeX size={18} className="text-white/40" />}
           </button>
@@ -314,7 +313,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
               value={selectedGiveawayId}
               onChange={e => setSelectedGiveawayId(e.target.value)}
               disabled={isSpinning || giveawayGames.length === 0}
-              className="w-full bg-background/90 border border-white/10 hover:border-primary/40 focus:border-primary text-white text-sm font-bold rounded-2xl px-4 py-3 outline-none transition-all cursor-pointer disabled:opacity-50"
+              className="w-full bg-[#0A0A0E]/80 border border-white/[0.08] hover:border-primary/40 focus:border-primary text-white text-sm font-bold rounded-2xl px-4 py-3 outline-none transition-all cursor-pointer disabled:opacity-50 backdrop-blur-md"
             >
               {giveawayGames.length === 0 ? (
                 <option value="">No Active Giveaways</option>
@@ -333,7 +332,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
             onClick={() => selectedGiveawayId && fetchParticipants(selectedGiveawayId)}
             disabled={isSpinning || !selectedGiveawayId || loadingParticipants}
             title="Refresh Participants"
-            className="p-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl border border-white/10 transition-all cursor-pointer disabled:opacity-50"
+            className="p-3 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-2xl border border-white/[0.08] transition-all cursor-pointer disabled:opacity-50 backdrop-blur-sm"
           >
             <RefreshCw size={18} className={loadingParticipants ? 'animate-spin text-primary' : ''} />
           </button>
@@ -362,7 +361,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
                 ref={canvasRef}
                 width={420}
                 height={420}
-                className="w-full h-full rounded-full shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                className="w-full h-full rounded-full shadow-[0_0_40px_rgba(0,0,0,0.6)]"
               />
             </div>
           </div>
@@ -373,7 +372,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
               type="button"
               onClick={handleSpinWheel}
               disabled={isSpinning || participants.length === 0 || !selectedGiveawayId}
-              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary via-lime-400 to-primary text-black font-heading font-black text-lg uppercase tracking-wider shadow-[0_0_30px_rgba(220,248,54,0.4)] hover:shadow-[0_0_45px_rgba(220,248,54,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none flex items-center justify-center gap-3"
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary via-lime-400 to-primary text-black font-heading font-black text-lg uppercase tracking-wider shadow-[0_0_30px_rgba(220,248,54,0.35)] hover:shadow-[0_0_45px_rgba(220,248,54,0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none flex items-center justify-center gap-3"
             >
               <Sparkles size={22} className={isSpinning ? 'animate-spin' : ''} />
               <span>{isSpinning ? 'SPINNING THE WHEEL...' : 'SPIN TO SELECT WINNER'}</span>
@@ -386,8 +385,8 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
 
         {/* Right Side: Giveaway Information & Entrants List */}
         <div className="lg:col-span-5 flex flex-col gap-5">
-          {/* Selected Giveaway Card */}
-          <div className="bg-background/80 border border-white/5 rounded-2xl p-5">
+          {/* Selected Giveaway Card (Seamless dark blending) */}
+          <div className="bg-[#0B0B0E]/60 border border-white/[0.06] rounded-2xl p-5 backdrop-blur-md">
             <div className="flex items-center gap-3 mb-3">
               <Gift className="text-primary" size={20} />
               <span className="text-xs uppercase font-bold tracking-widest text-text-secondary">Selected Giveaway</span>
@@ -399,14 +398,14 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
               <span className="flex items-center gap-1.5 text-primary">
                 <Users size={14} /> {participants.length} Approved Entries
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/70">
                 Instagram Verified
               </span>
             </div>
           </div>
 
-          {/* Participant List Preview */}
-          <div className="bg-background/80 border border-white/5 rounded-2xl p-5 flex flex-col">
+          {/* Participant List Preview (Seamless dark blending) */}
+          <div className="bg-[#0B0B0E]/60 border border-white/[0.06] rounded-2xl p-5 flex flex-col backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs uppercase font-bold tracking-widest text-text-secondary flex items-center gap-2">
                 <CheckCircle2 size={14} className="text-primary" /> Approved Entrants
@@ -422,7 +421,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
                 <span className="text-xs font-bold">Loading entrants...</span>
               </div>
             ) : participants.length === 0 ? (
-              <div className="py-10 px-4 rounded-xl border border-dashed border-white/10 text-center flex flex-col items-center justify-center">
+              <div className="py-10 px-4 rounded-xl border border-dashed border-white/[0.08] text-center flex flex-col items-center justify-center">
                 <AlertCircle size={28} className="text-amber-400/80 mb-2" />
                 <p className="text-sm font-bold text-white">No Approved Entrants Yet</p>
                 <p className="text-xs text-text-secondary mt-1 max-w-xs">
@@ -434,11 +433,11 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
                 {participants.map((entry, idx) => (
                   <div
                     key={entry.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className="w-3 h-3 rounded-full shrink-0"
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{ backgroundColor: SEGMENT_COLORS[idx % SEGMENT_COLORS.length] }}
                       />
                       <div className="min-w-0">
