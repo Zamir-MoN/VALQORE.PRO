@@ -10,11 +10,11 @@ import type { Game } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
 
-// Miniature game card for ambient background horizontal strips
+// Miniature crisp game card for ambient background horizontal strips
 const BackgroundGameStripCard: React.FC<{ game: Game }> = React.memo(({ game }) => {
   return (
-    <div className="flex-shrink-0 w-32 sm:w-36 md:w-44 bg-[#111115]/85 border border-white/[0.08] rounded-xl p-2 shadow-2xl backdrop-blur-md select-none pointer-events-none">
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-black/60 mb-2">
+    <div className="flex-shrink-0 w-36 sm:w-40 md:w-48 bg-[#16161D] border-2 border-white/20 hover:border-primary/50 rounded-2xl p-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.8)] select-none pointer-events-none transition-all">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-black mb-2.5 shadow-inner">
         <img
           src={game.coverImage ? getImageUrl(game.coverImage) : '/images/hero-artwork.png'}
           alt={game.title}
@@ -25,18 +25,18 @@ const BackgroundGameStripCard: React.FC<{ game: Game }> = React.memo(({ game }) 
           <img
             src={getImageUrl(game.tagImage)}
             alt="Tag"
-            className="absolute bottom-1.5 left-1.5 h-4 sm:h-5 object-contain drop-shadow"
+            className="absolute bottom-2 left-2 h-5 sm:h-6 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
           />
         )}
       </div>
-      <div className="px-0.5">
-        <h5 className="font-heading font-bold text-xs text-white/90 truncate leading-snug">
+      <div className="px-1">
+        <h5 className="font-heading font-black text-xs sm:text-sm text-white truncate leading-snug tracking-wide">
           {game.title}
         </h5>
-        <div className="flex items-center justify-between mt-1 text-[11px] font-mono">
-          <span className="text-[#DCF836] font-bold">₹{game.price}</span>
+        <div className="flex items-center justify-between mt-1 text-xs font-mono font-bold">
+          <span className="text-primary font-black">₹{game.price}</span>
           {game.steamPrice && game.steamPrice > game.price && (
-            <span className="text-white/40 line-through text-[10px]">₹{game.steamPrice}</span>
+            <span className="text-white/50 line-through text-[11px]">₹{game.steamPrice}</span>
           )}
         </div>
       </div>
@@ -107,10 +107,10 @@ export const CreatorSpinWheelPage: React.FC = () => {
 
       {/* 2 Horizontal looping background strips in the middle */}
       {stripRow1.length > 0 && (
-        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 -z-10 pointer-events-none flex flex-col gap-6 opacity-25 overflow-hidden select-none mask-fade">
+        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 -z-10 pointer-events-none flex flex-col gap-8 opacity-85 overflow-hidden select-none">
           {/* Top horizontal strip: Moves Right to Left */}
           <div className="w-full overflow-hidden flex">
-            <div className="animate-marquee-left flex gap-4">
+            <div className="animate-marquee-left flex gap-5">
               {stripRow1.map((game, i) => (
                 <BackgroundGameStripCard key={`strip-top-${game.id || i}-${i}`} game={game} />
               ))}
@@ -119,7 +119,7 @@ export const CreatorSpinWheelPage: React.FC = () => {
 
           {/* Bottom horizontal strip: Moves Left to Right */}
           <div className="w-full overflow-hidden flex">
-            <div className="animate-marquee-right flex gap-4">
+            <div className="animate-marquee-right flex gap-5">
               {stripRow2.map((game, i) => (
                 <BackgroundGameStripCard key={`strip-bottom-${game.id || i}-${i}`} game={game} />
               ))}
