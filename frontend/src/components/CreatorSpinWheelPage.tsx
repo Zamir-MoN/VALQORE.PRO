@@ -107,7 +107,7 @@ export const CreatorSpinWheelPage: React.FC = () => {
 
       {/* 2 Horizontal looping background strips in the middle */}
       {stripRow1.length > 0 && (
-        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 -z-10 pointer-events-none flex flex-col gap-8 opacity-85 overflow-hidden select-none">
+        <div className="absolute top-[52%] -translate-y-1/2 left-0 right-0 -z-10 pointer-events-none flex flex-col gap-10 opacity-70 overflow-hidden select-none">
           {/* Top horizontal strip: Moves Right to Left */}
           <div className="w-full overflow-hidden flex">
             <div className="animate-marquee-left flex gap-5">

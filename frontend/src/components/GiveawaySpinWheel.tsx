@@ -286,12 +286,12 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.04] rounded-full blur-[140px] pointer-events-none" />
 
       {/* Header (Clean, tag removed, seamless blending) */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-[#0A0A0E]/85 border border-white/[0.08] backdrop-blur-md shadow-2xl mb-6">
         <div>
-          <h3 className="text-2xl md:text-3xl font-heading font-black tracking-wide uppercase text-white flex items-center gap-3">
+          <h3 className="text-2xl md:text-3xl font-heading font-black tracking-wide uppercase text-white flex items-center gap-3 drop-shadow-md">
             <Trophy className="text-primary" size={26} /> Giveaway Spin Wheel
           </h3>
-          <p className="text-text-secondary text-sm font-medium mt-1">
+          <p className="text-text-primary/90 text-sm font-medium mt-1 drop-shadow-sm">
             Pick a giveaway and spin the live wheel to randomly select the lucky winner among verified participants.
           </p>
         </div>

@@ -120,14 +120,14 @@
 .animate-marquee-left {
   display: flex;
   width: max-content;
-  animation: marqueeLeft 90s linear infinite;
+  animation: marqueeLeft 180s linear infinite;
   will-change: transform;
 }
 
 .animate-marquee-right {
   display: flex;
   width: max-content;
-  animation: marqueeRight 90s linear infinite;
+  animation: marqueeRight 180s linear infinite;
   will-change: transform;
 }
 
