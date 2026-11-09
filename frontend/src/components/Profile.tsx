@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard, Copy, Check } from 'lucide-react';
+import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard, Copy, Check, Trophy } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -19,7 +19,7 @@ export const Profile = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'settings' | 'creator'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'settings' | 'creator' | 'spinwheel'>('orders');
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
   const [creatorStats, setCreatorStats] = useState<any>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
@@ -300,21 +300,41 @@ export const Profile = () => {
             </button>
 
             {creatorStatus === 'APPROVED' && (
-              <button 
-                onClick={() => setActiveTab('creator')}
-                className={clsx(
-                  "flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group",
-                  activeTab === 'creator' 
-                    ? 'bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_20px_rgba(220,248,54,0.05)]' 
-                    : 'text-text-secondary hover:bg-white/5 hover:text-white border border-transparent'
-                )}
-              >
-                <span className="flex items-center gap-3">
-                  <User size={20} className={activeTab === 'creator' ? 'text-primary' : 'text-text-secondary group-hover:text-white'} /> 
-                  Creator Panel
-                </span>
-                {activeTab === 'creator' && <ChevronRight size={16} className="hidden md:block opacity-70" />}
-              </button>
+              <>
+                <button 
+                  onClick={() => setActiveTab('creator')}
+                  className={clsx(
+                    "flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group",
+                    activeTab === 'creator' 
+                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_20px_rgba(220,248,54,0.05)]' 
+                      : 'text-text-secondary hover:bg-white/5 hover:text-white border border-transparent'
+                  )}
+                >
+                  <span className="flex items-center gap-3">
+                    <User size={20} className={activeTab === 'creator' ? 'text-primary' : 'text-text-secondary group-hover:text-white'} /> 
+                    Creator Panel
+                  </span>
+                  {activeTab === 'creator' && <ChevronRight size={16} className="hidden md:block opacity-70" />}
+                </button>
+
+                <button 
+                  onClick={() => setActiveTab('spinwheel')}
+                  className={clsx(
+                    "flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group relative overflow-hidden",
+                    activeTab === 'spinwheel' 
+                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_20px_rgba(220,248,54,0.05)]' 
+                      : 'text-text-secondary hover:bg-white/5 hover:text-white border border-transparent'
+                  )}
+                >
+                  <span className="flex items-center gap-3">
+                    <Trophy size={20} className={activeTab === 'spinwheel' ? 'text-primary' : 'text-primary/70 group-hover:text-primary'} /> 
+                    <span>Spin Wheel</span>
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-wider border border-primary/30">
+                    Live
+                  </span>
+                </button>
+              </>
             )}
           </div>
 
@@ -640,13 +660,20 @@ export const Profile = () => {
 
             {/* CREATOR TAB */}
             {activeTab === 'creator' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl">
-                <div className="mb-8">
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl space-y-8">
+                <div className="mb-4">
                   <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white flex items-center gap-3 mb-2">
                     <span className="w-2 h-8 bg-primary rounded-full"></span> Creator Dashboard
                   </h2>
-                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your creator partnership and track your impact.</p>
+                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your creator partnership, select giveaway winners, and track your impact.</p>
                 </div>
+
+                {/* CREATOR EXCLUSIVE GIVEAWAY SPIN WHEEL (TOP POSITION) */}
+                <GiveawaySpinWheel
+                  token={token}
+                  apiUrl={API_URL}
+                  games={games as any}
+                />
                 
                 <div className="bg-cards/40 border border-primary/20 rounded-3xl p-8 relative overflow-hidden group shadow-[0_0_30px_rgba(220,248,54,0.05)]">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] group-hover:bg-primary/20 transition-colors duration-700"></div>
@@ -689,8 +716,12 @@ export const Profile = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* CREATOR EXCLUSIVE GIVEAWAY SPIN WHEEL */}
+            {/* SPIN WHEEL DEDICATED TAB */}
+            {activeTab === 'spinwheel' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl">
                 <GiveawaySpinWheel
                   token={token}
                   apiUrl={API_URL}
