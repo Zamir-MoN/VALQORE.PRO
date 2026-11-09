@@ -129,12 +129,18 @@ function App() {
                     <div className="min-h-screen text-text-primary flex flex-col font-body relative z-0 animate-in fade-in duration-700">
                       <Toaster
                         position="top-center"
+                        containerStyle={{
+                          zIndex: 999999,
+                          top: 48,
+                        }}
                         toastOptions={{
-                          className: 'glass text-white font-bold',
+                          className: 'text-white font-bold',
                           style: {
-                            background: 'rgba(25, 25, 25, 0.9)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            background: '#141418',
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(220, 248, 54, 0.4)',
+                            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.7)',
+                            padding: '12px 18px',
                           },
                         }}
                       />

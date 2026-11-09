@@ -488,9 +488,9 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
       {showWinnerModal && winner && (
         <div
           data-lenis-prevent
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-300 overscroll-contain"
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300 overscroll-contain overflow-y-auto"
         >
-          <div className="relative w-full max-w-md bg-[#0D0D11] border-2 border-primary/50 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(220,248,54,0.35)] text-center animate-in zoom-in-95 duration-300">
+          <div className="relative w-full max-w-md bg-[#0D0D11] border-2 border-primary/50 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(220,248,54,0.35)] text-center animate-in zoom-in-95 duration-300 my-auto mt-16 sm:mt-auto">
             {/* Ambient burst */}
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/30 rounded-full blur-[40px] pointer-events-none" />
 
