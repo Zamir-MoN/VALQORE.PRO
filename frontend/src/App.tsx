@@ -29,6 +29,7 @@ const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m =
 const AdminLogin = lazy(() => import('./components/AdminLogin').then(m => ({ default: m.AdminLogin })));
 const CreatorGuidelines = lazy(() => import('./components/CreatorGuidelines').then(m => ({ default: m.CreatorGuidelines })));
 const CreatorApplication = lazy(() => import('./components/CreatorApplication').then(m => ({ default: m.CreatorApplication })));
+const CreatorSpinWheelPage = lazy(() => import('./components/CreatorSpinWheelPage').then(m => ({ default: m.CreatorSpinWheelPage })));
 const Support = lazy(() => import('./components/Support').then(m => ({ default: m.Support })));
 const TermsOfService = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfService })));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
@@ -175,6 +176,7 @@ function App() {
                             <Route path="/about" element={<AboutUs />} />
                             <Route path="/creator/guidelines" element={<CreatorGuidelines />} />
                             <Route path="/creator/apply" element={<CreatorApplication />} />
+                            <Route path="/creator/spin-wheel" element={<CreatorSpinWheelPage />} />
                           </Routes>
                         </Suspense>
                       </main>

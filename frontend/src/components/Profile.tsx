@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard, Copy, Check, Trophy } from 'lucide-react';
+import { User, Key, ShoppingBag, XCircle, Loader2, CheckCircle2, Clock, ChevronRight, Mail, Calendar, ShieldCheck, LogOut, ArrowLeft, Gamepad2, CreditCard, Copy, Check, Trophy, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -318,21 +318,19 @@ export const Profile = () => {
                 </button>
 
                 <button 
-                  onClick={() => setActiveTab('spinwheel')}
-                  className={clsx(
-                    "flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group relative overflow-hidden",
-                    activeTab === 'spinwheel' 
-                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-[inset_0_0_20px_rgba(220,248,54,0.05)]' 
-                      : 'text-text-secondary hover:bg-white/5 hover:text-white border border-transparent'
-                  )}
+                  onClick={() => navigate('/creator/spin-wheel')}
+                  className="flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all duration-300 whitespace-nowrap flex-1 md:flex-none group relative overflow-hidden text-text-secondary hover:bg-white/5 hover:text-white border border-transparent"
                 >
                   <span className="flex items-center gap-3">
-                    <Trophy size={20} className={activeTab === 'spinwheel' ? 'text-primary' : 'text-primary/70 group-hover:text-primary'} /> 
+                    <Trophy size={20} className="text-primary/70 group-hover:text-primary transition-colors" /> 
                     <span>Spin Wheel</span>
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-wider border border-primary/30">
-                    Live
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-wider border border-primary/30">
+                      Live
+                    </span>
+                    <ExternalLink size={14} className="opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-primary" />
+                  </div>
                 </button>
               </>
             )}
