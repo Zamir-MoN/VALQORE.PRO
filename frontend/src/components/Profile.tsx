@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { PaymentModal } from './PaymentModal';
 import { formatOrderId } from '../utils/order';
-import { GiveawaySpinWheel } from './GiveawaySpinWheel';
 import { useGames } from '../context/GameContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
@@ -659,20 +658,13 @@ export const Profile = () => {
             {/* CREATOR TAB */}
             {activeTab === 'creator' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl space-y-8">
-                <div className="mb-4">
+                <div className="mb-8">
                   <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-wider uppercase text-white flex items-center gap-3 mb-2">
                     <span className="w-2 h-8 bg-primary rounded-full"></span> Creator Dashboard
                   </h2>
-                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your creator partnership, select giveaway winners, and track your impact.</p>
+                  <p className="text-text-secondary font-bold text-sm ml-5">Manage your creator partnership and track your impact.</p>
                 </div>
 
-                {/* CREATOR EXCLUSIVE GIVEAWAY SPIN WHEEL (TOP POSITION) */}
-                <GiveawaySpinWheel
-                  token={token}
-                  apiUrl={API_URL}
-                  games={games as any}
-                />
-                
                 <div className="bg-cards/40 border border-primary/20 rounded-3xl p-8 relative overflow-hidden group shadow-[0_0_30px_rgba(220,248,54,0.05)]">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] group-hover:bg-primary/20 transition-colors duration-700"></div>
                   
@@ -714,17 +706,6 @@ export const Profile = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* SPIN WHEEL DEDICATED TAB */}
-            {activeTab === 'spinwheel' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-4xl">
-                <GiveawaySpinWheel
-                  token={token}
-                  apiUrl={API_URL}
-                  games={games as any}
-                />
               </div>
             )}
 
