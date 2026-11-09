@@ -429,7 +429,14 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
                 </p>
               </div>
             ) : (
-              <div className="max-h-[260px] overflow-y-auto space-y-2 pr-1 no-scrollbar">
+              <div
+                data-lenis-prevent
+                className="max-h-[320px] overflow-y-auto space-y-2 pr-2.5 overscroll-contain"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(220, 248, 54, 0.4) rgba(255, 255, 255, 0.04)',
+                }}
+              >
                 {participants.map((entry, idx) => (
                   <div
                     key={entry.id}
