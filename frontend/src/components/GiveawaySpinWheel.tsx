@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, Sparkles, RefreshCw, AlertCircle, CheckCircle2, Copy, Check, Users, Gift } from 'lucide-react';
+import { Trophy, Sparkles, RefreshCw, AlertCircle, CheckCircle2, Copy, Check, Users, Gift, Volume2, VolumeX } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { soundFX } from '../utils/wheelAudio';
 
 interface Participant {
   id: string;
@@ -33,8 +34,8 @@ interface GiveawaySpinWheelProps {
 }
 
 const SEGMENT_COLORS = [
-  '#DCF836', // Neon Primary
-  '#00F0FF', // Cyan
+  '#DCF836', // Neon Lime Primary
+  '#00F0FF', // Cyber Cyan
   '#FF0055', // Neon Pink
   '#9D00FF', // Purple
   '#FF7700', // Orange
@@ -57,8 +58,12 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
   const [winner, setWinner] = useState<any | null>(null);
   const [showWinnerModal, setShowWinnerModal] = useState<boolean>(false);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const soundEnabledRef = useRef<boolean>(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
 
   // Set default selected giveaway
   useEffect(() => {
@@ -92,7 +97,7 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
     }
   };
 
-  // Draw the spin wheel on canvas
+  // Draw the spin wheel on canvas (clean look without heavy borders)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -101,20 +106,17 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
 
     const size = canvas.width;
     const center = size / 2;
-    const radius = center - 16;
+    const radius = center - 12;
 
     ctx.clearRect(0, 0, size, size);
 
     const count = participants.length;
     if (count === 0) {
-      // Draw empty placeholder wheel
+      // Empty placeholder wheel
       ctx.beginPath();
       ctx.arc(center, center, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = '#16161a';
+      ctx.fillStyle = '#141418';
       ctx.fill();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = 'rgba(220, 248, 54, 0.2)';
-      ctx.stroke();
 
       ctx.font = 'bold 15px sans-serif';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
@@ -136,52 +138,52 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
 
       ctx.fillStyle = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
       ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#0B0B0E';
+
+      // Subtle slice separator
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(10, 10, 14, 0.4)';
       ctx.stroke();
 
-      // Draw participant label
+      // Draw participant label (rotated so text is always readable from outside)
       ctx.save();
       ctx.translate(center, center);
-      ctx.rotate(angle + arc / 2);
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#050507';
-      ctx.font = count > 16 ? 'bold 10px sans-serif' : count > 8 ? 'bold 12px sans-serif' : 'bold 14px sans-serif';
+      const midAngle = angle + arc / 2;
+      ctx.rotate(midAngle);
+
+      ctx.fillStyle = '#060608';
+      ctx.font = count > 16 ? 'bold 10px sans-serif' : count > 8 ? 'bold 12px sans-serif' : 'bold 13px sans-serif';
 
       const username = participants[i].user?.username || `User #${i + 1}`;
       const code = participants[i].code ? ` (${participants[i].code})` : '';
       const label = username.length > 12 ? `${username.slice(0, 10)}..` : username;
-      ctx.fillText(`${label}${code}`, radius - 20, 5);
+
+      // Always readable orientation
+      const normalizedMid = (midAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+      if (normalizedMid > Math.PI / 2 && normalizedMid < (3 * Math.PI) / 2) {
+        ctx.rotate(Math.PI);
+        ctx.textAlign = 'left';
+        ctx.fillText(`${label}${code}`, -radius + 20, 5);
+      } else {
+        ctx.textAlign = 'right';
+        ctx.fillText(`${label}${code}`, radius - 20, 5);
+      }
       ctx.restore();
     }
 
-    // Outer glow ring
-    ctx.beginPath();
-    ctx.arc(center, center, radius + 4, 0, 2 * Math.PI);
-    ctx.lineWidth = 6;
-    ctx.strokeStyle = '#DCF836';
-    ctx.shadowColor = '#DCF836';
-    ctx.shadowBlur = 15;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
     // Center hub
     ctx.beginPath();
-    ctx.arc(center, center, 36, 0, 2 * Math.PI);
-    ctx.fillStyle = '#0B0B0E';
+    ctx.arc(center, center, 32, 0, 2 * Math.PI);
+    ctx.fillStyle = '#0E0E12';
     ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = '#DCF836';
-    ctx.stroke();
 
-    // Center inner badge
+    // Center inner dot
     ctx.beginPath();
-    ctx.arc(center, center, 14, 0, 2 * Math.PI);
+    ctx.arc(center, center, 12, 0, 2 * Math.PI);
     ctx.fillStyle = '#DCF836';
     ctx.fill();
   }, [participants]);
 
-  // Trigger spin animation and draw winner
+  // Handle spin with smooth deceleration physics & realistic audio ticking
   const handleSpinWheel = async () => {
     if (isSpinning || !selectedGiveawayId || participants.length === 0) return;
 
@@ -210,48 +212,83 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
       const targetIndex = winnerIndex >= 0 ? winnerIndex : 0;
       const sliceDeg = 360 / count;
 
-      // The top indicator is at 270 degrees (pointing down at top)
-      // Angle for slice center: targetIndex * sliceDeg + sliceDeg / 2
-      // Desired final normalized rotation: (270 - sliceCenterAngle) mod 360
+      // Top indicator is at 270 degrees
       const sliceCenter = targetIndex * sliceDeg + sliceDeg / 2;
       let targetDeg = (270 - sliceCenter) % 360;
       if (targetDeg < 0) targetDeg += 360;
 
-      // Spin minimum 5 to 7 full circles + target degree for realism
+      // Spin minimum 6 full revolutions
       const fullSpins = 6 * 360;
-      const currentMod = rotation % 360;
+      const startDeg = rotation;
+      const currentMod = startDeg % 360;
       const additionalRotation = fullSpins + ((targetDeg - currentMod + 360) % 360);
-      const finalRotation = rotation + additionalRotation;
+      const totalDelta = additionalRotation;
+      const totalDuration = 5500; // 5.5 seconds
 
-      setRotation(finalRotation);
+      const startTime = performance.now();
+      let lastSliceIndex = -1;
 
-      // Smooth spin duration: 5.5s
-      setTimeout(() => {
-        setIsSpinning(false);
-        setWinner(drawnWinner);
-        setShowWinnerModal(true);
-        toast.success(`🎉 Winner Selected: @${drawnWinner.username}!`, { duration: 6000 });
-      }, 5500);
+      // Physics tick loop with deceleration sound
+      const animateWheel = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / totalDuration, 1);
+
+        // Quintic ease-out deceleration curve for ultra-realistic slow down
+        const easeOut = 1 - Math.pow(1 - progress, 5);
+        const currentRot = startDeg + totalDelta * easeOut;
+        setRotation(currentRot);
+
+        // Check which slice is passing top indicator (270 deg)
+        const currentAngleAtIndicator = (270 - (currentRot % 360) + 360) % 360;
+        const currentSlice = Math.floor(currentAngleAtIndicator / sliceDeg);
+
+        if (currentSlice !== lastSliceIndex) {
+          lastSliceIndex = currentSlice;
+          if (soundEnabledRef.current) {
+            soundFX.playTick();
+          }
+        }
+
+        if (progress < 1) {
+          animFrameRef.current = requestAnimationFrame(animateWheel);
+        } else {
+          // Finished spinning
+          setIsSpinning(false);
+          setWinner(drawnWinner);
+          setShowWinnerModal(true);
+          if (soundEnabledRef.current) {
+            soundFX.playWinChime();
+          }
+          toast.success(`🎉 Winner Selected: @${drawnWinner.username}!`, { duration: 6000 });
+        }
+      };
+
+      animFrameRef.current = requestAnimationFrame(animateWheel);
     } catch (err: any) {
       setIsSpinning(false);
       toast.error(err.response?.data?.error || 'Failed to spin wheel');
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
+
   const selectedGame = giveawayGames.find(g => g.id === selectedGiveawayId);
 
   return (
-    <div className="bg-cards/40 border border-primary/20 rounded-3xl p-6 md:p-8 relative overflow-hidden group shadow-[0_0_35px_rgba(220,248,54,0.06)] mt-8">
+    <div className="bg-cards/40 rounded-3xl p-6 md:p-8 relative overflow-hidden group shadow-2xl mt-4">
       {/* Background cyber ambient glow */}
       <div className="absolute -top-24 -left-24 w-80 h-80 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Header */}
+      {/* Header (Clean, tag removed) */}
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-bold uppercase tracking-widest border border-primary/30 mb-3">
-            <Sparkles size={13} className="animate-pulse" /> Exclusive Creator Tool
-          </div>
           <h3 className="text-2xl md:text-3xl font-heading font-black tracking-wide uppercase text-white flex items-center gap-3">
             <Trophy className="text-primary" size={26} /> Giveaway Spin Wheel
           </h3>
@@ -260,8 +297,18 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
           </p>
         </div>
 
-        {/* Giveaway Selector */}
+        {/* Giveaway Selector & Controls */}
         <div className="flex items-center gap-3">
+          {/* Sound Toggle */}
+          <button
+            type="button"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title={soundEnabled ? 'Mute Sound' : 'Enable Sound'}
+            className="p-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl border border-white/10 transition-all cursor-pointer"
+          >
+            {soundEnabled ? <Volume2 size={18} className="text-primary" /> : <VolumeX size={18} className="text-white/40" />}
+          </button>
+
           <div className="relative min-w-[220px]">
             <select
               value={selectedGiveawayId}
@@ -306,11 +353,9 @@ export const GiveawaySpinWheel: React.FC<GiveawaySpinWheelProps> = ({ token, api
 
             {/* Rotating Wheel Canvas */}
             <div
-              className="w-full h-full flex items-center justify-center transition-transform"
+              className="w-full h-full flex items-center justify-center"
               style={{
                 transform: `rotate(${rotation}deg)`,
-                transitionDuration: isSpinning ? '5500ms' : '0ms',
-                transitionTimingFunction: 'cubic-bezier(0.15, 0.95, 0.2, 1.0)',
               }}
             >
               <canvas
