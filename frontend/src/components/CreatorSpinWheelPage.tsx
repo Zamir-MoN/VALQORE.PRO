@@ -1,12 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trophy, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useGames } from '../context/GameContext';
 import { GiveawaySpinWheel } from './GiveawaySpinWheel';
+import { getImageUrl } from '../utils/image';
 import axios from 'axios';
+import type { Game } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://valqore.pro/api';
+
+// Miniature game card for ambient background horizontal strips
+const BackgroundGameStripCard: React.FC<{ game: Game }> = React.memo(({ game }) => {
+  return (
+    <div className="flex-shrink-0 w-32 sm:w-36 md:w-44 bg-[#111115]/85 border border-white/[0.08] rounded-xl p-2 shadow-2xl backdrop-blur-md select-none pointer-events-none">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-black/60 mb-2">
+        <img
+          src={game.coverImage ? getImageUrl(game.coverImage) : '/images/hero-artwork.png'}
+          alt={game.title}
+          loading="lazy"
+          className="w-full h-full object-cover"
+        />
+        {game.tagImage && (
+          <img
+            src={getImageUrl(game.tagImage)}
+            alt="Tag"
+            className="absolute bottom-1.5 left-1.5 h-4 sm:h-5 object-contain drop-shadow"
+          />
+        )}
+      </div>
+      <div className="px-0.5">
+        <h5 className="font-heading font-bold text-xs text-white/90 truncate leading-snug">
+          {game.title}
+        </h5>
+        <div className="flex items-center justify-between mt-1 text-[11px] font-mono">
+          <span className="text-[#DCF836] font-bold">₹{game.price}</span>
+          {game.steamPrice && game.steamPrice > game.price && (
+            <span className="text-white/40 line-through text-[10px]">₹{game.steamPrice}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
 
 export const CreatorSpinWheelPage: React.FC = () => {
   const { user, token, loading: authLoading, openAuthModal } = useAuth();
@@ -42,10 +78,55 @@ export const CreatorSpinWheelPage: React.FC = () => {
     }
   };
 
+  // Prepare game items for the two horizontal looping background strips
+  const { stripRow1, stripRow2 } = useMemo(() => {
+    const validGames = (games || []).filter(g => g && (g.title || g.coverImage));
+    if (validGames.length === 0) return { stripRow1: [], stripRow2: [] };
+
+    // Duplicate list so seamless loop has sufficient width
+    const targetLength = Math.max(16, validGames.length * 2);
+    const repeated: Game[] = [];
+    while (repeated.length < targetLength) {
+      repeated.push(...validGames);
+    }
+
+    const mid = Math.floor(repeated.length / 2);
+    const r1 = repeated.slice(0, mid);
+    const r2 = repeated.slice(mid);
+
+    return {
+      stripRow1: [...r1, ...r1], // 2x duplication for 100% seamless marquee
+      stripRow2: [...r2, ...r2]
+    };
+  }, [games]);
+
   return (
-    <div className="pt-32 pb-24 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen">
+    <div className="pt-32 pb-24 px-4 md:px-6 lg:px-12 relative z-10 min-h-screen overflow-hidden">
       {/* Background cyber ambient glow */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-primary/10 rounded-[100%] blur-[140px] -z-10 pointer-events-none" />
+
+      {/* 2 Horizontal looping background strips in the middle */}
+      {stripRow1.length > 0 && (
+        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 -z-10 pointer-events-none flex flex-col gap-6 opacity-25 overflow-hidden select-none mask-fade">
+          {/* Top horizontal strip: Moves Right to Left */}
+          <div className="w-full overflow-hidden flex">
+            <div className="animate-marquee-left flex gap-4">
+              {stripRow1.map((game, i) => (
+                <BackgroundGameStripCard key={`strip-top-${game.id || i}-${i}`} game={game} />
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom horizontal strip: Moves Left to Right */}
+          <div className="w-full overflow-hidden flex">
+            <div className="animate-marquee-right flex gap-4">
+              {stripRow2.map((game, i) => (
+                <BackgroundGameStripCard key={`strip-bottom-${game.id || i}-${i}`} game={game} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto max-w-[1200px]">
         {/* Navigation Bar */}
